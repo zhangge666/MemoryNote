@@ -9,15 +9,26 @@
       <Sidebar v-if="appStore.showSidebar" />
       
       <!-- 文件列表/搜索面板 -->
-      <div v-if="appStore.showFilePanel" class="flex" :style="{ width: `${filePanelWidth}px` }">
-        <FilePanel class="flex-1" />
-        <ResizeHandle 
-          direction="horizontal" 
-          :min-size="200" 
-          :max-size="600"
-          @resize="handleFilePanelResize"
-          @reset="resetFilePanelSize"
-        />
+      <div 
+        class="file-panel-wrapper"
+        :class="{ 
+          'file-panel-hidden': !appStore.showFilePanel,
+          'file-panel-no-transition': isResizing
+        }"
+        :style="{ width: appStore.showFilePanel ? `${filePanelWidth}px` : '0px' }"
+      >
+        <div v-if="appStore.showFilePanel" class="file-panel-content flex">
+          <FilePanel class="flex-1" />
+          <ResizeHandle 
+            direction="horizontal" 
+            :min-size="200" 
+            :max-size="600"
+            @resize="handleFilePanelResize"
+            @resizeStart="handleResizeStart"
+            @resizeEnd="handleResizeEnd"
+            @reset="resetFilePanelSize"
+          />
+        </div>
       </div>
       
       <!-- 主编辑区域 -->
@@ -53,12 +64,21 @@ const appStore = useAppStore();
 
 // 面板大小控制
 const filePanelWidth = ref(320); // 文件面板默认宽度
+const isResizing = ref(false); // 拖拽状态
 
 // 调整大小处理函数
 function handleFilePanelResize(size: number) {
   filePanelWidth.value = size;
   // 保存到本地存储
   localStorage.setItem('filePanelWidth', size.toString());
+}
+
+function handleResizeStart() {
+  isResizing.value = true;
+}
+
+function handleResizeEnd() {
+  isResizing.value = false;
 }
 
 function resetFilePanelSize() {
@@ -105,5 +125,39 @@ settingsStore.$subscribe(() => {
 </script>
 
 <style scoped>
-/* 组件特定样式 */
+/* 文件面板包装器 - 负责动画 */
+.file-panel-wrapper {
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+/* 拖拽时禁用动画 */
+.file-panel-no-transition {
+  transition: none !important;
+}
+
+/* 文件面板内容 - 实际内容容器 */
+.file-panel-content {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+}
+
+.dark .file-panel-content {
+  background: rgb(31 41 55);
+  border-right: 1px solid rgb(75 85 99);
+}
+
+/* 隐藏状态 */
+.file-panel-hidden {
+  border-right: none;
+}
+
+/* 主工作区动画 */
+.main-work-area {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 400px;
+}
 </style>
