@@ -12,6 +12,8 @@ export interface Note {
   created_at?: string;
   updated_at?: string;
   file_path?: string;
+  parent_id?: number; // 父文件夹ID
+  is_folder?: boolean; // 是否为文件夹
 }
 
 export interface ReviewRecord {
@@ -82,6 +84,9 @@ export class DatabaseManager {
       )
     `);
 
+    // 检查并添加新字段
+    this.migrateDatabase();
+
     // 标签表
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS tags (
@@ -125,18 +130,122 @@ export class DatabaseManager {
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_review_records_next_review ON review_records(next_review_at)');
   }
 
+  private migrateDatabase(): void {
+    if (!this.db) return;
+
+    try {
+      // 检查是否存在 parent_id 字段
+      const tableInfo = this.db.prepare("PRAGMA table_info(notes)").all() as any[];
+      const hasParentId = tableInfo.some(col => col.name === 'parent_id');
+      const hasIsFolder = tableInfo.some(col => col.name === 'is_folder');
+
+      if (!hasParentId) {
+        console.log('Adding parent_id column to notes table...');
+        this.db.exec('ALTER TABLE notes ADD COLUMN parent_id INTEGER');
+      }
+
+      if (!hasIsFolder) {
+        console.log('Adding is_folder column to notes table...');
+        this.db.exec('ALTER TABLE notes ADD COLUMN is_folder INTEGER DEFAULT 0');
+      }
+
+      // 创建外键约束（如果需要）
+      if (hasParentId && !this.hasParentIdConstraint()) {
+        console.log('Note: Foreign key constraint for parent_id cannot be added to existing table.');
+        console.log('Consider recreating the database for full constraint support.');
+      }
+
+      console.log('Database migration completed successfully');
+    } catch (error) {
+      console.error('Database migration failed:', error);
+      throw error;
+    }
+  }
+
+  private hasParentIdConstraint(): boolean {
+    if (!this.db) return false;
+    
+    try {
+      const foreignKeys = this.db.prepare("PRAGMA foreign_key_list(notes)").all() as any[];
+      return foreignKeys.some(fk => fk.from === 'parent_id');
+    } catch {
+      return false;
+    }
+  }
+
   // 笔记相关方法
   createNote(note: Omit<Note, 'id' | 'created_at' | 'updated_at'>): Note {
     if (!this.db) throw new Error('Database not initialized');
     
     const stmt = this.db.prepare(`
-      INSERT INTO notes (title, content, tags, category, file_path)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO notes (title, content, tags, category, file_path, parent_id, is_folder)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
-    const result = stmt.run(note.title, note.content, note.tags || '', note.category || '', note.file_path || '');
+    const result = stmt.run(
+      note.title, 
+      note.content, 
+      note.tags || '', 
+      note.category || '', 
+      note.file_path || '',
+      note.parent_id || null,
+      note.is_folder ? 1 : 0
+    );
     
     return this.getNoteById(result.lastInsertRowid as number)!;
+  }
+
+  // 创建文件夹
+  createFolder(title: string, parentId?: number): Note {
+    return this.createNote({
+      title,
+      content: '',
+      parent_id: parentId,
+      is_folder: true,
+      category: 'folder'
+    });
+  }
+
+  // 获取指定文件夹下的所有项目
+  getItemsByParentId(parentId?: number): Note[] {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const stmt = parentId 
+      ? this.db.prepare('SELECT * FROM notes WHERE parent_id = ? ORDER BY is_folder DESC, title ASC')
+      : this.db.prepare('SELECT * FROM notes WHERE parent_id IS NULL ORDER BY is_folder DESC, title ASC');
+    
+    return parentId ? stmt.all(parentId) as Note[] : stmt.all() as Note[];
+  }
+
+  // 获取树形结构
+  getNotesTree(): Note[] {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const allNotes = this.getAllNotes();
+    const noteMap = new Map<number, Note & { children: Note[] }>();
+    const rootNotes: (Note & { children: Note[] })[] = [];
+    
+    // 创建带children属性的笔记映射
+    allNotes.forEach(note => {
+      noteMap.set(note.id!, { ...note, children: [] });
+    });
+    
+    // 构建树形结构
+    allNotes.forEach(note => {
+      const noteWithChildren = noteMap.get(note.id!)!;
+      if (note.parent_id) {
+        const parent = noteMap.get(note.parent_id);
+        if (parent) {
+          parent.children.push(noteWithChildren);
+        } else {
+          rootNotes.push(noteWithChildren);
+        }
+      } else {
+        rootNotes.push(noteWithChildren);
+      }
+    });
+    
+    return rootNotes;
   }
 
   getNoteById(id: number): Note | null {

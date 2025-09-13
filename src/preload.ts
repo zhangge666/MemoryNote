@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('notes:update', id, updates),
     delete: (id: number) => ipcRenderer.invoke('notes:delete', id),
     search: (query: string) => ipcRenderer.invoke('notes:search', query),
+    createFolder: (title: string, parentId?: number) => 
+      ipcRenderer.invoke('notes:createFolder', title, parentId),
+    getTree: () => ipcRenderer.invoke('notes:getTree'),
+    getByParentId: (parentId?: number) => 
+      ipcRenderer.invoke('notes:getByParentId', parentId),
   },
 
   // 标签相关API
@@ -70,6 +75,9 @@ export interface ElectronAPI {
     update: (id: number, updates: Partial<Note>) => Promise<Note | null>;
     delete: (id: number) => Promise<boolean>;
     search: (query: string) => Promise<Note[]>;
+    createFolder: (title: string, parentId?: number) => Promise<Note>;
+    getTree: () => Promise<Note[]>;
+    getByParentId: (parentId?: number) => Promise<Note[]>;
   };
   tags: {
     create: (tag: Omit<Tag, 'id' | 'created_at'>) => Promise<Tag>;

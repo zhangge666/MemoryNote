@@ -60,6 +60,33 @@ export function setupIpcHandlers(dbManager: DatabaseManager) {
     }
   });
 
+  ipcMain.handle('notes:createFolder', async (_, title: string, parentId?: number) => {
+    try {
+      return dbManager.createFolder(title, parentId);
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('notes:getTree', async () => {
+    try {
+      return dbManager.getNotesTree();
+    } catch (error) {
+      console.error('Error getting notes tree:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('notes:getByParentId', async (_, parentId?: number) => {
+    try {
+      return dbManager.getItemsByParentId(parentId);
+    } catch (error) {
+      console.error('Error getting notes by parent id:', error);
+      throw error;
+    }
+  });
+
   // 标签相关IPC处理器
   ipcMain.handle('tags:create', async (_, tag: Omit<Tag, 'id' | 'created_at'>) => {
     try {

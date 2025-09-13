@@ -61,53 +61,152 @@
       </div>
       
       <div v-else class="p-2">
-        <div
-          v-for="note in sortedNotes"
-          :key="note.id"
-          @click="openNote(note)"
-          class="note-item group"
-          :class="{ 'note-item-active': currentNote?.id === note.id }"
-        >
-          <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-              {{ note.title || t('editor.title') }}
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-              {{ getPreviewText(note.content) }}
-            </p>
-            <div class="flex items-center justify-between mt-2">
-              <div class="flex items-center space-x-2">
-                <span v-if="note.category" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                  {{ note.category }}
-                </span>
-                <div v-if="note.tags" class="flex flex-wrap gap-1">
-                  <span
-                    v-for="tag in getNoteTags(note.tags)"
-                    :key="tag"
-                    class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                  >
-                    {{ tag }}
-                  </span>
+        <!-- 创建新文件夹按钮 -->
+        <div class="mb-4 flex space-x-2">
+          <button
+            @click="createNewFolder"
+            class="flex-1 btn btn-secondary btn-sm text-xs"
+          >
+            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+            </svg>
+            新建文件夹
+          </button>
+          <button
+            @click="createNewNote"
+            class="flex-1 btn btn-primary btn-sm text-xs"
+          >
+            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            新建笔记
+          </button>
+        </div>
+
+        <!-- 面包屑导航 -->
+        <div v-if="currentPath.length > 0" class="mb-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
+          <button @click="navigateToFolder(null)" class="hover:text-gray-700 dark:hover:text-gray-200">
+            根目录
+          </button>
+          <template v-for="(folder, index) in currentPath" :key="folder.id">
+            <svg class="w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <button 
+              @click="navigateToFolder(folder)"
+              class="hover:text-gray-700 dark:hover:text-gray-200"
+              :class="{ 'font-medium': index === currentPath.length - 1 }"
+            >
+              {{ folder.title }}
+            </button>
+          </template>
+        </div>
+
+        <!-- 树形文件列表 -->
+        <div class="space-y-1">
+          <div
+            v-for="item in currentFolderItems"
+            :key="item.id"
+            class="note-item group"
+            :class="{ 'note-item-active': currentNote?.id === item.id }"
+          >
+            <!-- 文件夹显示 -->
+            <div v-if="item.is_folder" @click="navigateToFolder(item)" class="flex items-center cursor-pointer">
+              <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+              </svg>
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.title }}</span>
+              <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  @click.stop="deleteNote(item)"
+                  class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                  title="删除文件夹"
+                >
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- 笔记显示 -->
+            <div v-else @click="openNote(item)" class="cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center">
+                  <svg class="w-3 h-3 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                  </svg>
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {{ item.title || '无标题' }}
+                  </h3>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-5 line-clamp-2">
+                  {{ getPreviewText(item.content) }}
+                </p>
+                <div class="flex items-center justify-between mt-2 ml-5">
+                  <div class="flex items-center space-x-2">
+                    <span v-if="item.category && item.category !== 'folder'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                      {{ item.category }}
+                    </span>
+                    <div v-if="item.tags" class="flex flex-wrap gap-1">
+                      <span
+                        v-for="tag in getNoteTags(item.tags)"
+                        :key="tag"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                      >
+                        {{ tag }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      @click.stop="deleteNote(item)"
+                      class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                      title="删除笔记"
+                    >
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-5">
+                  {{ formatDate(item.updated_at) }}
                 </div>
               </div>
             </div>
-            <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {{ formatDate(note.updated_at) }}
-            </div>
           </div>
-          
-          <!-- 操作按钮 -->
-          <div class="flex-shrink-0 ml-2">
-            <button
-              @click.stop="deleteNote(note)"
-              class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="删除笔记"
-            >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-              </svg>
-            </button>
-          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 创建文件夹对话框 -->
+    <div v-if="showCreateFolderDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-80">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">创建新文件夹</h3>
+        <input
+          v-model="newFolderName"
+          type="text"
+          placeholder="请输入文件夹名称"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          @keyup.enter="confirmCreateFolder"
+          @keyup.esc="cancelCreateFolder"
+          autofocus
+        />
+        <div class="flex justify-end space-x-3 mt-4">
+          <button
+            @click="cancelCreateFolder"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500"
+          >
+            取消
+          </button>
+          <button
+            @click="confirmCreateFolder"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            :disabled="!newFolderName.trim()"
+          >
+            创建
+          </button>
         </div>
       </div>
     </div>
@@ -149,6 +248,15 @@ const selectedCategory = ref('');
 const sortBy = ref('updated');
 const showOutline = ref(true);
 const outline = ref<Array<{ id: string; level: number; text: string }>>([]);
+
+// 树形结构相关状态
+const currentFolder = ref<Note | null>(null);
+const currentPath = ref<Note[]>([]);
+const currentFolderItems = ref<Note[]>([]);
+
+// 对话框状态
+const showCreateFolderDialog = ref(false);
+const newFolderName = ref('');
 
 // 计算属性
 const currentNote = computed(() => notesStore.currentNote);
@@ -289,9 +397,90 @@ watch(selectedCategory, (newCategory) => {
   notesStore.setSelectedCategory(newCategory);
 });
 
+// 文件夹导航方法
+async function navigateToFolder(folder: Note | null) {
+  currentFolder.value = folder;
+  
+  if (folder) {
+    // 构建路径
+    currentPath.value = [...currentPath.value];
+    if (!currentPath.value.find(f => f.id === folder.id)) {
+      currentPath.value.push(folder);
+    } else {
+      // 如果点击的是路径中的文件夹，截断路径
+      const index = currentPath.value.findIndex(f => f.id === folder.id);
+      currentPath.value = currentPath.value.slice(0, index + 1);
+    }
+  } else {
+    // 返回根目录
+    currentPath.value = [];
+  }
+  
+  await loadCurrentFolderItems();
+}
+
+// 加载当前文件夹内容
+async function loadCurrentFolderItems() {
+  try {
+    const parentId = currentFolder.value?.id;
+    const items = await window.electronAPI.notes.getByParentId(parentId);
+    currentFolderItems.value = items || [];
+  } catch (error) {
+    console.error('加载文件夹内容失败:', error);
+    currentFolderItems.value = [];
+  }
+}
+
+// 创建新文件夹
+async function createNewFolder() {
+  showCreateFolderDialog.value = true;
+}
+
+// 确认创建文件夹
+async function confirmCreateFolder() {
+  if (newFolderName.value && newFolderName.value.trim()) {
+    try {
+      await window.electronAPI.notes.createFolder(newFolderName.value.trim(), currentFolder.value?.id);
+      await loadCurrentFolderItems();
+      showCreateFolderDialog.value = false;
+      newFolderName.value = '';
+    } catch (error) {
+      console.error('创建文件夹失败:', error);
+      alert('创建文件夹失败，请重试。');
+    }
+  }
+}
+
+// 取消创建文件夹
+function cancelCreateFolder() {
+  showCreateFolderDialog.value = false;
+  newFolderName.value = '';
+}
+
+// 创建新笔记
+async function createNewNote() {
+  try {
+    const newNote = await notesStore.createNote({
+      title: '新建笔记',
+      content: '',
+      category: '',
+      tags: '',
+      parent_id: currentFolder.value?.id,
+    });
+    
+    await loadCurrentFolderItems();
+    openNote(newNote);
+  } catch (error) {
+    console.error('创建笔记失败:', error);
+    alert('创建笔记失败，请重试。');
+  }
+}
+
 onMounted(() => {
   // 加载笔记
   notesStore.loadNotes();
+  // 加载根目录内容
+  loadCurrentFolderItems();
 });
 </script>
 
