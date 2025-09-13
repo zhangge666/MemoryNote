@@ -5,14 +5,23 @@
     
     <!-- 主内容区域 -->
     <div class="flex-1 flex overflow-hidden">
-      <!-- 侧边栏 -->
-      <Sidebar v-if="showSidebar" />
+      <!-- 侧边栏 - 固定宽度，不需要拖拽 -->
+      <Sidebar v-if="appStore.showSidebar" />
       
       <!-- 文件列表/搜索面板 -->
-      <FilePanel v-if="showFilePanel" />
+      <div v-if="appStore.showFilePanel" class="flex" :style="{ width: `${filePanelWidth}px` }">
+        <FilePanel class="flex-1" />
+        <ResizeHandle 
+          direction="horizontal" 
+          :min-size="200" 
+          :max-size="600"
+          @resize="handleFilePanelResize"
+          @reset="resetFilePanelSize"
+        />
+      </div>
       
       <!-- 主编辑区域 -->
-      <main class="flex-1 flex flex-col overflow-hidden">
+      <main class="main-work-area flex-1 flex flex-col overflow-hidden min-w-0">
         <!-- 标签页 -->
         <TabBar />
         
@@ -29,25 +38,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import TitleBar from './components/layout/TitleBar.vue';
 import Sidebar from './components/layout/Sidebar.vue';
 import FilePanel from './components/layout/FilePanel.vue';
 import StatusBar from './components/layout/StatusBar.vue';
 import TabBar from './components/layout/TabBar.vue';
+import ResizeHandle from './components/ui/ResizeHandle.vue';
 import { useSettingsStore } from './stores/settings';
 import { useAppStore } from './stores/app';
 
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
 
-// 界面显示控制
-const showSidebar = ref(true);
-const showFilePanel = ref(true);
+// 面板大小控制
+const filePanelWidth = ref(320); // 文件面板默认宽度
+
+// 调整大小处理函数
+function handleFilePanelResize(size: number) {
+  filePanelWidth.value = size;
+  // 保存到本地存储
+  localStorage.setItem('filePanelWidth', size.toString());
+}
+
+function resetFilePanelSize() {
+  filePanelWidth.value = 320;
+  localStorage.setItem('filePanelWidth', '320');
+}
+
+// 从本地存储恢复面板大小
+function restorePanelSizes() {
+  const savedFilePanelWidth = localStorage.getItem('filePanelWidth');
+  
+  if (savedFilePanelWidth) {
+    filePanelWidth.value = parseInt(savedFilePanelWidth);
+  }
+}
 
 onMounted(async () => {
   // 初始化应用设置
   await settingsStore.loadSettings();
+  
+  // 恢复面板大小
+  restorePanelSizes();
   
   // 应用主题
   applyTheme();
