@@ -1,13 +1,24 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>Hello World!</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MemoryNote - 个人知识库</title>
+    <style>
+      /* 防止页面闪烁 */
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+        overflow: hidden;
+      }
+      .dark body {
+        background: #0f172a;
+      }
+    </style>
   </head>
   <body>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
+    <div id="app"></div>
     <script type="module" src="/src/renderer.ts"></script>
   </body>
 </html>
