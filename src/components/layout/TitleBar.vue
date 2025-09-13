@@ -13,7 +13,7 @@
       <button
         @click="toggleFilePanel"
         class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-        title="切换文件列表"
+        :title="t('titleBar.toggleFilePanel')"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
@@ -24,7 +24,7 @@
       <button
         @click="toggleSearch"
         class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-        title="搜索"
+        :title="t('titleBar.search')"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
@@ -46,7 +46,7 @@
         <button
           @click="showUserMenu = !showUserMenu"
           class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center hover:bg-primary-700 transition-colors"
-          title="用户菜单"
+          :title="t('titleBar.userMenu')"
         >
           <span class="text-sm font-medium">{{ userInitial }}</span>
         </button>
@@ -59,19 +59,19 @@
           >
             <div class="px-4 py-2 border-b border-gray-200 dark:border-dark-600">
               <div class="font-medium text-gray-900 dark:text-gray-100">{{ settingsStore.userName }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">{{ settingsStore.userEmail || '未设置邮箱' }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ settingsStore.userEmail || t('user.notSetEmail') }}</div>
             </div>
             <button
               @click="goToPersonalSpace"
               class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-700 dark:text-gray-300"
             >
-              个人空间
+              {{ t('nav.personalSpace') }}
             </button>
             <button
               @click="goToReviewReminder"
               class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-700 dark:text-gray-300"
             >
-              学习提醒
+              {{ t('nav.studyReminder') }}
             </button>
           </div>
         </transition>
@@ -82,7 +82,7 @@
         <button
           @click="minimizeWindow"
           class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-dark-700 rounded transition-colors"
-          title="最小化"
+          :title="t('titleBar.minimize')"
         >
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 10 1">
             <path d="M0 0h10v1H0z"/>
@@ -92,7 +92,7 @@
         <button
           @click="maximizeWindow"
           class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-dark-700 rounded transition-colors"
-          title="最大化"
+          :title="t('titleBar.maximize')"
         >
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 10 10">
             <path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"/>
@@ -102,7 +102,7 @@
         <button
           @click="closeWindow"
           class="w-8 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white rounded transition-colors"
-          title="关闭"
+          :title="t('titleBar.close')"
         >
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 10 10">
             <path d="M0 0L10 10M10 0L0 10" stroke="currentColor" stroke-width="1.5"/>
@@ -116,10 +116,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAppStore } from '../../stores/app';
 import { useSettingsStore } from '../../stores/settings';
 
 const route = useRoute();
+const { t } = useI18n();
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
 
@@ -129,13 +131,13 @@ const showUserMenu = ref(false);
 const currentTitle = computed(() => {
   switch (route.name) {
     case 'Dashboard':
-      return 'MemoryNote - 个人知识库';
+      return t('app.title');
     case 'NoteEditor':
-      return '笔记编辑器';
+      return t('editor.title');
     case 'ReviewCenter':
-      return '复习中心';
+      return t('review.title');
     case 'Settings':
-      return '设置';
+      return t('settings.title');
     default:
       return 'MemoryNote';
   }

@@ -3,9 +3,9 @@
     <div class="max-w-4xl mx-auto p-6">
       <!-- 设置页面头部 -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">设置</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.title') }}</h1>
         <p class="text-gray-600 dark:text-gray-400">
-          个性化你的知识库体验
+          {{ t('settings.subtitle') }}
         </p>
       </div>
       
@@ -31,12 +31,12 @@
       <div v-if="activeTab === 'general'" class="space-y-6">
         <!-- 主题设置 -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">外观</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.appearance.title') }}</h3>
           
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                主题
+                {{ t('settings.appearance.theme') }}
               </label>
               <div class="flex space-x-4">
                 <label
@@ -58,7 +58,7 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                字体大小
+                {{ t('settings.appearance.fontSize') }}
               </label>
               <div class="flex items-center space-x-4">
                 <input
@@ -78,31 +78,31 @@
         
         <!-- 语言设置 -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">语言</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.language.title') }}</h3>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              界面语言
+              {{ t('settings.language.interface') }}
             </label>
             <select
               v-model="selectedLanguage"
               class="input w-48"
               @change="updateLanguage"
             >
-              <option value="zh-CN">简体中文</option>
-              <option value="en-US">English</option>
+              <option value="zh-CN">{{ t('settings.language.chinese') }}</option>
+              <option value="en-US">{{ t('settings.language.english') }}</option>
             </select>
           </div>
         </div>
         
         <!-- 用户信息 -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">用户信息</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.user.title') }}</h3>
           
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                用户名
+                {{ t('settings.user.username') }}
               </label>
               <input
                 v-model="userName"
@@ -114,7 +114,7 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                邮箱
+                {{ t('settings.user.email') }}
               </label>
               <input
                 v-model="userEmail"
@@ -130,28 +130,30 @@
       <!-- 编辑器设置 -->
       <div v-if="activeTab === 'editor'" class="space-y-6">
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">编辑器</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.editor.title') }}</h3>
           
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  自动保存
+                  {{ t('settings.editor.autoSave') }}
                 </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  编辑时自动保存笔记
+                  {{ t('settings.editor.autoSaveDesc') }}
                 </p>
               </div>
-              <input
-                v-model="autoSave"
-                type="checkbox"
-                class="toggle"
-              />
+              <div class="toggle-switch">
+                <input
+                  v-model="autoSave"
+                  type="checkbox"
+                />
+                <span class="toggle-slider"></span>
+              </div>
             </div>
             
             <div v-if="autoSave">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                自动保存间隔（秒）
+                {{ t('settings.editor.autoSaveInterval') }}
               </label>
               <input
                 v-model="autoSaveInterval"
@@ -165,33 +167,37 @@
             <div class="flex items-center justify-between">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  显示行号
+                  {{ t('settings.editor.showLineNumbers') }}
                 </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  在编辑器中显示行号
+                  {{ t('settings.editor.showLineNumbersDesc') }}
                 </p>
               </div>
-              <input
-                v-model="showLineNumbers"
-                type="checkbox"
-                class="toggle"
-              />
+              <div class="toggle-switch">
+                <input
+                  v-model="showLineNumbers"
+                  type="checkbox"
+                />
+                <span class="toggle-slider"></span>
+              </div>
             </div>
             
             <div class="flex items-center justify-between">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  自动换行
+                  {{ t('settings.editor.wordWrap') }}
                 </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  长行自动换行显示
+                  {{ t('settings.editor.wordWrapDesc') }}
                 </p>
               </div>
-              <input
-                v-model="wordWrap"
-                type="checkbox"
-                class="toggle"
-              />
+              <div class="toggle-switch">
+                <input
+                  v-model="wordWrap"
+                  type="checkbox"
+                />
+                <span class="toggle-slider"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -200,44 +206,48 @@
       <!-- 复习设置 -->
       <div v-if="activeTab === 'review'" class="space-y-6">
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">复习提醒</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.review.title') }}</h3>
           
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  桌面通知
+                  {{ t('settings.review.notifications') }}
                 </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  有复习任务时显示桌面通知
+                  {{ t('settings.review.notificationsDesc') }}
                 </p>
               </div>
-              <input
-                v-model="reviewNotifications"
-                type="checkbox"
-                class="toggle"
-              />
+              <div class="toggle-switch">
+                <input
+                  v-model="reviewNotifications"
+                  type="checkbox"
+                />
+                <span class="toggle-slider"></span>
+              </div>
             </div>
             
             <div class="flex items-center justify-between">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  提示音
+                  {{ t('settings.review.sound') }}
                 </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  复习提醒时播放提示音
+                  {{ t('settings.review.soundDesc') }}
                 </p>
               </div>
-              <input
-                v-model="reviewSound"
-                type="checkbox"
-                class="toggle"
-              />
+              <div class="toggle-switch">
+                <input
+                  v-model="reviewSound"
+                  type="checkbox"
+                />
+                <span class="toggle-slider"></span>
+              </div>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                每日复习目标
+                {{ t('settings.review.dailyGoal') }}
               </label>
               <input
                 v-model="dailyReviewGoal"
@@ -246,7 +256,7 @@
                 max="100"
                 class="input w-24"
               />
-              <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">个笔记</span>
+              <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.review.notes') }}</span>
             </div>
           </div>
         </div>
@@ -255,7 +265,7 @@
       <!-- 关于 -->
       <div v-if="activeTab === 'about'" class="space-y-6">
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">关于 MemoryNote</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.about.title') }}</h3>
           
           <div class="space-y-4">
             <div class="flex items-center space-x-4">
@@ -266,16 +276,16 @@
               </div>
               <div>
                 <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">MemoryNote</h4>
-                <p class="text-gray-600 dark:text-gray-400">版本 1.0.0</p>
+                <p class="text-gray-600 dark:text-gray-400">{{ t('settings.about.version') }}</p>
               </div>
             </div>
             
             <p class="text-gray-700 dark:text-gray-300">
-              基于艾宾浩斯遗忘曲线的个人知识库系统，帮助你更高效地学习和记忆。
+              {{ t('settings.about.description') }}
             </p>
             
             <div class="pt-4 border-t border-gray-200 dark:border-dark-600">
-              <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">技术栈</h5>
+              <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.about.techStack') }}</h5>
               <div class="flex flex-wrap gap-2">
                 <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded text-xs">
                   Electron
@@ -299,15 +309,15 @@
         
         <!-- 重置设置 -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">重置设置</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.reset.title') }}</h3>
           <p class="text-gray-600 dark:text-gray-400 mb-4">
-            将所有设置恢复为默认值。此操作不会删除你的笔记数据。
+            {{ t('settings.reset.description') }}
           </p>
           <button
             @click="resetAllSettings"
             class="btn btn-secondary"
           >
-            重置所有设置
+            {{ t('settings.reset.button') }}
           </button>
         </div>
       </div>
@@ -317,26 +327,28 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '../stores/settings';
 import type { Theme, Language } from '../stores/settings';
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
 // 响应式状态
 const activeTab = ref('general');
 
-const tabs = [
-  { id: 'general', name: '通用' },
-  { id: 'editor', name: '编辑器' },
-  { id: 'review', name: '复习' },
-  { id: 'about', name: '关于' },
-];
+const tabs = computed(() => [
+  { id: 'general', name: t('settings.tabs.general') },
+  { id: 'editor', name: t('settings.tabs.editor') },
+  { id: 'review', name: t('settings.tabs.review') },
+  { id: 'about', name: t('settings.tabs.about') },
+]);
 
-const themeOptions = [
-  { value: 'light', label: '浅色' },
-  { value: 'dark', label: '深色' },
-  { value: 'auto', label: '跟随系统' },
-];
+const themeOptions = computed(() => [
+  { value: 'light', label: t('settings.theme.light') },
+  { value: 'dark', label: t('settings.theme.dark') },
+  { value: 'auto', label: t('settings.theme.auto') },
+]);
 
 // 计算属性
 const selectedTheme = computed({
@@ -421,7 +433,7 @@ function updateUserEmail() {
 }
 
 function resetAllSettings() {
-  if (confirm('确定要重置所有设置吗？此操作不可撤销。')) {
+  if (confirm(t('settings.reset.confirm'))) {
     settingsStore.resetSettings();
   }
 }
@@ -432,24 +444,88 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.toggle {
-  @apply relative inline-flex h-6 w-11 items-center rounded-full;
-  @apply bg-gray-200 dark:bg-dark-600;
-  @apply transition-colors duration-200 ease-in-out;
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
 }
 
-.toggle:checked {
-  @apply bg-primary-600;
+.toggle-switch input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
 }
 
-.toggle:before {
-  @apply absolute left-1 top-1 h-4 w-4 rounded-full bg-white;
-  @apply transition-transform duration-200 ease-in-out;
-  content: '';
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  z-index: 0;
 }
 
-.toggle:checked:before {
-  @apply translate-x-5;
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.toggle-switch:hover .toggle-slider {
+  background-color: #94a3b8;
+}
+
+.toggle-switch input:checked:hover + .toggle-slider {
+  background-color: #2563eb;
+}
+
+/* Dark mode styles */
+.dark .toggle-slider {
+  background-color: #4b5563;
+}
+
+.dark .toggle-switch:hover .toggle-slider {
+  background-color: #6b7280;
+}
+
+.dark .toggle-switch input:checked + .toggle-slider {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+}
+
+.dark .toggle-switch input:checked:hover + .toggle-slider {
+  background-color: #2563eb;
 }
 </style>

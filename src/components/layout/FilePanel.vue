@@ -12,7 +12,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="搜索笔记..."
+          :placeholder="t('filePanel.searchPlaceholder')"
           class="input pl-10 pr-4"
           @input="onSearchInput"
         />
@@ -33,7 +33,7 @@
           v-model="selectedCategory"
           class="input text-xs py-1"
         >
-          <option value="">所有分类</option>
+          <option value="">{{ t('filePanel.allNotes') }}</option>
           <option v-for="category in categories" :key="category" :value="category">
             {{ category }}
           </option>
@@ -43,9 +43,9 @@
           v-model="sortBy"
           class="input text-xs py-1"
         >
-          <option value="updated">最近更新</option>
-          <option value="created">创建时间</option>
-          <option value="title">标题</option>
+          <option value="updated">{{ t('filePanel.sortByDate') }}</option>
+          <option value="created">{{ t('filePanel.sortByDate') }}</option>
+          <option value="title">{{ t('filePanel.sortByName') }}</option>
         </select>
       </div>
     </div>
@@ -53,11 +53,11 @@
     <!-- 文件列表 -->
     <div class="flex-1 overflow-y-auto">
       <div v-if="isLoading" class="p-4 text-center text-gray-500">
-        加载中...
+        {{ t('common.loading') }}
       </div>
       
       <div v-else-if="filteredNotes.length === 0" class="p-4 text-center text-gray-500">
-        {{ searchQuery ? '没有找到匹配的笔记' : '暂无笔记' }}
+        {{ searchQuery ? t('filePanel.noNotesFound') : t('filePanel.noNotesFound') }}
       </div>
       
       <div v-else class="p-2">
@@ -70,7 +70,7 @@
         >
           <div class="flex-1 min-w-0">
             <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-              {{ note.title || '无标题' }}
+              {{ note.title || t('editor.title') }}
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
               {{ getPreviewText(note.content) }}
@@ -133,11 +133,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
 import { useAppStore } from '../../stores/app';
 import type { Note } from '../../database/DatabaseManager';
 
 const router = useRouter();
+const { t } = useI18n();
 const notesStore = useNotesStore();
 const appStore = useAppStore();
 

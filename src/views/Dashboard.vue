@@ -4,10 +4,10 @@
       <!-- 欢迎区域 -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          欢迎回来，{{ settingsStore.userName }}！
+          {{ t('dashboard.welcome', { name: settingsStore.userName }) }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          今天是 {{ formatDate(new Date()) }}，让我们开始学习吧
+          {{ t('dashboard.today', { date: formatDate(new Date()) }) }}
         </p>
       </div>
       
@@ -25,7 +25,7 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">笔记总数</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('dashboard.totalNotes') }}</p>
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ totalNotes }}</p>
             </div>
           </div>
@@ -42,7 +42,7 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">今日复习</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('dashboard.todayReview') }}</p>
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ todayReviews }}</p>
             </div>
           </div>
@@ -59,8 +59,8 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">连续学习</p>
-              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ studyStreak }} 天</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('dashboard.studyStreak') }}</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ studyStreak }} {{ t('dashboard.days') }}</p>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@
               </div>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">本周新增</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('dashboard.weeklyNew') }}</p>
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ weeklyNewNotes }}</p>
             </div>
           </div>
@@ -89,12 +89,12 @@
         <div class="lg:col-span-2">
           <div class="card p-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">最近笔记</h2>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ t('dashboard.recentNotes') }}</h2>
               <router-link
                 to="/note"
                 class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
               >
-                查看全部
+                {{ t('dashboard.viewAll') }}
               </router-link>
             </div>
             
@@ -102,12 +102,12 @@
               <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
               </svg>
-              <p>还没有笔记，创建第一篇笔记吧！</p>
+              <p>{{ t('dashboard.noNotes') }}</p>
               <button
                 @click="createFirstNote"
                 class="btn btn-primary mt-4"
               >
-                创建笔记
+                {{ t('dashboard.createNote') }}
               </button>
             </div>
             
@@ -138,12 +138,12 @@
           <!-- 今日复习 -->
           <div class="card p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">今日复习</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ t('dashboard.todayReview') }}</h3>
               <router-link
                 to="/review"
                 class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
               >
-                开始复习
+                {{ t('dashboard.startReview') }}
               </router-link>
             </div>
             
@@ -151,7 +151,7 @@
               <svg class="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <p class="text-sm">今天没有需要复习的内容</p>
+              <p class="text-sm">{{ t('dashboard.noReviewToday') }}</p>
             </div>
             
             <div v-else class="space-y-2">
@@ -164,13 +164,13 @@
                   {{ (review as any).title }}
                 </p>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  间隔: {{ review.interval_days }} 天
+                  {{ t('dashboard.interval', { days: review.interval_days }) }}
                 </p>
               </div>
               
               <div v-if="dueReviews.length > 3" class="text-center">
                 <span class="text-sm text-gray-500 dark:text-gray-400">
-                  还有 {{ dueReviews.length - 3 }} 个待复习
+                  {{ t('dashboard.moreReviews', { count: dueReviews.length - 3 }) }}
                 </span>
               </div>
             </div>
@@ -178,7 +178,7 @@
           
           <!-- 快速操作 -->
           <div class="card p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">快速操作</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('dashboard.quickActions') }}</h3>
             <div class="space-y-3">
               <button
                 @click="createNewNote"
@@ -187,7 +187,7 @@
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
                 </svg>
-                新建笔记
+                {{ t('dashboard.newNote') }}
               </button>
               
               <button
@@ -197,7 +197,7 @@
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                 </svg>
-                导入文件
+                {{ t('dashboard.importFiles') }}
               </button>
               
               <button
@@ -208,7 +208,7 @@
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/>
                 </svg>
-                开始复习
+                {{ t('dashboard.startReview') }}
               </button>
             </div>
           </div>
@@ -221,12 +221,14 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../stores/notes';
 import { useReviewsStore } from '../stores/reviews';
 import { useSettingsStore } from '../stores/settings';
 import { useAppStore } from '../stores/app';
 import type { Note } from '../database/DatabaseManager';
 
+const { t } = useI18n();
 const router = useRouter();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
@@ -287,7 +289,7 @@ function openNote(note: Note) {
 async function createNewNote() {
   try {
     const newNote = await notesStore.createNote({
-      title: '新建笔记',
+      title: t('dashboard.newNote'),
       content: '',
       category: '',
       tags: '',

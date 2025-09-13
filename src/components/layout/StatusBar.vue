@@ -21,7 +21,7 @@
         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
         </svg>
-        <span>{{ dueReviewsCount }} 个笔记待复习</span>
+        <span>{{ t('filePanel.noteCount', { count: dueReviewsCount }) }}</span>
       </div>
     </div>
     
@@ -30,16 +30,16 @@
       <!-- 当前笔记信息 -->
       <div v-if="currentNote" class="flex items-center space-x-4">
         <!-- 字数统计 -->
-        <span>{{ wordCount }} 字</span>
+        <span>{{ wordCount }} {{ t('statusBar.wordCount') }}</span>
         
         <!-- 字符数统计 -->
-        <span>{{ charCount }} 字符</span>
+        <span>{{ charCount }} {{ t('statusBar.characterCount') }}</span>
         
         <!-- 行数统计 -->
-        <span>第 {{ currentLine }} 行</span>
+        <span>{{ t('statusBar.lineCount') }} {{ currentLine }}</span>
         
         <!-- 列数统计 -->
-        <span>第 {{ currentColumn }} 列</span>
+        <span>{{ t('statusBar.position') }} {{ currentColumn }}</span>
         
         <!-- 文件路径 -->
         <span v-if="currentNote.file_path" :title="currentNote.file_path">
@@ -61,9 +61,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
 
+const { t } = useI18n();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
 
@@ -82,13 +84,13 @@ const dueReviewsCount = computed(() => reviewsStore.dueReviews.length);
 const syncStatusText = computed(() => {
   switch (syncStatus.value) {
     case 'synced':
-      return '已同步';
+      return t('statusBar.saved');
     case 'syncing':
-      return '同步中...';
+      return t('statusBar.saving');
     case 'error':
-      return '同步失败';
+      return t('common.error');
     case 'offline':
-      return '离线';
+      return t('statusBar.ready');
     default:
       return '';
   }
@@ -118,14 +120,14 @@ const lastSavedText = computed(() => {
   const diffInMinutes = (now.getTime() - date.getTime()) / (1000 * 60);
   
   if (diffInMinutes < 1) {
-    return '刚刚保存';
+    return t('time.now');
   } else if (diffInMinutes < 60) {
-    return `${Math.floor(diffInMinutes)} 分钟前保存`;
+    return t('time.minutesAgo', { n: Math.floor(diffInMinutes) });
   } else {
     return date.toLocaleTimeString('zh-CN', { 
       hour: '2-digit', 
       minute: '2-digit' 
-    }) + ' 保存';
+    }) + ' ' + t('statusBar.saved');
   }
 });
 

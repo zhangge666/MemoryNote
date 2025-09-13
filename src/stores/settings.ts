@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { setLocale, getCurrentLocale } from '../locales';
 
 export type Theme = 'light' | 'dark' | 'auto';
 export type Language = 'zh-CN' | 'en-US';
@@ -36,7 +37,14 @@ export const useSettingsStore = defineStore('settings', () => {
       const savedUserName = await window.electronAPI.settings.get('userName');
       
       if (savedTheme) theme.value = savedTheme as Theme;
-      if (savedLanguage) language.value = savedLanguage as Language;
+      if (savedLanguage) {
+        language.value = savedLanguage as Language;
+        // 同步更新i18n语言
+        setLocale(savedLanguage);
+      } else {
+        // 如果没有保存的语言设置，使用i18n的当前语言
+        language.value = getCurrentLocale() as Language;
+      }
       if (savedFontSize) fontSize.value = parseInt(savedFontSize);
       if (savedUserName) userName.value = savedUserName;
       
@@ -66,6 +74,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setLanguage(newLanguage: Language) {
     language.value = newLanguage;
+    // 同步更新i18n语言
+    setLocale(newLanguage);
     saveSettings();
   }
 
