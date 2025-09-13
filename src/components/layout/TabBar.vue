@@ -54,11 +54,11 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '../../stores/app';
-import { useNotesStore } from '../../stores/notes';
+import { useFilesStore } from '../../stores/files';
 
 const router = useRouter();
 const appStore = useAppStore();
-const notesStore = useNotesStore();
+const filesStore = useFilesStore();
 
 // 计算属性
 const tabs = computed(() => appStore.openTabs);
@@ -73,7 +73,17 @@ function setActiveTab(tabKey: string) {
   if (tab) {
     switch (tab.type) {
       case 'note':
-        router.push(`/note/${tab.id}`);
+        // 使用保存的filePath
+        const filePath = tab.filePath || tab.id;
+        const fileName = filePath.split(/[/\\]/).pop() || 'unknown.md';
+        
+        router.push({
+          name: 'NoteEditor',
+          query: {
+            filePath: filePath,
+            fileName: fileName
+          }
+        });
         break;
       case 'review':
         router.push('/review');
@@ -96,22 +106,45 @@ function closeTab(tabKey: string) {
 
 async function createNewNote() {
   try {
-    const newNote = await notesStore.createNote({
-      title: '新建笔记',
-      content: '',
-      category: '',
-      tags: '',
-    });
+    // 生成唯一的文件名
+    const timestamp = Date.now();
+    const fileName = `新建笔记-${timestamp}.md`;
+    const content = `# 新建笔记\n\n`;
     
+    // 创建文件
+    const filePath = await filesStore.createFile(fileName, content);
+    
+    // 刷新文件树
+    await filesStore.refreshTree();
+    
+    // 创建标签页
+    const tabId = btoa(filePath).replace(/[+=\/]/g, '');
     appStore.openTab({
-      id: newNote.id!.toString(),
-      title: newNote.title,
-      type: 'note'
+      id: tabId,
+      title: `新建笔记-${timestamp}`,
+      type: 'note',
+      filePath: filePath
     });
     
-    router.push(`/note/${newNote.id}`);
+    // 导航到编辑页面
+    router.push({
+      name: 'NoteEditor',
+      query: {
+        filePath: filePath,
+        fileName: fileName
+      }
+    });
+    
+    // 更新应用状态
+    appStore.setCurrentFile({
+      path: filePath,
+      name: fileName,
+      content: content
+    });
+    
   } catch (error) {
     console.error('创建笔记失败:', error);
+    alert('创建笔记失败: ' + (error instanceof Error ? error.message : '未知错误'));
   }
 }
 </script>

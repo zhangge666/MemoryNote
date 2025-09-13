@@ -3,13 +3,13 @@
     <!-- 笔记标题栏 -->
     <div class="border-b border-gray-200 dark:border-dark-600 p-4">
       <div class="flex items-center justify-between">
-        <input
-          v-model="noteTitle"
-          type="text"
-          placeholder="请输入标题..."
+          <input
+            v-model="noteTitle"
+            type="text"
+            placeholder="请输入标题..."
           class="flex-1 text-xl font-semibold bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
-          @blur="saveNote"
-        />
+            @blur="saveNote"
+          />
         
         <!-- 更多选项按钮 -->
         <div class="relative ml-4">
@@ -177,7 +177,7 @@
                   <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                 </svg>
                 导入文件
-              </button>
+          </button>
             </div>
           </div>
         </div>
@@ -203,13 +203,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useNotesStore } from '../stores/notes';
+import { useFilesStore } from '../stores/files';
+import { useAppStore } from '../stores/app';
 import { useSettingsStore } from '../stores/settings';
 import MarkdownEditor from '../components/editor/MarkdownEditor.vue';
 
 const route = useRoute();
 const router = useRouter();
-const notesStore = useNotesStore();
+const filesStore = useFilesStore();
+const appStore = useAppStore();
 const settingsStore = useSettingsStore();
 
 // 响应式状态
@@ -217,6 +219,8 @@ const noteTitle = ref('');
 const noteContent = ref('');
 const hasChanges = ref(false);
 const saveTimer = ref<number | null>(null);
+const currentFilePath = ref('');
+const currentFileName = ref('');
 
 // 更多选项菜单状态
 const showMoreOptions = ref(false);
@@ -228,34 +232,119 @@ const isPublished = ref(false);
 const showToolbar = ref(true);
 
 // 计算属性
-const currentNote = computed(() => notesStore.currentNote);
+const currentFile = computed(() => appStore.currentFile);
 const showLineNumbers = computed(() => settingsStore.showLineNumbers);
 
 // 方法
-async function loadNote(id: string) {
+async function loadFile() {
   try {
-    const note = await notesStore.loadNoteById(parseInt(id));
-    if (note) {
-      noteTitle.value = note.title;
-      noteContent.value = note.content;
+    const filePath = route.query.filePath as string;
+    const fileName = route.query.fileName as string;
+    
+    
+    if (filePath && fileName) {
+      currentFilePath.value = filePath;
+      currentFileName.value = fileName;
+      
+      try {
+        const content = await filesStore.readFile(filePath);
+        noteContent.value = content;
+        
+        // 从文件名提取标题（去掉.md扩展名）
+        const title = fileName.replace(/\.(md|markdown)$/i, '');
+        noteTitle.value = title;
+        hasChanges.value = false;
+        
+        // 确保标签页存在
+        const tabId = btoa(filePath).replace(/[+=\/]/g, '');
+        const existingTab = appStore.openTabs.find(tab => tab.id === tabId);
+        if (!existingTab) {
+          appStore.openTab({
+            id: tabId,
+            title: title,
+            type: 'note',
+            filePath: filePath
+          });
+        }
+        
+        // 设置为当前活动标签
+        appStore.setActiveTab(`note-${tabId}`);
+        
+      } catch (fileError) {
+        console.error('读取文件失败:', fileError);
+        alert('读取文件失败: ' + (fileError instanceof Error ? fileError.message : '未知错误'));
+      }
+      
+    } else if (currentFile.value) {
+      // 从 app store 加载文件
+      currentFilePath.value = currentFile.value.path;
+      currentFileName.value = currentFile.value.name;
+      noteContent.value = currentFile.value.content;
+      
+      const title = currentFile.value.name.replace(/\.(md|markdown)$/i, '');
+      noteTitle.value = title;
       hasChanges.value = false;
+      
+      // 确保标签页存在
+      const tabId = btoa(currentFile.value.path).replace(/[+=\/]/g, '');
+      const existingTab = appStore.openTabs.find(tab => tab.id === tabId);
+      if (!existingTab) {
+        appStore.openTab({
+          id: tabId,
+          title: title,
+          type: 'note',
+          filePath: currentFile.value.path
+        });
+      }
+      
+      // 设置为当前活动标签
+      appStore.setActiveTab(`note-${tabId}`);
     }
   } catch (error) {
-    console.error('加载笔记失败:', error);
+    console.error('加载文件失败:', error);
   }
 }
 
 async function saveNote() {
-  if (!currentNote.value || !hasChanges.value) return;
+  if (!currentFilePath.value || !hasChanges.value) return;
   
   try {
-    await notesStore.updateNote(currentNote.value.id!, {
-      title: noteTitle.value,
-      content: noteContent.value,
-    });
+    // 构建文件内容，包含标题
+    const content = noteContent.value;
+    await filesStore.writeFile(currentFilePath.value, content);
+    
+    // 如果标题发生了变化，需要重命名文件
+    const expectedFileName = noteTitle.value + '.md';
+    if (currentFileName.value !== expectedFileName) {
+      const newPath = currentFilePath.value.replace(currentFileName.value, expectedFileName);
+      await filesStore.renameItem({
+        name: currentFileName.value,
+        path: currentFilePath.value,
+        isDirectory: false,
+        isFile: true,
+        size: 0,
+        modified: new Date(),
+        created: new Date()
+      }, expectedFileName);
+      
+      // 更新当前文件信息
+      currentFilePath.value = newPath;
+      currentFileName.value = expectedFileName;
+      
+      // 更新路由
+      router.replace({
+        query: {
+          filePath: newPath,
+          fileName: expectedFileName
+        }
+      });
+    }
+    
     hasChanges.value = false;
+    console.log('文件保存成功');
   } catch (error) {
-    console.error('保存笔记失败:', error);
+    console.error('保存文件失败:', error);
+    alert('保存文件失败: ' + (error instanceof Error ? error.message : '未知错误'));
   }
 }
 
@@ -273,14 +362,22 @@ function onContentChange() {
 }
 
 async function deleteNote() {
-  if (!currentNote.value) return;
+  if (!currentFilePath.value) return;
   
-  if (confirm(`确定要删除笔记"${noteTitle.value}"吗？此操作不可撤销。`)) {
+  if (confirm(`确定要删除文件"${currentFileName.value}"吗？此操作不可撤销。`)) {
     try {
-      await notesStore.deleteNote(currentNote.value.id!);
+      await filesStore.deleteItem({
+        name: currentFileName.value,
+        path: currentFilePath.value,
+        isDirectory: false,
+        isFile: true,
+        size: 0,
+        modified: new Date(),
+        created: new Date()
+      });
       router.push('/dashboard');
     } catch (error) {
-      console.error('删除笔记失败:', error);
+      console.error('删除文件失败:', error);
     }
   }
 }
@@ -477,22 +574,28 @@ function handleClickOutside(event: Event) {
 }
 
 // 监听路由参数变化
-watch(() => route.params.id, (newId) => {
-  if (newId) {
-    loadNote(newId as string);
+watch(() => route.query, (newQuery) => {
+  if (newQuery.filePath && newQuery.fileName) {
+    loadFile();
   }
 }, { immediate: true });
 
 // 监听标题变化
-watch(noteTitle, () => {
+watch(noteTitle, (newTitle) => {
   hasChanges.value = true;
+  
+  // 同步更新标签页标题
+  if (currentFilePath.value && newTitle.trim()) {
+    const currentTab = appStore.openTabs.find(tab => tab.filePath === currentFilePath.value);
+    if (currentTab) {
+      currentTab.title = newTitle;
+    }
+  }
 });
 
 onMounted(() => {
-  // 如果有路由参数，加载对应笔记
-  if (route.params.id) {
-    loadNote(route.params.id as string);
-  }
+  // 加载文件
+  loadFile();
   
   // 添加点击外部关闭菜单事件
   document.addEventListener('click', handleClickOutside);

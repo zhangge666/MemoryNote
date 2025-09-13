@@ -1,9 +1,72 @@
 <template>
-  <div class="w-full bg-white dark:bg-dark-800 flex flex-col h-full">
-    <!-- 头部：搜索和过滤 -->
-    <div class="p-4 border-b border-gray-200 dark:border-dark-600">
-      <!-- 搜索框 -->
-      <div class="relative mb-3">
+  <div class="w-full bg-white dark:bg-gray-800 flex flex-col h-full border-r border-gray-200 dark:border-gray-700">
+    <!-- 头部工具栏 -->
+    <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+        文件资源管理器
+      </h2>
+      
+      <div class="flex items-center space-x-1">
+        <!-- 新建文件按钮 -->
+        <button
+          @click="showCreateFileDialog"
+          class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="新建笔记 (Ctrl+N)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </button>
+        
+        <!-- 新建文件夹按钮 -->
+        <button
+          @click="showCreateFolderDialog"
+          class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="新建文件夹 (Ctrl+Shift+N)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+        
+        <!-- 折叠所有按钮 -->
+        <button
+          @click="collapseAll"
+          class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="折叠所有文件夹"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        
+        <!-- 刷新按钮 -->
+        <button
+          @click="refreshFiles"
+          class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="刷新文件列表"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        
+        <!-- 更多选项按钮 -->
+        <button
+          @click="showMoreOptions = !showMoreOptions"
+          class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="更多选项"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 搜索栏 -->
+    <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+      <div class="relative">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg class="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
@@ -12,9 +75,8 @@
         <input
           v-model="searchQuery"
           type="text"
-          :placeholder="t('filePanel.searchPlaceholder')"
-          class="input pl-10 pr-4"
-          @input="onSearchInput"
+          placeholder="搜索文件..."
+          class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
         />
         <button
           v-if="searchQuery"
@@ -26,203 +88,148 @@
           </svg>
         </button>
       </div>
+    </div>
+    
+    <!-- 文件树视图 -->
+    <div class="flex-1 overflow-y-auto">
+      <div v-if="filesStore.loading" class="p-4 text-center text-gray-500">
+        <div class="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+        <span class="text-sm">加载中...</span>
+      </div>
       
-      <!-- 过滤选项 -->
-      <div class="flex space-x-2">
-        <select
-          v-model="selectedCategory"
-          class="input text-xs py-1"
-        >
-          <option value="">{{ t('filePanel.allNotes') }}</option>
-          <option v-for="category in categories" :key="category" :value="category">
-            {{ category }}
-          </option>
-        </select>
+      <div v-else-if="filesStore.error" class="p-4 text-center text-red-500">
+        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-sm">{{ filesStore.error }}</p>
+        <button @click="refreshFiles" class="mt-2 text-blue-500 hover:text-blue-600 text-sm">重试</button>
+      </div>
+      
+      <div v-else class="py-2">
+        <div v-if="filteredTreeNodes.length === 0" class="p-8 text-center text-gray-500">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="text-sm">{{ searchQuery ? '没有找到匹配的文件' : '当前目录为空' }}</p>
+          <p class="text-xs text-gray-400 mt-1">点击工具栏的 + 号开始创建文件</p>
+        </div>
         
-        <select
-          v-model="sortBy"
-          class="input text-xs py-1"
+        <div v-else>
+          <TreeNodeComponent
+            v-for="node in filteredTreeNodes"
+            :key="node.path"
+            :node="node"
+            :selected-path="filesStore.selectedFile?.path"
+            :show-details="showFileDetails"
+            @toggle="handleToggleNode"
+            @select="handleSelectNode"
+            @context-menu="handleContextMenu"
+            @double-click="handleDoubleClick"
+            @quick-create="handleQuickCreate"
+            @more-actions="handleMoreActions"
+          />
+                </div>
+              </div>
+            </div>
+    
+    <!-- 底部状态栏 -->
+    <div class="border-t border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-gray-800">
+      <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <span>{{ fileCount }} 个文件</span>
+        <button
+          @click="showFileDetails = !showFileDetails"
+          class="hover:text-gray-700 dark:hover:text-gray-300"
+          :title="showFileDetails ? '隐藏详细信息' : '显示详细信息'"
         >
-          <option value="updated">{{ t('filePanel.sortByDate') }}</option>
-          <option value="created">{{ t('filePanel.sortByDate') }}</option>
-          <option value="title">{{ t('filePanel.sortByName') }}</option>
-        </select>
+          {{ showFileDetails ? '隐藏详情' : '显示详情' }}
+        </button>
+            </div>
+          </div>
+          
+    <!-- 右键菜单 -->
+    <ContextMenu
+      :visible="contextMenu.visible"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :target="contextMenu.target"
+      @close="closeContextMenu"
+      @new-file="handleNewFile"
+      @new-folder="handleNewFolder"
+      @open="handleOpen"
+      @open-new-tab="handleOpenNewTab"
+      @rename="handleRename"
+      @duplicate="handleDuplicate"
+      @delete="handleDelete"
+      @copy-path="handleCopyPath"
+      @copy-link="handleCopyLink"
+      @collapse-all="collapseAll"
+      @expand-all="expandAll"
+      @reveal-in-explorer="handleRevealInExplorer"
+      @properties="handleProperties"
+    />
+
+    <!-- 创建文件对话框 -->
+    <div v-if="showCreateDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-96 max-w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          {{ dialogType === 'file' ? '创建新笔记' : '创建新文件夹' }}
+        </h3>
+        <input
+          ref="createInputRef"
+          v-model="newItemName"
+          type="text"
+          :placeholder="dialogType === 'file' ? '输入笔记标题...' : '输入文件夹名称...'"
+          class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+          @keyup.enter="confirmCreate"
+          @keyup.esc="cancelCreate"
+        />
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            @click="cancelCreate"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            取消
+          </button>
+            <button
+            @click="confirmCreate"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            :disabled="!newItemName.trim()"
+            :class="{ 'opacity-50 cursor-not-allowed': !newItemName.trim() }"
+          >
+            创建
+            </button>
+        </div>
       </div>
     </div>
     
-    <!-- 文件列表 -->
-    <div class="flex-1 overflow-y-auto">
-      <div v-if="isLoading" class="p-4 text-center text-gray-500">
-        {{ t('common.loading') }}
-      </div>
-      
-      <div v-else-if="filteredNotes.length === 0" class="p-4 text-center text-gray-500">
-        {{ searchQuery ? t('filePanel.noNotesFound') : t('filePanel.noNotesFound') }}
-      </div>
-      
-      <div v-else class="p-2">
-        <!-- 创建新文件夹按钮 -->
-        <div class="mb-4 flex space-x-2">
-          <button
-            @click="createNewFolder"
-            class="flex-1 btn btn-secondary btn-sm text-xs"
-          >
-            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
-            </svg>
-            新建文件夹
-          </button>
-          <button
-            @click="createNewNote"
-            class="flex-1 btn btn-primary btn-sm text-xs"
-          >
-            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-            </svg>
-            新建笔记
-          </button>
-        </div>
-
-        <!-- 面包屑导航 -->
-        <div v-if="currentPath.length > 0" class="mb-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <button @click="navigateToFolder(null)" class="hover:text-gray-700 dark:hover:text-gray-200">
-            根目录
-          </button>
-          <template v-for="(folder, index) in currentPath" :key="folder.id">
-            <svg class="w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-            </svg>
-            <button 
-              @click="navigateToFolder(folder)"
-              class="hover:text-gray-700 dark:hover:text-gray-200"
-              :class="{ 'font-medium': index === currentPath.length - 1 }"
-            >
-              {{ folder.title }}
-            </button>
-          </template>
-        </div>
-
-        <!-- 树形文件列表 -->
-        <div class="space-y-1">
-          <div
-            v-for="item in currentFolderItems"
-            :key="item.id"
-            class="note-item group"
-            :class="{ 'note-item-active': currentNote?.id === item.id }"
-          >
-            <!-- 文件夹显示 -->
-            <div v-if="item.is_folder" @click="navigateToFolder(item)" class="flex items-center cursor-pointer">
-              <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
-              </svg>
-              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.title }}</span>
-              <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  @click.stop="deleteNote(item)"
-                  class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                  title="删除文件夹"
-                >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- 笔记显示 -->
-            <div v-else @click="openNote(item)" class="cursor-pointer">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center">
-                  <svg class="w-3 h-3 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                  </svg>
-                  <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {{ item.title || '无标题' }}
-                  </h3>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-5 line-clamp-2">
-                  {{ getPreviewText(item.content) }}
-                </p>
-                <div class="flex items-center justify-between mt-2 ml-5">
-                  <div class="flex items-center space-x-2">
-                    <span v-if="item.category && item.category !== 'folder'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                      {{ item.category }}
-                    </span>
-                    <div v-if="item.tags" class="flex flex-wrap gap-1">
-                      <span
-                        v-for="tag in getNoteTags(item.tags)"
-                        :key="tag"
-                        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                      >
-                        {{ tag }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      @click.stop="deleteNote(item)"
-                      class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                      title="删除笔记"
-                    >
-                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-5">
-                  {{ formatDate(item.updated_at) }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 创建文件夹对话框 -->
-    <div v-if="showCreateFolderDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-80">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">创建新文件夹</h3>
+    <!-- 重命名对话框 -->
+    <div v-if="showRenameDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-96 max-w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">重命名</h3>
         <input
-          v-model="newFolderName"
+          ref="renameInputRef"
+          v-model="newName"
           type="text"
-          placeholder="请输入文件夹名称"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          @keyup.enter="confirmCreateFolder"
-          @keyup.esc="cancelCreateFolder"
-          autofocus
+          placeholder="输入新名称..."
+          class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+          @keyup.enter="confirmRename"
+          @keyup.esc="cancelRename"
         />
-        <div class="flex justify-end space-x-3 mt-4">
+        <div class="flex justify-end space-x-3 mt-6">
           <button
-            @click="cancelCreateFolder"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500"
+            @click="cancelRename"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             取消
           </button>
           <button
-            @click="confirmCreateFolder"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            :disabled="!newFolderName.trim()"
+            @click="confirmRename"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            :disabled="!newName.trim()"
+            :class="{ 'opacity-50 cursor-not-allowed': !newName.trim() }"
           >
-            创建
+            重命名
           </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 文档大纲 -->
-    <div v-if="currentNote && showOutline" class="border-t border-gray-200 dark:border-dark-600 p-4">
-      <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">文档大纲</h4>
-      <div class="space-y-1">
-        <div
-          v-for="heading in outline"
-          :key="heading.id"
-          @click="scrollToHeading(heading.id)"
-          class="cursor-pointer text-xs text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 truncate"
-          :style="{ paddingLeft: `${(heading.level - 1) * 12}px` }"
-        >
-          {{ heading.text }}
         </div>
       </div>
     </div>
@@ -230,276 +237,404 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { useNotesStore } from '../../stores/notes';
+import { useFilesStore } from '../../stores/files';
 import { useAppStore } from '../../stores/app';
-import type { Note } from '../../database/DatabaseManager';
+import type { FileItem, TreeNode } from '../../stores/files';
+import TreeNodeComponent from '../ui/TreeNode.vue';
+import ContextMenu from '../ui/ContextMenu.vue';
 
 const router = useRouter();
-const { t } = useI18n();
-const notesStore = useNotesStore();
+const filesStore = useFilesStore();
 const appStore = useAppStore();
 
 // 响应式状态
 const searchQuery = ref('');
-const selectedCategory = ref('');
-const sortBy = ref('updated');
-const showOutline = ref(true);
-const outline = ref<Array<{ id: string; level: number; text: string }>>([]);
-
-// 树形结构相关状态
-const currentFolder = ref<Note | null>(null);
-const currentPath = ref<Note[]>([]);
-const currentFolderItems = ref<Note[]>([]);
+const showMoreOptions = ref(false);
+const showFileDetails = ref(false);
 
 // 对话框状态
-const showCreateFolderDialog = ref(false);
-const newFolderName = ref('');
+const showCreateDialog = ref(false);
+const dialogType = ref<'file' | 'folder'>('file');
+const newItemName = ref('');
+const createInputRef = ref<HTMLInputElement>();
 
-// 计算属性
-const currentNote = computed(() => notesStore.currentNote);
-const isLoading = computed(() => notesStore.isLoading);
-const categories = computed(() => notesStore.categories);
+const showRenameDialog = ref(false);
+const renamingItem = ref<FileItem | null>(null);
+const newName = ref('');
+const renameInputRef = ref<HTMLInputElement>();
 
-const filteredNotes = computed(() => {
-  let notes = notesStore.notes;
-  
-  // 搜索过滤
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    notes = notes.filter(note => 
-      note.title.toLowerCase().includes(query) ||
-      note.content.toLowerCase().includes(query) ||
-      (note.tags && note.tags.toLowerCase().includes(query))
-    );
-  }
-  
-  // 分类过滤
-  if (selectedCategory.value) {
-    notes = notes.filter(note => note.category === selectedCategory.value);
-  }
-  
-  return notes;
+// 右键菜单状态
+const contextMenu = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  target: null as FileItem | null
 });
 
-const sortedNotes = computed(() => {
-  const notes = [...filteredNotes.value];
-  
-  switch (sortBy.value) {
-    case 'created':
-      return notes.sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
-    case 'title':
-      return notes.sort((a, b) => a.title.localeCompare(b.title));
-    case 'updated':
-    default:
-      return notes.sort((a, b) => new Date(b.updated_at!).getTime() - new Date(a.updated_at!).getTime());
+// 计算属性
+const filteredTreeNodes = computed(() => {
+  let nodes = filesStore.flattenedTree;
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    nodes = nodes.filter(node => node.name.toLowerCase().includes(query));
   }
+  return nodes;
+});
+
+const fileCount = computed(() => {
+  return filteredTreeNodes.value.filter(node => node.isFile).length;
 });
 
 // 方法
-function onSearchInput() {
-  notesStore.setSearchQuery(searchQuery.value);
+async function handleToggleNode(node: TreeNode) {
+  await filesStore.toggleNode(node);
+}
+
+async function handleSelectNode(node: TreeNode) {
+  if (node.isFile) {
+    await openFile(node);
+  }
+}
+
+function handleContextMenu(node: TreeNode, event: MouseEvent) {
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    target: node
+  };
+}
+
+function handleDoubleClick(node: TreeNode) {
+  if (node.isFile) {
+    openFile(node);
+  }
+}
+
+function handleQuickCreate(node: TreeNode) {
+  // 快速在文件夹中创建新笔记
+  if (node.isDirectory) {
+    filesStore.setCurrentWorkingDirectory(node.path);
+  }
+  dialogType.value = 'file';
+  newItemName.value = '';
+  showCreateDialog.value = true;
+}
+
+function handleMoreActions(node: TreeNode, event: MouseEvent) {
+  handleContextMenu(node, event);
+}
+
+function closeContextMenu() {
+  contextMenu.value.visible = false;
+}
+
+// 右键菜单处理函数
+function handleNewFile() {
+  // 如果右键点击的是文件夹，设置为当前工作目录
+  if (contextMenu.value.target?.isDirectory) {
+    filesStore.setCurrentWorkingDirectory(contextMenu.value.target.path);
+  }
+  showCreateFileDialog();
+  closeContextMenu();
+}
+
+function handleNewFolder() {
+  // 如果右键点击的是文件夹，设置为当前工作目录
+  if (contextMenu.value.target?.isDirectory) {
+    filesStore.setCurrentWorkingDirectory(contextMenu.value.target.path);
+  }
+  showCreateFolderDialog();
+  closeContextMenu();
+}
+
+function handleOpen() {
+  if (contextMenu.value.target?.isFile) {
+    openFile(contextMenu.value.target);
+  }
+  closeContextMenu();
+}
+
+function handleOpenNewTab() {
+  // TODO: 实现在新标签中打开
+  handleOpen();
+}
+
+function handleRename() {
+  if (contextMenu.value.target) {
+    startRename(contextMenu.value.target);
+  }
+  closeContextMenu();
+}
+
+function handleDuplicate() {
+  // TODO: 实现复制文件功能
+  closeContextMenu();
+}
+
+function handleDelete() {
+  if (contextMenu.value.target) {
+    deleteItem(contextMenu.value.target);
+  }
+  closeContextMenu();
+}
+
+async function handleCopyPath() {
+  if (contextMenu.value.target) {
+    try {
+      await navigator.clipboard.writeText(contextMenu.value.target.path);
+      // TODO: 显示成功提示
+    } catch (error) {
+      console.error('复制路径失败:', error);
+    }
+  }
+  closeContextMenu();
+}
+
+async function handleCopyLink() {
+  if (contextMenu.value.target?.isFile) {
+    try {
+      const fileName = contextMenu.value.target.name.replace(/\.(md|markdown)$/i, '');
+      const link = `[[${fileName}]]`;
+      await navigator.clipboard.writeText(link);
+      // TODO: 显示成功提示
+    } catch (error) {
+      console.error('复制链接失败:', error);
+    }
+  }
+  closeContextMenu();
+}
+
+function handleRevealInExplorer() {
+  // TODO: 实现在文件管理器中显示
+  closeContextMenu();
+}
+
+function handleProperties() {
+  // TODO: 实现属性对话框
+  closeContextMenu();
+}
+
+// 工具栏功能
+function showCreateFileDialog() {
+  dialogType.value = 'file';
+  newItemName.value = '';
+  showCreateDialog.value = true;
+  nextTick(() => {
+    createInputRef.value?.focus();
+  });
+}
+
+function showCreateFolderDialog() {
+  dialogType.value = 'folder';
+  newItemName.value = '';
+  showCreateDialog.value = true;
+  nextTick(() => {
+    createInputRef.value?.focus();
+  });
+}
+
+async function collapseAll() {
+  filesStore.expandedNodes.clear();
+  await filesStore.refreshTree();
+}
+
+async function expandAll() {
+  // TODO: 实现展开所有功能
+  console.log('展开所有功能待实现');
+}
+
+async function refreshFiles() {
+  await filesStore.refreshTree();
+}
+
+function cancelCreate() {
+  showCreateDialog.value = false;
+  newItemName.value = '';
+}
+
+async function confirmCreate() {
+  if (!newItemName.value.trim()) return;
+  
+  try {
+    if (dialogType.value === 'file') {
+      let fileName = newItemName.value;
+      if (!fileName.endsWith('.md') && !fileName.endsWith('.markdown')) {
+        fileName += '.md';
+      }
+      await filesStore.createFile(fileName, `# ${newItemName.value}\n\n`);
+  } else {
+      await filesStore.createDirectory(newItemName.value);
+    }
+    
+    await filesStore.refreshTree();
+    
+    // 清除当前工作目录
+    filesStore.setCurrentWorkingDirectory('');
+    
+    cancelCreate();
+  } catch (error) {
+    console.error('创建失败:', error);
+    alert(error instanceof Error ? error.message : '创建失败');
+  }
+}
+
+function startRename(item: FileItem) {
+  renamingItem.value = item;
+  newName.value = item.name;
+  showRenameDialog.value = true;
+  nextTick(() => {
+    renameInputRef.value?.focus();
+    renameInputRef.value?.select();
+  });
+}
+
+function cancelRename() {
+  showRenameDialog.value = false;
+  renamingItem.value = null;
+  newName.value = '';
+}
+
+async function confirmRename() {
+  if (!renamingItem.value || !newName.value.trim()) return;
+  
+  try {
+    await filesStore.renameItem(renamingItem.value, newName.value);
+    await filesStore.refreshTree();
+    cancelRename();
+  } catch (error) {
+    console.error('重命名失败:', error);
+    alert(error instanceof Error ? error.message : '重命名失败');
+  }
+}
+
+async function deleteItem(item: FileItem) {
+  const confirmMsg = item.isDirectory ? 
+    `确定要删除文件夹 "${item.name}" 及其所有内容吗？` : 
+    `确定要删除文件 "${item.name}" 吗？`;
+    
+  if (confirm(confirmMsg)) {
+    try {
+      await filesStore.deleteItem(item);
+      await filesStore.refreshTree();
+    } catch (error) {
+      console.error('删除失败:', error);
+      alert(error instanceof Error ? error.message : '删除失败');
+    }
+  }
+}
+
+async function openFile(file: FileItem) {
+  try {
+    filesStore.selectFile(file);
+    const content = await filesStore.readFile(file.path);
+    
+    // 获取文件名（不含扩展名）作为标签标题
+    const fileName = file.name.replace(/\.(md|markdown)$/i, '');
+    
+    // 创建或激活标签页
+    const tabId = btoa(file.path).replace(/[+=\/]/g, ''); // 使用base64编码路径作为安全的唯一标识
+    appStore.openTab({
+      id: tabId,
+      title: fileName,
+      type: 'note',
+      filePath: file.path // 保存原始文件路径
+    });
+    
+    // 导航到笔记编辑页面
+    router.push({
+      name: 'NoteEditor',
+      query: {
+        filePath: file.path,
+        fileName: file.name
+      }
+    });
+    
+    // 更新应用状态
+    appStore.setCurrentFile({
+      path: file.path,
+      name: file.name,
+      content: content
+    });
+    
+  } catch (error) {
+    console.error('打开文件失败:', error);
+    alert('打开文件失败');
+  }
 }
 
 function clearSearch() {
   searchQuery.value = '';
-  notesStore.setSearchQuery('');
 }
 
-function openNote(note: Note) {
-  notesStore.setCurrentNote(note);
-  appStore.openTab({
-    id: note.id!.toString(),
-    title: note.title,
-    type: 'note'
-  });
-  router.push(`/note/${note.id}`);
-}
-
-async function deleteNote(note: Note) {
-  if (confirm(`确定要删除笔记"${note.title}"吗？`)) {
-    try {
-      await notesStore.deleteNote(note.id!);
-    } catch (error) {
-      console.error('删除笔记失败:', error);
+// 键盘快捷键
+function handleKeydown(event: KeyboardEvent) {
+  if (event.ctrlKey || event.metaKey) {
+    switch (event.key) {
+      case 'n':
+        if (event.shiftKey) {
+          event.preventDefault();
+          showCreateFolderDialog();
+        } else {
+          event.preventDefault();
+          showCreateFileDialog();
+        }
+        break;
+      case 'r':
+        event.preventDefault();
+        refreshFiles();
+        break;
     }
   }
 }
 
-function getPreviewText(content: string): string {
-  // 移除Markdown标记并截取前100个字符
-  const plainText = content
-    .replace(/#+\s/g, '')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/`(.*?)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\n/g, ' ')
-    .trim();
-  
-  return plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText;
-}
-
-function getNoteTags(tags: string): string[] {
-  return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-}
-
-function formatDate(dateString?: string): string {
-  if (!dateString) return '';
-  
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-  
-  if (diffInHours < 1) {
-    return '刚刚';
-  } else if (diffInHours < 24) {
-    return `${Math.floor(diffInHours)}小时前`;
-  } else if (diffInHours < 24 * 7) {
-    return `${Math.floor(diffInHours / 24)}天前`;
-  } else {
-    return date.toLocaleDateString('zh-CN');
-  }
-}
-
-function generateOutline() {
-  if (!currentNote.value) {
-    outline.value = [];
-    return;
-  }
-  
-  const content = currentNote.value.content;
-  const headings = content.match(/^#{1,6}\s+.+$/gm) || [];
-  
-  outline.value = headings.map((heading, index) => {
-    const level = heading.match(/^#+/)?.[0].length || 1;
-    const text = heading.replace(/^#+\s+/, '');
-    return {
-      id: `heading-${index}`,
-      level,
-      text
-    };
-  });
-}
-
-function scrollToHeading(headingId: string) {
-  // TODO: 实现滚动到指定标题
-  console.log('滚动到标题:', headingId);
-}
-
-// 监听当前笔记变化，生成大纲
-watch(currentNote, generateOutline, { immediate: true });
-
-// 监听分类选择变化
-watch(selectedCategory, (newCategory) => {
-  notesStore.setSelectedCategory(newCategory);
-});
-
-// 文件夹导航方法
-async function navigateToFolder(folder: Note | null) {
-  currentFolder.value = folder;
-  
-  if (folder) {
-    // 构建路径
-    currentPath.value = [...currentPath.value];
-    if (!currentPath.value.find(f => f.id === folder.id)) {
-      currentPath.value.push(folder);
-    } else {
-      // 如果点击的是路径中的文件夹，截断路径
-      const index = currentPath.value.findIndex(f => f.id === folder.id);
-      currentPath.value = currentPath.value.slice(0, index + 1);
-    }
-  } else {
-    // 返回根目录
-    currentPath.value = [];
-  }
-  
-  await loadCurrentFolderItems();
-}
-
-// 加载当前文件夹内容
-async function loadCurrentFolderItems() {
-  try {
-    const parentId = currentFolder.value?.id;
-    const items = await window.electronAPI.notes.getByParentId(parentId);
-    currentFolderItems.value = items || [];
-  } catch (error) {
-    console.error('加载文件夹内容失败:', error);
-    currentFolderItems.value = [];
-  }
-}
-
-// 创建新文件夹
-async function createNewFolder() {
-  showCreateFolderDialog.value = true;
-}
-
-// 确认创建文件夹
-async function confirmCreateFolder() {
-  if (newFolderName.value && newFolderName.value.trim()) {
-    try {
-      await window.electronAPI.notes.createFolder(newFolderName.value.trim(), currentFolder.value?.id);
-      await loadCurrentFolderItems();
-      showCreateFolderDialog.value = false;
-      newFolderName.value = '';
-    } catch (error) {
-      console.error('创建文件夹失败:', error);
-      alert('创建文件夹失败，请重试。');
-    }
-  }
-}
-
-// 取消创建文件夹
-function cancelCreateFolder() {
-  showCreateFolderDialog.value = false;
-  newFolderName.value = '';
-}
-
-// 创建新笔记
-async function createNewNote() {
-  try {
-    const newNote = await notesStore.createNote({
-      title: '新建笔记',
-      content: '',
-      category: '',
-      tags: '',
-      parent_id: currentFolder.value?.id,
-    });
-    
-    await loadCurrentFolderItems();
-    openNote(newNote);
-  } catch (error) {
-    console.error('创建笔记失败:', error);
-    alert('创建笔记失败，请重试。');
-  }
-}
-
-onMounted(() => {
-  // 加载笔记
-  notesStore.loadNotes();
-  // 加载根目录内容
-  loadCurrentFolderItems();
+// 初始化
+onMounted(async () => {
+  await filesStore.initialize();
+  document.addEventListener('keydown', handleKeydown);
 });
 </script>
 
 <style scoped>
-.note-item {
-  @apply p-3 rounded-lg cursor-pointer transition-colors duration-200;
-  @apply hover:bg-gray-50 dark:hover:bg-dark-700;
-  @apply border border-transparent;
+/* 自定义滚动条 */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
 }
 
-.note-item-active {
-  @apply bg-primary-50 dark:bg-primary-900/20;
-  @apply border-primary-200 dark:border-primary-800;
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8);
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(75, 85, 99, 0.8);
+}
+
+/* 动画效果 */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

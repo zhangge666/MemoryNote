@@ -1,6 +1,8 @@
-import { ipcMain } from 'electron';
+import { ipcMain, app } from 'electron';
 import { DatabaseManager, Note, ReviewRecord, Tag } from '../database/DatabaseManager';
 import { SpacedRepetitionService } from '../services/SpacedRepetitionService';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export function setupIpcHandlers(dbManager: DatabaseManager) {
   const srService = new SpacedRepetitionService(dbManager);
@@ -208,6 +210,121 @@ export function setupIpcHandlers(dbManager: DatabaseManager) {
       return result;
     } catch (error) {
       console.error('Error showing save dialog:', error);
+      throw error;
+    }
+  });
+
+  // 获取默认Warehouse目录
+  ipcMain.handle('fs:getWarehouseDir', async () => {
+    try {
+      const appDataPath = app.getPath('userData');
+      const warehouseDir = path.join(appDataPath, 'Warehouse');
+      
+      // 确保目录存在
+      try {
+        await fs.access(warehouseDir);
+      } catch {
+        await fs.mkdir(warehouseDir, { recursive: true });
+      }
+      
+      return warehouseDir;
+    } catch (error) {
+      console.error('Error getting warehouse directory:', error);
+      throw error;
+    }
+  });
+
+  // 读取目录内容
+  ipcMain.handle('fs:readDir', async (_, dirPath: string) => {
+    try {
+      const items = await fs.readdir(dirPath, { withFileTypes: true });
+      const result = [];
+      
+      for (const item of items) {
+        const itemPath = path.join(dirPath, item.name);
+        const stats = await fs.stat(itemPath);
+        
+        result.push({
+          name: item.name,
+          path: itemPath,
+          isDirectory: item.isDirectory(),
+          isFile: item.isFile(),
+          size: stats.size,
+          modified: stats.mtime,
+          created: stats.birthtime,
+        });
+      }
+      
+      return result.sort((a, b) => {
+        // 目录优先，然后按名称排序
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        return a.name.localeCompare(b.name);
+      });
+    } catch (error) {
+      console.error('Error reading directory:', error);
+      throw error;
+    }
+  });
+
+  // 创建目录
+  ipcMain.handle('fs:createDir', async (_, dirPath: string) => {
+    try {
+      await fs.mkdir(dirPath, { recursive: true });
+      return true;
+    } catch (error) {
+      console.error('Error creating directory:', error);
+      throw error;
+    }
+  });
+
+  // 删除文件或目录
+  ipcMain.handle('fs:delete', async (_, itemPath: string) => {
+    try {
+      const stats = await fs.stat(itemPath);
+      if (stats.isDirectory()) {
+        await fs.rmdir(itemPath, { recursive: true });
+      } else {
+        await fs.unlink(itemPath);
+      }
+      return true;
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      throw error;
+    }
+  });
+
+  // 重命名文件或目录
+  ipcMain.handle('fs:rename', async (_, oldPath: string, newPath: string) => {
+    try {
+      await fs.rename(oldPath, newPath);
+      return true;
+    } catch (error) {
+      console.error('Error renaming item:', error);
+      throw error;
+    }
+  });
+
+  // 检查路径是否存在
+  ipcMain.handle('fs:exists', async (_, itemPath: string) => {
+    try {
+      await fs.access(itemPath);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  // 选择目录对话框
+  ipcMain.handle('fs:showOpenDirectoryDialog', async () => {
+    try {
+      const { dialog } = require('electron');
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+      });
+      return result;
+    } catch (error) {
+      console.error('Error showing open directory dialog:', error);
       throw error;
     }
   });

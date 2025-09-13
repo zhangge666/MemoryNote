@@ -95,6 +95,37 @@
           </div>
         </div>
         
+        <!-- 工作目录设置 -->
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">工作目录</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                当前工作目录
+              </label>
+              <div class="flex items-center space-x-3">
+                <input
+                  v-model="settingsStore.workspaceDirectory"
+                  type="text"
+                  class="input flex-1"
+                  readonly
+                  placeholder="选择工作目录..."
+                />
+                <button
+                  @click="selectWorkspaceDirectory"
+                  class="btn btn-secondary px-4 py-2"
+                >
+                  选择目录
+                </button>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                工作目录是存储所有笔记文件的位置
+              </p>
+            </div>
+          </div>
+        </div>
+        
         <!-- 用户信息 -->
         <div class="card p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('settings.user.title') }}</h3>
@@ -435,6 +466,22 @@ function updateUserEmail() {
 function resetAllSettings() {
   if (confirm(t('settings.reset.confirm'))) {
     settingsStore.resetSettings();
+  }
+}
+
+async function selectWorkspaceDirectory() {
+  try {
+    const result = await window.electronAPI.fs.showOpenDirectoryDialog();
+    if (!result.canceled && result.filePaths.length > 0) {
+      const selectedPath = result.filePaths[0];
+      settingsStore.setWorkspaceDirectory(selectedPath);
+      
+      // 提示用户重启应用以应用更改
+      alert('工作目录已更改。为了确保所有功能正常工作，建议重启应用程序。');
+    }
+  } catch (error) {
+    console.error('选择工作目录失败:', error);
+    alert('选择工作目录失败，请重试。');
   }
 }
 

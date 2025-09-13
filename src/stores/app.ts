@@ -8,7 +8,10 @@ export const useAppStore = defineStore('app', () => {
   const showSidebar = ref(true);
   const showFilePanel = ref(true);
   const activeTab = ref<string | null>(null);
-  const openTabs = ref<Array<{ id: string; title: string; type: 'note' | 'review' | 'settings' }>>([]);
+  const openTabs = ref<Array<{ id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }>>([]);
+
+  // 当前文件状态
+  const currentFile = ref<{ path: string; name: string; content: string } | null>(null);
 
   // 错误状态
   const error = ref<string | null>(null);
@@ -30,7 +33,7 @@ export const useAppStore = defineStore('app', () => {
     showFilePanel.value = !showFilePanel.value;
   }
 
-  function openTab(tab: { id: string; title: string; type: 'note' | 'review' | 'settings' }) {
+  function openTab(tab: { id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }) {
     const existingTab = openTabs.value.find(t => t.id === tab.id && t.type === tab.type);
     if (!existingTab) {
       openTabs.value.push(tab);
@@ -59,6 +62,10 @@ export const useAppStore = defineStore('app', () => {
     activeTab.value = tabKey;
   }
 
+  function setCurrentFile(file: { path: string; name: string; content: string } | null) {
+    currentFile.value = file;
+  }
+
   return {
     // 状态
     isLoading,
@@ -67,6 +74,7 @@ export const useAppStore = defineStore('app', () => {
     showFilePanel,
     activeTab,
     openTabs,
+    currentFile,
     error,
     
     // 方法
@@ -77,5 +85,6 @@ export const useAppStore = defineStore('app', () => {
     openTab,
     closeTab,
     setActiveTab,
+    setCurrentFile,
   };
 });

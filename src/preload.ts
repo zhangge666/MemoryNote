@@ -58,6 +58,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     showOpenDialog: () => ipcRenderer.invoke('fs:showOpenDialog'),
     showSaveDialog: (defaultPath?: string) => 
       ipcRenderer.invoke('fs:showSaveDialog', defaultPath),
+    getWarehouseDir: () => ipcRenderer.invoke('fs:getWarehouseDir'),
+    readDir: (dirPath: string) => ipcRenderer.invoke('fs:readDir', dirPath),
+    createDir: (dirPath: string) => ipcRenderer.invoke('fs:createDir', dirPath),
+    delete: (itemPath: string) => ipcRenderer.invoke('fs:delete', itemPath),
+    rename: (oldPath: string, newPath: string) => 
+      ipcRenderer.invoke('fs:rename', oldPath, newPath),
+    exists: (itemPath: string) => ipcRenderer.invoke('fs:exists', itemPath),
+    showOpenDirectoryDialog: () => ipcRenderer.invoke('fs:showOpenDirectoryDialog'),
   },
 });
 
@@ -97,6 +105,13 @@ export interface ElectronAPI {
     writeFile: (filePath: string, content: string) => Promise<boolean>;
     showOpenDialog: () => Promise<any>;
     showSaveDialog: (defaultPath?: string) => Promise<any>;
+    getWarehouseDir: () => Promise<string>;
+    readDir: (dirPath: string) => Promise<any[]>;
+    createDir: (dirPath: string) => Promise<boolean>;
+    delete: (itemPath: string) => Promise<boolean>;
+    rename: (oldPath: string, newPath: string) => Promise<boolean>;
+    exists: (itemPath: string) => Promise<boolean>;
+    showOpenDirectoryDialog: () => Promise<any>;
   };
 }
 

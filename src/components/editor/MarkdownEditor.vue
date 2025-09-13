@@ -6,7 +6,7 @@
         <div class="flex items-center space-x-2">
         <!-- 格式化按钮 -->
         <button
-          @click="isWysiwygMode ? execCommand('bold') : insertFormat('**', '**')"
+          @click="handleBold"
           class="toolbar-btn"
           title="粗体 (Ctrl+B)"
         >
@@ -16,7 +16,7 @@
         </button>
         
         <button
-          @click="isWysiwygMode ? execCommand('italic') : insertFormat('*', '*')"
+          @click="handleItalic"
           class="toolbar-btn"
           title="斜体 (Ctrl+I)"
         >
@@ -26,7 +26,7 @@
         </button>
         
         <button
-          @click="insertFormat('`', '`')"
+          @click="handleCode"
           class="toolbar-btn"
           title="代码"
         >
@@ -38,7 +38,7 @@
         <div class="border-l border-gray-300 dark:border-dark-600 h-6 mx-2"></div>
         
         <button
-          @click="insertHeading(1)"
+          @click="handleHeading(1)"
           class="toolbar-btn"
           title="标题 1"
         >
@@ -46,7 +46,7 @@
         </button>
         
         <button
-          @click="insertHeading(2)"
+          @click="handleHeading(2)"
           class="toolbar-btn"
           title="标题 2"
         >
@@ -54,7 +54,7 @@
         </button>
         
         <button
-          @click="insertHeading(3)"
+          @click="handleHeading(3)"
           class="toolbar-btn"
           title="标题 3"
         >
@@ -64,7 +64,7 @@
         <div class="border-l border-gray-300 dark:border-dark-600 h-6 mx-2"></div>
         
         <button
-          @click="insertList('-')"
+          @click="handleBulletList"
           class="toolbar-btn"
           title="无序列表"
         >
@@ -74,7 +74,7 @@
         </button>
         
         <button
-          @click="insertList('1.')"
+          @click="handleOrderedList"
           class="toolbar-btn"
           title="有序列表"
         >
@@ -89,10 +89,20 @@
         <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mr-3">
           <span class="mr-1">模式:</span>
           <span class="font-medium">
-            {{ currentViewMode === 'edit' ? '编辑' : currentViewMode === 'read' ? '阅读' : '源码' }}
+            {{ currentViewMode === 'edit' ? (isWysiwygMode ? '所见即所得' : '源码') : currentViewMode === 'read' ? '阅读' : '源码' }}
           </span>
           <span v-if="currentViewMode === 'edit' && currentLayoutMode !== 'single'" class="ml-1 text-gray-400">
             | {{ currentLayoutMode === 'horizontal' ? '水平分屏' : currentLayoutMode === 'vertical' ? '垂直分屏' : '' }}
+          </span>
+          
+          <!-- 性能警告 -->
+          <span v-if="!isWysiwygMode && (isContentLarge || hasLargeImages)" class="ml-2 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded text-xs" title="文档包含大量内容或图片，源码模式可能影响性能">
+            ⚠️ 大文档
+          </span>
+          
+          <!-- 图片缓存状态 -->
+          <span v-if="imageCache.size > 0" class="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded text-xs" :title="`已缓存 ${imageCache.size} 张图片`">
+            🖼️ {{ imageCache.size }}
           </span>
         </div>
         
@@ -101,10 +111,13 @@
           @click="toggleWysiwygMode"
           class="toolbar-btn"
           :class="{ 'bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400': isWysiwygMode }"
-          title="所见即所得模式"
+          title="切换编辑模式"
         >
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg v-if="!isWysiwygMode" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
           </svg>
         </button>
 
@@ -136,19 +149,11 @@
         :class="getEditorClass()" 
         class="relative"
       >
-        <!-- WYSIWYG 编辑器 -->
+        <!-- Milkdown WYSIWYG 编辑器 -->
         <div
           v-if="isWysiwygMode"
-          ref="wysiwygRef"
-          class="wysiwyg-editor prose prose-gray dark:prose-invert max-w-none p-4 h-full overflow-y-auto focus:outline-none"
-          contenteditable="true"
-          @keydown="onWysiwygKeydown"
-          @paste="onWysiwygPaste"
-          @blur="onWysiwygBlur"
-          @compositionstart="onCompositionStart"
-          @compositionend="onCompositionEnd"
-          v-html="wysiwygContent"
-          :data-placeholder="placeholder"
+          ref="milkdownRef"
+          class="milkdown-editor h-full overflow-y-auto focus:outline-none p-4"
         ></div>
         
         <!-- 传统文本编辑器 -->
@@ -161,10 +166,11 @@
           @input="onInput"
           @keydown="onKeydown"
           @scroll="onScroll"
+          @paste="onTextareaPaste"
         ></textarea>
         
         <!-- 行号 -->
-        <div v-if="showLineNumbers" class="line-numbers">
+        <div v-if="showLineNumbers && !isWysiwygMode" class="line-numbers">
           <div
             v-for="lineNumber in lineCount"
             :key="lineNumber"
@@ -241,6 +247,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
+import { defaultValueCtx, Editor, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
+import { commonmark } from '@milkdown/preset-commonmark';
+import { nord } from '@milkdown/theme-nord';
+import { listener, listenerCtx } from '@milkdown/plugin-listener';
+import { history } from '@milkdown/plugin-history';
+import { cursor } from '@milkdown/plugin-cursor';
+import { block } from '@milkdown/plugin-block';
 
 interface Props {
   modelValue: string;
@@ -276,14 +289,18 @@ const md = new MarkdownIt({
 // 响应式状态
 const textareaRef = ref<HTMLTextAreaElement>();
 const previewRef = ref<HTMLElement>();
-const wysiwygRef = ref<HTMLElement>();
+const milkdownRef = ref<HTMLElement>();
 const content = ref(props.modelValue);
 const showPreview = ref(false);
 const previewScrollTop = ref(0);
 
-// WYSIWYG 相关状态
-const isWysiwygMode = ref(false);
-const wysiwygContent = ref('');
+// Milkdown 相关状态
+const isWysiwygMode = ref(true); // 默认为所见即所得模式
+let milkdownEditor: Editor | null = null;
+
+// 图片处理相关状态
+const imageCounter = ref(0);
+const imageCache = new Map<string, string>(); // 用于缓存图片数据
 
 // 查找替换相关状态
 const showFindReplace = ref(false);
@@ -292,6 +309,15 @@ const showFindReplace = ref(false);
 const currentViewMode = computed(() => props.viewMode);
 const currentLayoutMode = computed(() => props.layoutMode);
 const currentShowToolbar = computed(() => props.showToolbar);
+
+// 检查内容是否过大，可能影响性能
+const isContentLarge = computed(() => {
+  return content.value.length > 50000; // 超过50KB的内容认为是大内容
+});
+
+const hasLargeImages = computed(() => {
+  return content.value.includes('data:image/') || imageCache.size > 0;
+});
 
 // 查找替换相关状态
 const findText = ref('');
@@ -303,7 +329,8 @@ const totalMatches = ref(0);
 
 // 计算属性
 const renderedContent = computed(() => {
-  return md.render(content.value);
+  const processedContent = processContentForDisplay(content.value);
+  return md.render(processedContent);
 });
 
 const lineCount = computed(() => {
@@ -396,25 +423,9 @@ watch(() => props.modelValue, (newValue) => {
     if (undoStack.value.length === 0) {
       saveToHistory();
     }
-    // 如果在WYSIWYG模式，同步更新HTML内容
-    if (isWysiwygMode.value) {
-      wysiwygContent.value = md.render(newValue);
-    }
   }
 }, { immediate: true });
 
-// 监听content变化，同步WYSIWYG内容（但避免在用户输入时更新）
-let isUserTyping = false;
-watch(content, (newValue) => {
-  if (isWysiwygMode.value && wysiwygRef.value && !isUserTyping) {
-    // 只有当内容真正改变时才更新，避免循环更新
-    const currentHtml = wysiwygRef.value.innerHTML;
-    const newHtml = md.render(newValue);
-    if (currentHtml !== newHtml) {
-      wysiwygContent.value = newHtml;
-    }
-  }
-});
 
 // 方法 - onInput 已在上面定义
 
@@ -509,22 +520,133 @@ function onScroll(event: Event) {
   }
 }
 
-function insertFormat(before: string, after: string) {
-  const textarea = textareaRef.value!;
-  const { selectionStart, selectionEnd } = textarea;
-  const selectedText = content.value.substring(selectionStart, selectionEnd);
-  
-  const replacement = before + selectedText + after;
-  content.value = content.value.substring(0, selectionStart) + replacement + content.value.substring(selectionEnd);
-  
-  nextTick(() => {
-    if (selectedText) {
-      textarea.setSelectionRange(selectionStart, selectionStart + replacement.length);
-    } else {
-      textarea.setSelectionRange(selectionStart + before.length, selectionStart + before.length);
+// 处理textarea的粘贴事件
+async function onTextareaPaste(event: ClipboardEvent) {
+  const handled = await handlePasteWithImages(event);
+  if (!handled) {
+    // 如果没有处理图片，让默认的粘贴行为继续
+    return;
+  }
+}
+
+// 处理Milkdown的粘贴事件
+async function handleMilkdownPaste(event: ClipboardEvent) {
+  const handled = await handlePasteWithImages(event);
+  if (!handled) {
+    // 如果没有处理图片，让默认的粘贴行为继续
+    return;
+  }
+}
+
+// 工具栏处理函数
+function handleBold() {
+  if (isWysiwygMode.value && milkdownEditor) {
+    try {
+      milkdownEditor.action((ctx) => {
+        // 获取当前视图并执行格式化命令
+        const view = ctx.get(editorViewOptionsCtx);
+        // 使用文档执行命令，这是更通用的方法
+        document.execCommand('bold', false);
+      });
+    } catch (error) {
+      console.warn('Bold command failed in Milkdown, fallback to text mode');
+      insertFormat('**', '**');
     }
-    textarea.focus();
-  });
+  } else {
+    insertFormat('**', '**');
+  }
+}
+
+function handleItalic() {
+  if (isWysiwygMode.value && milkdownEditor) {
+    try {
+      milkdownEditor.action((ctx) => {
+        document.execCommand('italic', false);
+      });
+    } catch (error) {
+      console.warn('Italic command failed in Milkdown, fallback to text mode');
+      insertFormat('*', '*');
+    }
+  } else {
+    insertFormat('*', '*');
+  }
+}
+
+function handleCode() {
+  if (isWysiwygMode.value && milkdownEditor) {
+    // 对于内联代码，我们使用简单的文本插入
+    insertFormat('`', '`');
+  } else {
+    insertFormat('`', '`');
+  }
+}
+
+function handleHeading(level: number) {
+  if (isWysiwygMode.value && milkdownEditor) {
+    try {
+      // 为标题使用简化的方法
+      const headingText = '#'.repeat(level) + ' ';
+      insertFormat(headingText, '');
+    } catch (error) {
+      insertHeading(level);
+    }
+  } else {
+    insertHeading(level);
+  }
+}
+
+function handleBulletList() {
+  if (isWysiwygMode.value && milkdownEditor) {
+    insertFormat('- ', '');
+  } else {
+    insertList('-');
+  }
+}
+
+function handleOrderedList() {
+  if (isWysiwygMode.value && milkdownEditor) {
+    insertFormat('1. ', '');
+  } else {
+    insertList('1.');
+  }
+}
+
+function insertFormat(before: string, after: string) {
+  if (isWysiwygMode.value && milkdownEditor) {
+    // 在Milkdown模式下，直接操作内容
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const selectedText = range.toString();
+      const replacement = before + selectedText + after;
+      
+      range.deleteContents();
+      const textNode = document.createTextNode(replacement);
+      range.insertNode(textNode);
+      
+      // 设置光标位置
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  } else if (textareaRef.value) {
+    const textarea = textareaRef.value;
+    const { selectionStart, selectionEnd } = textarea;
+    const selectedText = content.value.substring(selectionStart, selectionEnd);
+    
+    const replacement = before + selectedText + after;
+    content.value = content.value.substring(0, selectionStart) + replacement + content.value.substring(selectionEnd);
+    
+    nextTick(() => {
+      if (selectedText) {
+        textarea.setSelectionRange(selectionStart, selectionStart + replacement.length);
+      } else {
+        textarea.setSelectionRange(selectionStart + before.length, selectionStart + before.length);
+      }
+      textarea.focus();
+    });
+  }
 }
 
 function insertHeading(level: number) {
@@ -587,27 +709,85 @@ function togglePreview() {
   showPreview.value = !showPreview.value;
 }
 
-// WYSIWYG 模式切换
+// Milkdown 编辑器初始化
+async function initMilkdownEditor() {
+  if (!milkdownRef.value) return;
+
+  try {
+    milkdownEditor = await Editor.make()
+      .config((ctx) => {
+        ctx.set(rootCtx, milkdownRef.value);
+        // 使用处理过的内容初始化编辑器，确保图片能正确显示
+        const initialContent = processContentForDisplay(content.value || '');
+        ctx.set(defaultValueCtx, initialContent);
+        ctx.set(editorViewOptionsCtx, { 
+          editable: () => true,
+          attributes: {
+            class: 'milkdown-editor-content prose prose-gray dark:prose-invert max-w-none outline-none'
+          }
+        });
+        
+        // 监听编辑器内容变化
+        ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
+          // 需要将返回的markdown内容转换回我们的图片引用格式
+          const convertedMarkdown = convertImageRefsFromMarkdown(markdown);
+          if (convertedMarkdown !== content.value) {
+            content.value = convertedMarkdown;
+            emit('update:modelValue', convertedMarkdown);
+            emit('change', convertedMarkdown);
+          }
+        });
+        
+        // 监听粘贴事件
+        ctx.get(listenerCtx).beforeMount((ctx) => {
+          const editorView = ctx.get(editorViewOptionsCtx);
+          // 这将在编辑器挂载后添加粘贴处理
+          nextTick(() => {
+            if (milkdownRef.value) {
+              milkdownRef.value.addEventListener('paste', handleMilkdownPaste);
+            }
+          });
+        });
+      })
+      .config(nord)
+      .use(commonmark)
+      .use(listener)
+      .use(history)
+      .use(cursor)
+      .use(block)
+      .create();
+      
+      console.log('Milkdown editor initialized successfully');
+      
+      // 如果有内容需要更新，在初始化后立即更新
+      if (content.value) {
+        await nextTick();
+        const processedContent = processContentForDisplay(content.value);
+        await milkdownEditor.action((ctx) => {
+          ctx.set(defaultValueCtx, processedContent);
+        });
+      }
+  } catch (error) {
+    console.error('Failed to initialize Milkdown editor:', error);
+    // 如果Milkdown初始化失败，回退到文本模式
+    isWysiwygMode.value = false;
+  }
+}
+
+// 编辑器模式切换
 function toggleWysiwygMode() {
   isWysiwygMode.value = !isWysiwygMode.value;
   
   if (isWysiwygMode.value) {
-    // 切换到 WYSIWYG 模式
+    // 切换到 Milkdown WYSIWYG 模式
     nextTick(() => {
-      initWysiwygEditor();
-      if (wysiwygRef.value) {
-        wysiwygRef.value.focus();
-      }
+      initMilkdownEditor();
     });
   } else {
-    // 切换回文本模式，清理观察器
-    if (observer) {
-      observer.disconnect();
-      observer = null;
-    }
-    // 最后一次转换
-    if (wysiwygRef.value) {
-      updateMarkdownFromWysiwyg();
+    // 切换回文本模式，销毁Milkdown编辑器
+    if (milkdownEditor) {
+      milkdownEditor.destroy();
+      milkdownEditor = null;
     }
     nextTick(() => {
       if (textareaRef.value) {
@@ -617,285 +797,149 @@ function toggleWysiwygMode() {
   }
 }
 
-// WYSIWYG 输入处理 - 使用更简单的方法
-let wysiwygUpdateTimer: number | null = null;
-let observer: MutationObserver | null = null;
-
-function onWysiwygInput(event: Event) {
-  // 标记用户正在输入
-  isUserTyping = true;
-  
-  // 清除之前的定时器
-  if (wysiwygUpdateTimer) {
-    clearTimeout(wysiwygUpdateTimer);
-  }
-  
-  // 延迟更新，让用户连续输入
-  wysiwygUpdateTimer = setTimeout(() => {
-    updateMarkdownFromWysiwyg();
-    isUserTyping = false;
-  }, 500); // 增加延迟到500ms
+// 图片处理函数
+function handleImagePaste(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // 生成唯一的图片ID
+    imageCounter.value++;
+    const imageId = `img_${Date.now()}_${imageCounter.value}`;
+    const imageName = file.name || `image_${imageId}.${file.type.split('/')[1] || 'png'}`;
+    
+    // 读取文件并转换为base64
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Data = e.target?.result as string;
+      
+      // 缓存图片数据
+      imageCache.set(imageId, base64Data);
+      
+      // 返回简化的图片引用
+      const imageRef = `![${imageName}](image://${imageId})`;
+      console.log('图片已缓存:', imageId, '大小:', Math.round(base64Data.length / 1024), 'KB');
+      resolve(imageRef);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
-function updateMarkdownFromWysiwyg() {
-  if (!wysiwygRef.value) return;
+// 处理图片粘贴事件
+async function handlePasteWithImages(event: ClipboardEvent) {
+  const clipboardData = event.clipboardData;
+  if (!clipboardData) return false;
   
-  const html = wysiwygRef.value.innerHTML;
-  const markdown = htmlToMarkdown(html);
+  const items = Array.from(clipboardData.items);
+  const imageItems = items.filter(item => item.type.startsWith('image/'));
   
-  // 只有内容真正改变时才更新
-  if (markdown !== content.value) {
-    wysiwygContent.value = html;
-    content.value = markdown;
-    emit('update:modelValue', markdown);
-    emit('change', markdown);
-  }
-}
-
-// 初始化WYSIWYG编辑器
-function initWysiwygEditor() {
-  if (!wysiwygRef.value) return;
+  if (imageItems.length === 0) return false;
   
-  // 设置初始内容
-  wysiwygContent.value = md.render(content.value);
+  event.preventDefault();
   
-  // 移除旧的观察器
-  if (observer) {
-    observer.disconnect();
-  }
-  
-  // 创建MutationObserver来监听内容变化
-  observer = new MutationObserver((mutations) => {
-    // 如果正在输入中文，不处理
-    if (isComposing) return;
-    
-    // 只有当不是程序化更新时才处理
-    if (!isUserTyping) return;
-    
-    let hasContentChange = false;
-    mutations.forEach(mutation => {
-      if (mutation.type === 'childList' || 
-          mutation.type === 'characterData' ||
-          (mutation.type === 'attributes' && mutation.attributeName === 'style')) {
-        hasContentChange = true;
+  try {
+    const imagePromises = imageItems.map(item => {
+      const file = item.getAsFile();
+      if (file) {
+        return handleImagePaste(file);
       }
+      return Promise.resolve('');
     });
     
-    if (hasContentChange) {
-      // 延迟处理，避免中文输入时的问题
-      if (wysiwygUpdateTimer) {
-        clearTimeout(wysiwygUpdateTimer);
+    const imageRefs = await Promise.all(imagePromises);
+    const imageText = imageRefs.filter(ref => ref).join('\n\n');
+    
+    // 简化处理：直接更新content，让编辑器自动处理
+    if (isWysiwygMode.value) {
+      // 获取当前光标位置（通过milkdown编辑器）
+      const currentContent = content.value;
+      content.value = currentContent + '\n\n' + imageText;
+      
+      // 强制Milkdown重新渲染内容
+      if (milkdownEditor) {
+        milkdownEditor.action((ctx) => {
+          const processedContent = processContentForDisplay(content.value);
+          ctx.set(defaultValueCtx, processedContent);
+        });
+      }
+    } else if (textareaRef.value) {
+      // 在文本模式下插入图片引用
+      const textarea = textareaRef.value;
+      const { selectionStart } = textarea;
+      const beforeCursor = content.value.substring(0, selectionStart);
+      const afterCursor = content.value.substring(selectionStart);
+      
+      content.value = beforeCursor + imageText + afterCursor;
+      
+      nextTick(() => {
+        textarea.setSelectionRange(selectionStart + imageText.length, selectionStart + imageText.length);
+        textarea.focus();
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to handle image paste:', error);
+    return false;
+  }
+}
+
+// 处理图片显示 - 将缓存的图片数据转换回来用于预览
+function processContentForDisplay(content: string): string {
+  return content.replace(/!\[([^\]]*)\]\(image:\/\/([^)]+)\)/g, (match, alt, imageId) => {
+    const cachedData = imageCache.get(imageId);
+    if (cachedData) {
+      return `![${alt}](${cachedData})`;
+    }
+    return `![${alt}](图片加载失败: ${imageId})`;
+  });
+}
+
+// 导出图片缓存数据，用于保存时包含图片
+function exportContentWithImages(content: string): string {
+  // 将图片引用转换为base64数据，用于导出
+  return processContentForDisplay(content);
+}
+
+// 将包含base64图片的markdown转换回我们的引用格式
+function convertImageRefsFromMarkdown(markdown: string): string {
+  return markdown.replace(/!\[([^\]]*)\]\(data:image\/[^;]+;base64,([^)]+)\)/g, (match, alt, base64) => {
+    const fullDataUrl = match.match(/!\[([^\]]*)\]\((data:image\/[^)]+)\)/)?.[2];
+    if (fullDataUrl) {
+      // 查找是否已经缓存了这个图片
+      for (const [imageId, cachedData] of imageCache.entries()) {
+        if (cachedData === fullDataUrl) {
+          return `![${alt}](image://${imageId})`;
+        }
       }
       
-      wysiwygUpdateTimer = setTimeout(() => {
-        updateMarkdownFromWysiwyg();
-        isUserTyping = false;
-      }, 300);
+      // 如果没有找到，创建新的缓存条目
+      imageCounter.value++;
+      const imageId = `img_${Date.now()}_${imageCounter.value}`;
+      imageCache.set(imageId, fullDataUrl);
+      return `![${alt}](image://${imageId})`;
     }
-  });
-  
-  // 开始观察
-  observer.observe(wysiwygRef.value, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-    attributes: true
+    return match;
   });
 }
 
-// 将光标放在内容末尾（备用函数）
-function placeCursorAtEnd() {
-  if (!wysiwygRef.value) return;
-  
-  const selection = window.getSelection();
-  if (selection) {
-    const range = document.createRange();
-    range.selectNodeContents(wysiwygRef.value);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
-}
-
-// WYSIWYG 键盘事件处理
-function onWysiwygKeydown(event: KeyboardEvent) {
-  // 处理一些特殊的键盘快捷键
-  if (event.ctrlKey || event.metaKey) {
-    switch (event.key) {
-      case 'b':
-        event.preventDefault();
-        execCommand('bold');
-        break;
-      case 'i':
-        event.preventDefault();
-        execCommand('italic');
-        break;
-      case 's':
-        event.preventDefault();
-        emit('save');
-        break;
-      case 'z':
-        event.preventDefault();
-        if (event.shiftKey) {
-          redo();
-        } else {
-          undo();
+// 监听内容变化，同步到Milkdown编辑器
+watch(content, async (newValue) => {
+  if (isWysiwygMode.value && milkdownEditor) {
+    try {
+      // 获取当前编辑器的内容
+      const processedNewValue = processContentForDisplay(newValue || '');
+      
+      await milkdownEditor.action((ctx) => {
+        const currentValue = ctx.get(defaultValueCtx);
+        if (currentValue !== processedNewValue) {
+          // 只有当内容真正不同时才更新，并使用处理过的内容
+          ctx.set(defaultValueCtx, processedNewValue);
         }
-        break;
-      case 'y':
-        event.preventDefault();
-        redo();
-        break;
+      });
+    } catch (error) {
+      console.error('Error updating Milkdown content:', error);
     }
   }
-  
-  // Enter键处理
-  if (event.key === 'Enter') {
-    handleEnterInWysiwyg(event);
-  }
-}
-
-// WYSIWYG 粘贴处理
-function onWysiwygPaste(event: ClipboardEvent) {
-  event.preventDefault();
-  
-  const text = event.clipboardData?.getData('text/plain') || '';
-  if (text) {
-    // 插入纯文本，避免粘贴格式问题
-    document.execCommand('insertText', false, text);
-    // 标记用户正在输入
-    isUserTyping = true;
-    // 延迟更新
-    setTimeout(() => {
-      updateMarkdownFromWysiwyg();
-      isUserTyping = false;
-    }, 100);
-  }
-}
-
-// WYSIWYG 失去焦点处理
-function onWysiwygBlur() {
-  // 失去焦点时立即同步内容
-  setTimeout(() => {
-    updateMarkdownFromWysiwyg();
-    isUserTyping = false;
-  }, 100);
-}
-
-// 中文输入开始
-let isComposing = false;
-function onCompositionStart() {
-  isComposing = true;
-  isUserTyping = true;
-}
-
-// 中文输入结束
-function onCompositionEnd() {
-  isComposing = false;
-  // 输入法结束后延迟更新
-  setTimeout(() => {
-    updateMarkdownFromWysiwyg();
-    isUserTyping = false;
-  }, 100);
-}
-
-// 执行编辑命令
-function execCommand(command: string, value?: string) {
-  document.execCommand(command, false, value);
-  // 标记用户操作
-  isUserTyping = true;
-  // 延迟更新
-  setTimeout(() => {
-    updateMarkdownFromWysiwyg();
-    isUserTyping = false;
-  }, 100);
-}
-
-// 处理WYSIWYG中的Enter键
-function handleEnterInWysiwyg(event: KeyboardEvent) {
-  const selection = window.getSelection();
-  if (!selection || !selection.rangeCount) return;
-  
-  const range = selection.getRangeAt(0);
-  const container = range.commonAncestorContainer;
-  
-  // 如果在列表中，处理列表项的创建
-  const listItem = container.nodeType === Node.TEXT_NODE 
-    ? container.parentElement?.closest('li')
-    : (container as Element).closest('li');
-    
-  if (listItem) {
-    // 在列表中，让浏览器处理默认行为
-    return;
-  }
-  
-  // 在其他情况下，创建新段落
-  event.preventDefault();
-  const br = document.createElement('br');
-  range.insertNode(br);
-  range.setStartAfter(br);
-  range.setEndAfter(br);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-// 将HTML转换为Markdown（简化版）
-function convertHtmlToMarkdown() {
-  if (!wysiwygRef.value) return;
-  
-  const html = wysiwygRef.value.innerHTML;
-  const markdown = htmlToMarkdown(html);
-  content.value = markdown;
-}
-
-// HTML转Markdown的核心函数
-function htmlToMarkdown(html: string): string {
-  // 简单的HTML到Markdown转换
-  // 标题
-  html = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n');
-  html = html.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n');
-  html = html.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n');
-  html = html.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n\n');
-  html = html.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n\n');
-  html = html.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n\n');
-  
-  // 粗体和斜体
-  html = html.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
-  html = html.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
-  html = html.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
-  html = html.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
-  
-  // 链接
-  html = html.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '[$2]($1)');
-  
-  // 代码
-  html = html.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`');
-  html = html.replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gi, '```\n$1\n```');
-  
-  // 列表
-  html = html.replace(/<ul[^>]*>(.*?)<\/ul>/gs, (match, content) => {
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n');
-  });
-  html = html.replace(/<ol[^>]*>(.*?)<\/ol>/gs, (match, content) => {
-    let counter = 1;
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, () => `${counter++}. $1\n`);
-  });
-  
-  // 段落
-  html = html.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n');
-  
-  // 换行
-  html = html.replace(/<br[^>]*>/gi, '\n');
-  
-  // 清理HTML标签
-  html = html.replace(/<[^>]*>/g, '');
-  
-  // 清理多余的空行
-  html = html.replace(/\n{3,}/g, '\n\n');
-  html = html.trim();
-  
-  return html;
-}
+});
 
 // 插入链接
 function insertLink() {
@@ -1101,21 +1145,30 @@ function handleKeyDown(event: KeyboardEvent) {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown);
+  
+  // 默认启动WYSIWYG模式
+  if (isWysiwygMode.value) {
+    nextTick(() => {
+      initMilkdownEditor();
+    });
+  }
 });
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown);
   
-  // 清理WYSIWYG相关资源
-  if (observer) {
-    observer.disconnect();
-    observer = null;
+  // 清理Milkdown编辑器和事件监听器
+  if (milkdownRef.value) {
+    milkdownRef.value.removeEventListener('paste', handleMilkdownPaste);
   }
   
-  if (wysiwygUpdateTimer) {
-    clearTimeout(wysiwygUpdateTimer);
-    wysiwygUpdateTimer = null;
+  if (milkdownEditor) {
+    milkdownEditor.destroy();
+    milkdownEditor = null;
   }
+  
+  // 清理图片缓存
+  imageCache.clear();
 });
 </script>
 
@@ -1360,5 +1413,132 @@ onUnmounted(() => {
 
 .prose::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-400;
+}
+
+/* Milkdown 编辑器样式 */
+.milkdown-editor {
+  background: transparent;
+  font-family: inherit;
+  height: 100%;
+}
+
+/* 自定义 Milkdown 编辑器样式以适配当前主题 */
+:deep(.milkdown) {
+  @apply bg-transparent;
+  @apply text-gray-900 dark:text-gray-100;
+  height: 100%;
+  outline: none;
+  border: none;
+}
+
+:deep(.milkdown .editor) {
+  @apply bg-transparent;
+  height: 100%;
+  padding: 0;
+  outline: none;
+}
+
+:deep(.milkdown .ProseMirror) {
+  @apply bg-transparent;
+  @apply text-gray-900 dark:text-gray-100;
+  height: 100%;
+  padding: 0;
+  outline: none;
+  border: none;
+  min-height: 100%;
+}
+
+:deep(.milkdown h1) {
+  @apply text-gray-900 dark:text-gray-100;
+  border-bottom: 3px solid #3b82f6;
+  padding-bottom: 0.5rem;
+}
+
+:deep(.milkdown h2) {
+  @apply text-gray-900 dark:text-gray-100;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.25rem;
+}
+
+:deep(.dark .milkdown h1) {
+  border-bottom-color: #60a5fa;
+}
+
+:deep(.dark .milkdown h2) {
+  border-bottom-color: #4b5563;
+}
+
+:deep(.milkdown h3),
+:deep(.milkdown h4),
+:deep(.milkdown h5),
+:deep(.milkdown h6) {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+:deep(.milkdown p) {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+:deep(.milkdown code) {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded text-sm;
+}
+
+:deep(.milkdown pre) {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-4 rounded-lg;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+:deep(.dark .milkdown pre) {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+:deep(.milkdown blockquote) {
+  @apply border-l-4 border-primary-500 pl-4 italic text-gray-600 dark:text-gray-400;
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+:deep(.dark .milkdown blockquote) {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+:deep(.milkdown ul),
+:deep(.milkdown ol) {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+:deep(.milkdown a) {
+  @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300;
+}
+
+:deep(.milkdown table) {
+  @apply border-collapse border border-gray-300 dark:border-gray-600;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+:deep(.dark .milkdown table) {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+:deep(.milkdown th),
+:deep(.milkdown td) {
+  @apply border border-gray-300 dark:border-gray-600 px-4 py-2;
+}
+
+:deep(.milkdown th) {
+  @apply bg-gray-100 dark:bg-gray-700 font-semibold;
+}
+
+:deep(.milkdown img) {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+:deep(.milkdown img:hover) {
+  transform: scale(1.02);
 }
 </style>

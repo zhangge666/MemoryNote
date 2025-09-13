@@ -16,6 +16,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const showLineNumbers = ref(false);
   const wordWrap = ref(true);
   const spellCheck = ref(true);
+  
+  // 文件系统设置
+  const workspaceDirectory = ref(''); // 工作目录路径
 
   // 复习设置
   const reviewNotifications = ref(true);
@@ -35,6 +38,7 @@ export const useSettingsStore = defineStore('settings', () => {
       const savedLanguage = await window.electronAPI.settings.get('language');
       const savedFontSize = await window.electronAPI.settings.get('fontSize');
       const savedUserName = await window.electronAPI.settings.get('userName');
+      const savedWorkspaceDir = await window.electronAPI.settings.get('workspaceDirectory');
       
       if (savedTheme) theme.value = savedTheme as Theme;
       if (savedLanguage) {
@@ -48,6 +52,15 @@ export const useSettingsStore = defineStore('settings', () => {
       if (savedFontSize) fontSize.value = parseInt(savedFontSize);
       if (savedUserName) userName.value = savedUserName;
       
+      // 设置工作目录，如果没有设置则使用默认的Warehouse目录
+      if (savedWorkspaceDir) {
+        workspaceDirectory.value = savedWorkspaceDir;
+      } else {
+        const defaultDir = await window.electronAPI.fs.getWarehouseDir();
+        workspaceDirectory.value = defaultDir;
+        await window.electronAPI.settings.set('workspaceDirectory', defaultDir);
+      }
+      
       console.log('设置已加载');
     } catch (error) {
       console.error('加载设置失败:', error);
@@ -60,6 +73,7 @@ export const useSettingsStore = defineStore('settings', () => {
       await window.electronAPI.settings.set('language', language.value);
       await window.electronAPI.settings.set('fontSize', fontSize.value.toString());
       await window.electronAPI.settings.set('userName', userName.value);
+      await window.electronAPI.settings.set('workspaceDirectory', workspaceDirectory.value);
       
       console.log('设置已保存');
     } catch (error) {
@@ -91,6 +105,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setUserAvatar(avatar: string) {
     userAvatar.value = avatar;
+    saveSettings();
+  }
+
+  function setWorkspaceDirectory(dir: string) {
+    workspaceDirectory.value = dir;
     saveSettings();
   }
 
@@ -132,6 +151,7 @@ export const useSettingsStore = defineStore('settings', () => {
     userName,
     userAvatar,
     userEmail,
+    workspaceDirectory,
     
     // 方法
     loadSettings,
@@ -141,6 +161,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setFontSize,
     setUserName,
     setUserAvatar,
+    setWorkspaceDirectory,
     resetSettings,
   };
 });

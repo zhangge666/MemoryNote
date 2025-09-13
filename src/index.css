@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 导入 Milkdown 样式 */
+@import '@milkdown/theme-nord/style.css';
+
 /* 自定义样式 */
 @layer base {
   * {
