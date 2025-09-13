@@ -17,19 +17,21 @@
         }"
         :style="{ width: appStore.showFilePanel ? `${filePanelWidth}px` : '0px' }"
       >
-        <div v-if="appStore.showFilePanel" class="file-panel-content flex">
-          <FilePanel class="flex-1" />
-          <ResizeHandle 
-            direction="horizontal" 
-            :min-size="200" 
-            :max-size="600"
-            @resize="handleFilePanelResize"
-            @resizeStart="handleResizeStart"
-            @resizeEnd="handleResizeEnd"
-            @reset="resetFilePanelSize"
-          />
-        </div>
+        <FilePanel v-if="appStore.showFilePanel" class="file-panel-content" />
       </div>
+      
+      <!-- 拖拽栏 - 独立于文件面板 -->
+      <ResizeHandle 
+        v-if="appStore.showFilePanel"
+        direction="horizontal" 
+        :min-size="200" 
+        :max-size="600"
+        :current-size="filePanelWidth"
+        @resize="handleFilePanelResize"
+        @resizeStart="handleResizeStart"
+        @resizeEnd="handleResizeEnd"
+        @reset="resetFilePanelSize"
+      />
       
       <!-- 主编辑区域 -->
       <main class="main-work-area flex-1 flex flex-col overflow-hidden min-w-0">
@@ -69,8 +71,17 @@ const isResizing = ref(false); // 拖拽状态
 // 调整大小处理函数
 function handleFilePanelResize(size: number) {
   filePanelWidth.value = size;
-  // 保存到本地存储
-  localStorage.setItem('filePanelWidth', size.toString());
+}
+
+// 节流保存到本地存储
+let saveTimer: number | null = null;
+function saveFilePanelWidth(size: number) {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+  }
+  saveTimer = setTimeout(() => {
+    localStorage.setItem('filePanelWidth', size.toString());
+  }, 300);
 }
 
 function handleResizeStart() {
@@ -79,6 +90,8 @@ function handleResizeStart() {
 
 function handleResizeEnd() {
   isResizing.value = false;
+  // 拖拽结束时保存尺寸
+  saveFilePanelWidth(filePanelWidth.value);
 }
 
 function resetFilePanelSize() {
@@ -142,12 +155,10 @@ settingsStore.$subscribe(() => {
   width: 100%;
   height: 100%;
   background: white;
-  border-right: 1px solid #e5e7eb;
 }
 
 .dark .file-panel-content {
   background: rgb(31 41 55);
-  border-right: 1px solid rgb(75 85 99);
 }
 
 /* 隐藏状态 */

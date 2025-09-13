@@ -1,5 +1,5 @@
 <template>
-  <div class="w-80 bg-white dark:bg-dark-800 border-r border-gray-200 dark:border-dark-600 flex flex-col h-full">
+  <div class="w-full bg-white dark:bg-dark-800 flex flex-col h-full">
     <!-- 头部：搜索和过滤 -->
     <div class="p-4 border-b border-gray-200 dark:border-dark-600">
       <!-- 搜索框 -->
