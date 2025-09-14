@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, markRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePluginsStore } from '../stores/plugins';
 import type { PluginPageConfig } from '../plugins/types';
@@ -72,18 +72,30 @@ async function loadPluginPage() {
       throw new Error('缺少页面ID');
     }
     
+    // 使用新的等待机制等待插件管理器就绪
+    console.log('⏳ 等待插件管理器就绪...');
+    const isReady = await pluginsStore.waitForManagerReady(10000); // 10秒超时
+    
+    if (!isReady) {
+      throw new Error('插件管理器未能在指定时间内就绪');
+    }
+    
     const pluginManager = pluginsStore.pluginManager;
     if (!pluginManager) {
-      throw new Error('插件管理器未初始化');
+      throw new Error('插件管理器获取失败');
     }
+    
+    console.log('✅ 插件管理器已就绪');
     
     const pageData = pluginManager.getPluginPage(pageId.value);
     if (!pageData) {
-      throw new Error(`页面 "${pageId.value}" 未找到`);
+      const allPages = pluginManager.getRegisteredPages();
+      const availablePages = allPages.map(p => p.id).join(', ');
+      throw new Error(`页面 "${pageId.value}" 未找到，可用页面: ${availablePages}`);
     }
     
     pageConfig.value = pageData.config;
-    pageComponent.value = pageData.component;
+    pageComponent.value = markRaw(pageData.component);
     
     // 获取插件ID（从页面ID中提取）
     const pluginId = pageId.value.split('-')[0];
@@ -102,7 +114,7 @@ async function loadPluginPage() {
     console.log('✅ 插件页面加载成功:', pageConfig.value.title);
     
   } catch (err) {
-    console.error('❌ 插件页面加载失败:', err);
+    console.error('插件页面加载失败:', err);
     error.value = err instanceof Error ? err.message : '未知错误';
   } finally {
     loading.value = false;

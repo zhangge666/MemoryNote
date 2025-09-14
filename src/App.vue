@@ -144,7 +144,7 @@ onMounted(async () => {
     console.log('✅ 插件系统初始化完成');
     
     // 监听插件主题重置事件
-    const pluginManager = (pluginsStore as any).pluginManager?.value;
+    const pluginManager = pluginsStore.pluginManager;
     if (pluginManager) {
       pluginManager.on('theme:reset', () => {
         console.log('🔄 收到主题重置事件，重新应用系统主题');
@@ -153,6 +153,26 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('❌ 插件系统初始化失败:', error);
+    
+    // 延时重试一次
+    setTimeout(async () => {
+      console.log('🔄 尝试重新初始化插件系统...');
+      try {
+        await pluginsStore.reinitialize();
+        console.log('✅ 插件系统重新初始化成功');
+        
+        // 重新设置主题重置事件监听
+        const pluginManager = pluginsStore.pluginManager;
+        if (pluginManager) {
+          pluginManager.on('theme:reset', () => {
+            console.log('🔄 收到主题重置事件，重新应用系统主题');
+            applyTheme();
+          });
+        }
+      } catch (retryError) {
+        console.error('❌ 插件系统重新初始化失败:', retryError);
+      }
+    }, 2000);
   }
   
   // 应用语言

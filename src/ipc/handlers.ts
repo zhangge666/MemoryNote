@@ -859,7 +859,7 @@ async function findAndValidateManifest(pluginDir: string): Promise<any> {
     }
 
     // 验证插件类型
-    const validTypes = ['theme', 'command', 'ui', 'editor', 'utility'];
+    const validTypes = ['theme', 'command', 'ui', 'editor', 'utility', 'page'];
     if (!validTypes.includes(manifest.type)) {
       throw new Error(`无效的插件类型: ${manifest.type}`);
     }

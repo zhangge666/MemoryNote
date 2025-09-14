@@ -482,7 +482,9 @@ export class PluginManager extends EventEmitter {
       pages: {
         register: (page: PluginPageConfig, component: any) => {
           const fullPageId = `${pluginId}-${page.id}`;
+          console.log(`🔗 注册插件页面: ${fullPageId}`, page);
           this.pluginPages.set(fullPageId, { config: { ...page, id: fullPageId }, component });
+          console.log(`📋 当前已注册页面数量: ${this.pluginPages.size}`);
           this.emit('page:registered', { pluginId, page: { ...page, id: fullPageId } });
         },
         unregister: (pageId: string) => {
@@ -796,7 +798,9 @@ export class PluginManager extends EventEmitter {
     for (const [id, { config }] of this.pluginPages) {
       pages.push(config);
     }
-    return pages.sort((a, b) => (a.sidebarOrder || 999) - (b.sidebarOrder || 999));
+    const sortedPages = pages.sort((a, b) => (a.sidebarOrder || 999) - (b.sidebarOrder || 999));
+    console.log(`📋 获取已注册页面: ${sortedPages.length} 个`, sortedPages);
+    return sortedPages;
   }
 
   public getPluginPage(pageId: string): { config: PluginPageConfig, component: any } | null {

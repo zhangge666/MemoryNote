@@ -59,7 +59,7 @@
         </router-link>
         
         <!-- 插件页面 -->
-        <template v-if="showPluginIcon && pluginPages.length > 0">
+        <template v-if="pluginPages.length > 0">
           <router-link
             v-for="page in pluginPages"
             :key="page.id"
@@ -74,6 +74,7 @@
             </svg>
           </router-link>
         </template>
+        
       </div>
       
       <!-- 分隔线 -->
@@ -120,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
@@ -149,10 +150,29 @@ const isDocumentSection = computed(() => {
 // 插件图标显示控制
 const showPluginIcon = ref(true);
 
+
 // 插件页面
+const pluginPagesUpdateTrigger = ref(0);
 const pluginPages = computed(() => {
-  if (!pluginsStore.pluginManager) return [];
-  return pluginsStore.pluginManager.getRegisteredPages().filter(page => page.showInSidebar !== false);
+  // 依赖更新触发器以确保响应式更新
+  pluginPagesUpdateTrigger.value;
+  
+  // 检查插件管理器是否就绪
+  if (!pluginsStore.isManagerReady) {
+    return [];
+  }
+  
+  const manager = pluginsStore.pluginManager;
+  if (!manager) {
+    return [];
+  }
+  
+  try {
+    return manager.getRegisteredPages().filter(page => page.showInSidebar !== false);
+  } catch (error) {
+    console.error('获取插件页面失败:', error);
+    return [];
+  }
 });
 
 // 方法
@@ -200,6 +220,7 @@ function showDiary() {
   console.log('显示日记');
 }
 
+
 onMounted(() => {
   // 加载数据
   notesStore.loadNotes();
@@ -216,6 +237,36 @@ onMounted(() => {
     console.error('加载插件设置失败:', error);
   }
 });
+
+// 监听插件管理器就绪状态
+watch(() => pluginsStore.isManagerReady, (isReady) => {
+  if (isReady && pluginsStore.pluginManager) {
+    // 设置插件页面事件监听器
+    const manager = pluginsStore.pluginManager;
+    
+    manager.on('page:registered', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    manager.on('page:unregistered', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    // 监听插件启用/禁用事件
+    manager.on('plugin:enabled', () => {
+      setTimeout(() => {
+        pluginPagesUpdateTrigger.value++;
+      }, 100); // 短暂延时确保页面已注册
+    });
+    
+    manager.on('plugin:disabled', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    // 立即触发一次更新以显示已注册的页面
+    pluginPagesUpdateTrigger.value++;
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>

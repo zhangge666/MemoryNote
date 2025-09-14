@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [vue()],
   css: {
     postcss: './postcss.config.js'
+  },
+  resolve: {
+    alias: {
+      vue: 'vue/dist/vue.esm-bundler.js'
+    }
   }
 });

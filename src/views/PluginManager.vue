@@ -317,6 +317,7 @@ const categories = computed(() => [
   { id: 'theme', name: '主题', icon: 'ThemeIcon', count: pluginsStore.filterPluginsByType('theme').length },
   { id: 'command', name: '命令', icon: 'CommandIcon', count: pluginsStore.filterPluginsByType('command').length },
   { id: 'ui', name: 'UI增强', icon: 'UIIcon', count: pluginsStore.filterPluginsByType('ui').length },
+  { id: 'page', name: '页面插件', icon: 'PageIcon', count: pluginsStore.filterPluginsByType('page').length },
   { id: 'utility', name: '实用工具', icon: 'UtilityIcon', count: pluginsStore.filterPluginsByType('utility').length }
 ]);
 
@@ -526,7 +527,8 @@ function getTypeLabel(type: PluginType): string {
     command: '命令',
     ui: 'UI',
     editor: '编辑器',
-    utility: '工具'
+    utility: '工具',
+    page: '页面'
   };
   return labels[type] || type;
 }

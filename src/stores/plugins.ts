@@ -7,7 +7,8 @@ import type {
   PluginRepository,
   ThemeConfig,
   Command,
-  UIComponent
+  UIComponent,
+  PluginType
 } from '../plugins/types';
 
 export const usePluginsStore = defineStore('plugins', () => {
@@ -55,16 +56,39 @@ export const usePluginsStore = defineStore('plugins', () => {
     components: registeredComponents.value.size
   }));
 
+  // 状态检查
+  const isManagerReady = computed(() => {
+    return !!(pluginManager.value && isInitialized.value && !isLoading.value);
+  });
+
   // 方法
   async function initialize(): Promise<void> {
-    if (isInitialized.value) return;
+    // 如果已经有管理器且初始化完成，跳过
+    if (isManagerReady.value) {
+      console.log('⏭️ 插件系统已就绪，跳过重复初始化');
+      return;
+    }
+    
+    console.log('🔄 开始初始化插件系统...');
     
     try {
       isLoading.value = true;
       error.value = null;
       
-      // 创建插件管理器
-      pluginManager.value = new PluginManager('1.0.0'); // 应用版本
+      // 如果已有管理器但未完成初始化，先清理
+      if (pluginManager.value) {
+        console.log('🧹 清理现有插件管理器...');
+        await cleanup();
+      }
+      
+      // 创建新的插件管理器
+      pluginManager.value = new PluginManager('1.0.0');
+      
+      // 设置全局引用（用于备用访问）
+      if (typeof window !== 'undefined') {
+        (window as any).__PLUGIN_MANAGER__ = pluginManager.value;
+        console.log('🌐 插件管理器已设置为全局引用');
+      }
       
       // 设置事件监听
       setupEventListeners();
@@ -75,11 +99,27 @@ export const usePluginsStore = defineStore('plugins', () => {
       // 同步状态
       syncStateFromManager();
       
+      // 标记为已初始化
       isInitialized.value = true;
+      
       console.log('✅ 插件Store初始化完成');
+      console.log('📊 初始化状态:', {
+        hasManager: !!pluginManager.value,
+        isInitialized: isInitialized.value,
+        isLoading: isLoading.value,
+        pluginCount: installedPlugins.value.size,
+        enabledCount: enabledPlugins.value.size
+      });
+      
     } catch (err) {
       console.error('❌ 插件Store初始化失败:', err);
       error.value = err instanceof Error ? err.message : '初始化失败';
+      
+      // 清理失败状态
+      pluginManager.value = null;
+      isInitialized.value = false;
+      
+      throw err; // 重新抛出错误，让调用者处理
     } finally {
       isLoading.value = false;
     }
@@ -318,13 +358,70 @@ export const usePluginsStore = defineStore('plugins', () => {
     // 在实际实现中需要在PluginManager中提供公共接口
   }
 
+  // 等待管理器就绪
+  async function waitForManagerReady(timeout: number = 5000): Promise<boolean> {
+    if (isManagerReady.value) {
+      return true;
+    }
+    
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeout) {
+      if (isManagerReady.value) {
+        return true;
+      }
+      
+      // 如果还在加载中，等待
+      if (isLoading.value) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
+      
+      // 如果未初始化且未在加载，尝试初始化
+      if (!isInitialized.value && !isLoading.value) {
+        try {
+          await initialize();
+          if (isManagerReady.value) {
+            return true;
+          }
+        } catch (error) {
+          console.error('等待期间初始化失败:', error);
+        }
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    console.warn(`插件管理器在 ${timeout}ms 内未能就绪`);
+    return false;
+  }
+
+  // 强制重新初始化
+  async function reinitialize(): Promise<void> {
+    console.log('🔄 强制重新初始化插件系统...');
+    
+    // 先清理
+    cleanup();
+    
+    // 重置状态
+    isInitialized.value = false;
+    error.value = null;
+    
+    // 重新初始化
+    await initialize();
+  }
+
   // 清理函数
   function cleanup(): void {
     if (pluginManager.value) {
-      // 清理所有插件
-      pluginManager.value.getAllPlugins().forEach(plugin => {
-        pluginManager.value!.unloadPlugin(plugin.manifest.id);
-      });
+      try {
+        // 清理所有插件
+        pluginManager.value.getAllPlugins().forEach(plugin => {
+          pluginManager.value!.unloadPlugin(plugin.manifest.id);
+        });
+      } catch (error) {
+        console.error('清理插件时出错:', error);
+      }
     }
     
     installedPlugins.value.clear();
@@ -333,7 +430,13 @@ export const usePluginsStore = defineStore('plugins', () => {
     registeredCommands.value.clear();
     registeredComponents.value.clear();
     
+    pluginManager.value = null;
     isInitialized.value = false;
+    
+    // 清理全局引用
+    if (typeof window !== 'undefined') {
+      delete (window as any).__PLUGIN_MANAGER__;
+    }
   }
 
   return {
@@ -341,6 +444,10 @@ export const usePluginsStore = defineStore('plugins', () => {
     isInitialized: readonly(isInitialized),
     isLoading: readonly(isLoading),
     error: readonly(error),
+    isManagerReady,
+    
+    // 核心引用
+    pluginManager: readonly(pluginManager),
     
     // 数据
     installedPlugins: readonly(installedPlugins),
@@ -363,6 +470,8 @@ export const usePluginsStore = defineStore('plugins', () => {
     
     // 方法
     initialize,
+    waitForManagerReady,
+    reinitialize,
     loadPlugin,
     refreshPlugins,
     enablePlugin,
