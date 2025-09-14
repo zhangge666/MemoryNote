@@ -224,8 +224,24 @@ export const useFilesStore = defineStore('files', () => {
         throw new Error('文件名不能为空');
       }
       
-      const parentDir = path.dirname(item.path);
-      const newPath = path.join(parentDir, cleanNewName);
+      // 确保在同一目录下重命名，保持路径一致性
+      const lastSeparatorIndex = Math.max(item.path.lastIndexOf('/'), item.path.lastIndexOf('\\'));
+      let newPath: string;
+      
+      if (lastSeparatorIndex === -1) {
+        // 如果没有路径分隔符，说明在当前目录
+        newPath = cleanNewName;
+      } else {
+        // 保持相同的目录路径，只替换文件名
+        const directory = item.path.substring(0, lastSeparatorIndex);
+        const separator = item.path.charAt(lastSeparatorIndex);
+        newPath = directory + separator + cleanNewName;
+      }
+      
+      // 如果新路径和旧路径相同，则不需要重命名
+      if (item.path === newPath) {
+        return newPath;
+      }
       
       // 检查新路径是否已存在
       const exists = await window.electronAPI.fs.exists(newPath);
@@ -240,7 +256,6 @@ export const useFilesStore = defineStore('files', () => {
       } else {
         await loadDirectory(currentPath.value);
       }
-      
       return newPath;
     } catch (err) {
       console.error('Failed to rename item:', err);

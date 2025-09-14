@@ -483,7 +483,12 @@ async function confirmCreate() {
 
 function startRename(item: FileItem) {
   renamingItem.value = item;
-  newName.value = item.name;
+  // 如果是文件，去掉扩展名进行编辑
+  if (item.isFile && item.name.endsWith('.md')) {
+    newName.value = item.name.replace(/\.md$/, '');
+  } else {
+    newName.value = item.name;
+  }
   showRenameDialog.value = true;
   nextTick(() => {
     renameInputRef.value?.focus();
@@ -501,7 +506,21 @@ async function confirmRename() {
   if (!renamingItem.value || !newName.value.trim()) return;
   
   try {
-    await filesStore.renameItem(renamingItem.value, newName.value);
+    let finalName = newName.value.trim();
+    
+    // 如果是文件且没有扩展名，自动添加.md扩展名
+    if (renamingItem.value.isFile && !finalName.includes('.')) {
+      finalName += '.md';
+    }
+    
+    const oldPath = renamingItem.value.path;
+    const newPath = await filesStore.renameItem(renamingItem.value, finalName);
+    
+    // 更新标签页信息（如果该文件已在标签页中打开）
+    if (renamingItem.value.isFile) {
+      appStore.updateFilePathInTabs(oldPath, newPath, finalName);
+    }
+    
     await filesStore.refreshTree();
     cancelRename();
   } catch (error) {

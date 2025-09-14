@@ -66,6 +66,34 @@ export const useAppStore = defineStore('app', () => {
     currentFile.value = file;
   }
 
+  function updateFilePathInTabs(oldPath: string, newPath: string, newName: string) {
+    // 更新所有引用该文件的标签页
+    openTabs.value.forEach(tab => {
+      if (tab.filePath === oldPath) {
+        const newTabId = btoa(encodeURIComponent(newPath)).replace(/[+=\/]/g, '');
+        tab.id = newTabId;
+        tab.title = newName.replace(/\.md$/, '');
+        tab.filePath = newPath;
+      }
+    });
+    
+    // 更新当前文件信息
+    if (currentFile.value?.path === oldPath) {
+      currentFile.value = {
+        ...currentFile.value,
+        path: newPath,
+        name: newName
+      };
+    }
+    
+    // 更新活动标签页
+    const oldTabId = btoa(encodeURIComponent(oldPath)).replace(/[+=\/]/g, '');
+    const newTabId = btoa(encodeURIComponent(newPath)).replace(/[+=\/]/g, '');
+    if (activeTab.value === `note-${oldTabId}`) {
+      activeTab.value = `note-${newTabId}`;
+    }
+  }
+
   return {
     // 状态
     isLoading,
@@ -86,5 +114,6 @@ export const useAppStore = defineStore('app', () => {
     closeTab,
     setActiveTab,
     setCurrentFile,
+    updateFilePathInTabs,
   };
 });

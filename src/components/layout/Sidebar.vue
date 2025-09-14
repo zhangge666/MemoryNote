@@ -7,7 +7,7 @@
         <router-link
           to="/"
           class="nav-icon-item"
-          :class="{ 'nav-icon-item-active': $route.name === 'Dashboard' }"
+          :class="{ 'nav-icon-item-active': isDocumentSection }"
           :title="t('nav.documents')"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -90,13 +90,14 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
 import { useAppStore } from '../../stores/app';
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
@@ -105,6 +106,11 @@ const appStore = useAppStore();
 // 计算属性
 const notesCount = computed(() => notesStore.notes.length);
 const dueReviewsCount = computed(() => reviewsStore.dueReviews.length);
+
+// 判断是否在文档相关的页面（Dashboard 或 NoteEditor）
+const isDocumentSection = computed(() => {
+  return route.name === 'Dashboard' || route.name === 'NoteEditor';
+});
 
 // 方法
 async function createNewNote() {

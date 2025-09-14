@@ -197,11 +197,43 @@
         :show-toolbar="showToolbar"
       />
     </div>
+    
+    <!-- 重命名对话框 -->
+    <div v-if="showRenameDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-96 max-w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">重命名笔记</h3>
+        <input
+          ref="renameInputRef"
+          v-model="renameInputValue"
+          type="text"
+          placeholder="请输入新的文件名..."
+          class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+          @keyup.enter="confirmRename"
+          @keyup.esc="cancelRename"
+        />
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            @click="cancelRename"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            取消
+          </button>
+          <button
+            @click="confirmRename"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            :disabled="!renameInputValue.trim()"
+            :class="{ 'opacity-50 cursor-not-allowed': !renameInputValue.trim() }"
+          >
+            重命名
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFilesStore, type FileItem } from '../stores/files';
 import { useAppStore } from '../stores/app';
@@ -230,6 +262,11 @@ const layoutMode = ref<'single' | 'horizontal' | 'vertical'>('single');
 const isBookmarked = ref(false);
 const isPublished = ref(false);
 const showToolbar = ref(true);
+
+// 重命名对话框状态
+const showRenameDialog = ref(false);
+const renameInputValue = ref('');
+const renameInputRef = ref<HTMLInputElement>();
 
 // 计算属性
 const currentFile = computed(() => appStore.currentFile);
@@ -382,14 +419,35 @@ async function deleteNote() {
   }
 }
 
-async function renameNote() {
-  if (!currentFilePath.value) return;
+function renameNote() {
+  if (!currentFilePath.value) {
+    alert('没有当前文件，无法重命名');
+    return;
+  }
   
-  const newName = prompt('请输入新的文件名:', noteTitle.value);
-  if (!newName || newName.trim() === '') return;
+  // 显示自定义重命名对话框
+  renameInputValue.value = noteTitle.value;
+  showRenameDialog.value = true;
+  showMoreOptions.value = false;
+  
+  nextTick(() => {
+    renameInputRef.value?.focus();
+    renameInputRef.value?.select();
+  });
+}
+
+function cancelRename() {
+  showRenameDialog.value = false;
+  renameInputValue.value = '';
+}
+
+async function confirmRename() {
+  if (!renameInputValue.value.trim()) return;
   
   try {
-    const newFileName = newName.trim() + '.md';
+    const trimmedName = renameInputValue.value.trim();
+    const newFileName = trimmedName.endsWith('.md') ? trimmedName : trimmedName + '.md';
+    
     const currentFileItem: FileItem = {
       name: currentFileName.value,
       path: currentFilePath.value,
@@ -405,7 +463,14 @@ async function renameNote() {
     // 更新当前文件信息
     currentFilePath.value = newPath;
     currentFileName.value = newFileName;
-    noteTitle.value = newName.trim();
+    noteTitle.value = trimmedName.replace(/\.md$/, '');
+    
+    // 更新AppStore中的当前文件信息
+    appStore.setCurrentFile({
+      path: newPath,
+      name: newFileName,
+      content: noteContent.value
+    });
     
     // 更新路由
     router.replace({
@@ -415,15 +480,15 @@ async function renameNote() {
       }
     });
     
-    // 更新标签页标题
-    const currentTab = appStore.openTabs.find(tab => tab.filePath === currentFilePath.value);
-    if (currentTab) {
-      currentTab.title = newName.trim();
-      currentTab.filePath = newPath;
-    }
+    // 更新所有相关的标签页信息（包括可能多次打开同一文件的情况）
+    appStore.updateFilePathInTabs(currentFilePath.value, newPath, newFileName);
     
-    showMoreOptions.value = false;
+    cancelRename();
     alert('重命名成功！');
+    
+    // 刷新文件树以反映变化
+    await filesStore.refreshTree();
+    
   } catch (error) {
     console.error('重命名笔记失败:', error);
     alert('重命名失败: ' + (error instanceof Error ? error.message : '未知错误'));
