@@ -69,6 +69,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAttachmentsDir: () => ipcRenderer.invoke('fs:getAttachmentsDir'),
     saveImage: (imageData: string, fileName: string) => ipcRenderer.invoke('fs:saveImage', imageData, fileName),
   },
+
+  // 插件系统API
+  plugins: {
+    getPluginsDir: () => ipcRenderer.invoke('plugins:getPluginsDir'),
+    scanDirectory: () => ipcRenderer.invoke('plugins:scanDirectory'),
+    readFile: (pluginId: string, filePath: string) => 
+      ipcRenderer.invoke('plugins:readFile', pluginId, filePath),
+    writeFile: (pluginId: string, filePath: string, content: string) => 
+      ipcRenderer.invoke('plugins:writeFile', pluginId, filePath, content),
+    installFromZip: (zipPath: string) => 
+      ipcRenderer.invoke('plugins:installFromZip', zipPath),
+    uninstall: (pluginId: string) => 
+      ipcRenderer.invoke('plugins:uninstall', pluginId),
+    getSettings: (pluginId: string) => 
+      ipcRenderer.invoke('plugins:getSettings', pluginId),
+    saveSettings: (pluginId: string, settings: any) => 
+      ipcRenderer.invoke('plugins:saveSettings', pluginId, settings),
+    executeCommand: (pluginId: string, command: string, args: string[]) => 
+      ipcRenderer.invoke('plugins:executeCommand', pluginId, command, args),
+    showNotification: (title: string, body: string, options?: any) => 
+      ipcRenderer.invoke('plugins:showNotification', title, body, options),
+  },
 });
 
 // 类型定义，供渲染进程使用
@@ -116,6 +138,18 @@ export interface ElectronAPI {
     showOpenDirectoryDialog: () => Promise<any>;
     getAttachmentsDir: () => Promise<string>;
     saveImage: (imageData: string, fileName: string) => Promise<string>;
+  };
+  plugins: {
+    getPluginsDir: () => Promise<string>;
+    scanDirectory: () => Promise<Array<{ path: string; manifest: any }>>;
+    readFile: (pluginId: string, filePath: string) => Promise<string>;
+    writeFile: (pluginId: string, filePath: string, content: string) => Promise<boolean>;
+    installFromZip: (zipPath: string) => Promise<{ success: boolean; message: string }>;
+    uninstall: (pluginId: string) => Promise<boolean>;
+    getSettings: (pluginId: string) => Promise<any>;
+    saveSettings: (pluginId: string, settings: any) => Promise<boolean>;
+    executeCommand: (pluginId: string, command: string, args: string[]) => Promise<any>;
+    showNotification: (title: string, body: string, options?: any) => Promise<boolean>;
   };
 }
 

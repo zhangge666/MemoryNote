@@ -1,11 +1,35 @@
+/* 注意：移除了 Milkdown 默认样式导入以避免 @layer 冲突 */
+/* 如果需要 Milkdown 样式，请在组件级别单独导入 */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 导入 Milkdown 样式 */
-@import '@milkdown/theme-nord/style.css';
+/* 主题变量默认值（浅色模式）*/
+:root {
+  --primary-color: #2563eb;
+  --primary-700: #1d4ed8;
+  --accent-color: #6366f1;
+  --background-color: #f9fafb;
+  --surface-color: #ffffff;
+  --text-color: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+}
 
-/* 自定义样式 */
+/* 深色模式变量（当系统处于深色模式但没有插件主题时）*/
+html.dark:root {
+  --primary-color: #3b82f6;
+  --primary-700: #2563eb;
+  --accent-color: #8b5cf6;
+  --background-color: #0f172a;
+  --surface-color: #1e293b;
+  --text-color: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+}
+
+/* 基础样式 */
 @layer base {
   * {
     @apply box-border;
@@ -17,8 +41,8 @@
   
   body {
     @apply h-full m-0 p-0 font-sans antialiased;
-    @apply bg-gray-50 text-gray-900;
-    @apply dark:bg-dark-900 dark:text-gray-100;
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
   
@@ -27,6 +51,7 @@
   }
 }
 
+/* 组件样式 */
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md;
@@ -36,43 +61,52 @@
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
-    @apply focus:ring-primary-500;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    @apply hover:opacity-90;
+    --tw-ring-color: var(--accent-color);
   }
   
   .btn-secondary {
-    @apply bg-gray-100 text-gray-900 hover:bg-gray-200;
-    @apply dark:bg-dark-700 dark:text-gray-100 dark:hover:bg-dark-600;
-    @apply focus:ring-gray-500;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    @apply hover:opacity-90;
+    --tw-ring-color: var(--accent-color);
   }
   
   .btn-ghost {
-    @apply bg-transparent text-gray-700 hover:bg-gray-100;
-    @apply dark:text-gray-300 dark:hover:bg-dark-800;
-    @apply focus:ring-gray-500;
+    @apply bg-transparent hover:bg-gray-100;
+    @apply dark:hover:bg-dark-800;
+    color: var(--text-color);
+    --tw-ring-color: var(--accent-color);
   }
   
   .input {
-    @apply block w-full px-3 py-2 text-sm;
-    @apply bg-white border border-gray-300 rounded-md;
-    @apply dark:bg-dark-800 dark:border-dark-600 dark:text-gray-100;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
-    @apply placeholder-gray-400 dark:placeholder-gray-500;
+    @apply block w-full px-3 py-2 text-sm rounded-md;
+    @apply focus:outline-none focus:ring-2 focus:border-transparent;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    --tw-ring-color: var(--accent-color);
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200;
-    @apply dark:bg-dark-800 dark:border-dark-700;
+    @apply rounded-lg shadow-sm border;
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
   }
   
   .sidebar {
-    @apply bg-white border-r border-gray-200;
-    @apply dark:bg-dark-800 dark:border-dark-700;
+    @apply border-r;
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
   }
   
   .titlebar {
-    @apply bg-white border-b border-gray-200;
-    @apply dark:bg-dark-800 dark:border-dark-700;
+    @apply border-b;
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
   }
 }
 
@@ -95,12 +129,13 @@
 
 /* 编辑器样式 */
 .editor {
-  @apply h-full bg-white dark:bg-dark-900;
+  @apply h-full;
+  background-color: var(--surface-color);
 }
 
 .editor .ProseMirror {
   @apply p-4 h-full outline-none;
-  @apply text-gray-900 dark:text-gray-100;
+  color: var(--text-color);
 }
 
 /* 动画 */

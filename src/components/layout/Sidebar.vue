@@ -43,6 +43,37 @@
             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
           </svg>
         </button>
+        
+        <!-- 插件管理 -->
+        <router-link
+          v-if="showPluginIcon"
+          to="/plugins"
+          class="nav-icon-item"
+          :class="{ 'nav-icon-item-active': $route.name === 'PluginManager' }"
+          :title="'插件管理'"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+          </svg>
+          <span v-if="pluginsCount > 0" class="nav-icon-badge bg-primary-500 text-white">{{ pluginsCount }}</span>
+        </router-link>
+        
+        <!-- 插件页面 -->
+        <template v-if="showPluginIcon && pluginPages.length > 0">
+          <router-link
+            v-for="page in pluginPages"
+            :key="page.id"
+            :to="`/plugin/${page.id}`"
+            class="nav-icon-item"
+            :class="{ 'nav-icon-item-active': $route.params.pageId === page.id }"
+            :title="page.title"
+          >
+            <div v-if="page.icon" v-html="page.icon" class="w-5 h-5"></div>
+            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
+            </svg>
+          </router-link>
+        </template>
       </div>
       
       <!-- 分隔线 -->
@@ -89,11 +120,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
+import { usePluginsStore } from '../../stores/plugins';
 import { useAppStore } from '../../stores/app';
 
 const router = useRouter();
@@ -102,14 +134,25 @@ const { t } = useI18n();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
 const appStore = useAppStore();
+const pluginsStore = usePluginsStore();
 
 // 计算属性
 const notesCount = computed(() => notesStore.notes.length);
 const dueReviewsCount = computed(() => reviewsStore.dueReviews.length);
+const pluginsCount = computed(() => pluginsStore.enabledPluginsList.length);
 
 // 判断是否在文档相关的页面（Dashboard 或 NoteEditor）
 const isDocumentSection = computed(() => {
   return route.name === 'Dashboard' || route.name === 'NoteEditor';
+});
+
+// 插件图标显示控制
+const showPluginIcon = ref(true);
+
+// 插件页面
+const pluginPages = computed(() => {
+  if (!pluginsStore.pluginManager) return [];
+  return pluginsStore.pluginManager.getRegisteredPages().filter(page => page.showInSidebar !== false);
 });
 
 // 方法
@@ -161,6 +204,17 @@ onMounted(() => {
   // 加载数据
   notesStore.loadNotes();
   reviewsStore.loadDueReviews();
+  
+  // 加载插件图标显示设置
+  try {
+    const savedPluginSettings = localStorage.getItem('plugin-settings');
+    if (savedPluginSettings) {
+      const settings = JSON.parse(savedPluginSettings);
+      showPluginIcon.value = settings.showPluginIcon ?? true;
+    }
+  } catch (error) {
+    console.error('加载插件设置失败:', error);
+  }
 });
 </script>
 

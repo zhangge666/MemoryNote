@@ -1,0 +1,20 @@
+{
+  "id": "example-themes",
+  "name": "示例主题包",
+  "version": "1.0.0",
+  "description": "包含多个精美主题的示例插件，展示插件系统的主题功能",
+  "author": "MemoryNote Team",
+  "type": "theme",
+  "main": "index.js",
+  "permissions": [
+    "theme_modify",
+    "ui_modify"
+  ],
+  "dependencies": [],
+  "minAppVersion": "1.0.0",
+  "icon": "icon.svg",
+  "homepage": "https://memorynote.com/plugins/example-themes",
+  "keywords": ["theme", "ui", "design", "dark", "light"]
+}
+
+

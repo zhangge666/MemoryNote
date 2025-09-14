@@ -1002,6 +1002,9 @@ onUnmounted(() => {
   outline: none;
   border: none;
   min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  padding: 1rem;
 }
 
 :deep(.milkdown h1) {

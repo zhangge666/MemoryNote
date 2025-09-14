@@ -60,9 +60,11 @@ import TabBar from './components/layout/TabBar.vue';
 import ResizeHandle from './components/ui/ResizeHandle.vue';
 import { useSettingsStore } from './stores/settings';
 import { useAppStore } from './stores/app';
+import { usePluginsStore } from './stores/plugins';
 
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
+const pluginsStore = usePluginsStore();
 
 // StatusBar交互接口
 const statusBarRef = ref<InstanceType<typeof StatusBar>>();
@@ -136,22 +138,57 @@ onMounted(async () => {
   // 应用主题
   applyTheme();
   
+  // 初始化插件系统
+  try {
+    await pluginsStore.initialize();
+    console.log('✅ 插件系统初始化完成');
+    
+    // 监听插件主题重置事件
+    const pluginManager = (pluginsStore as any).pluginManager?.value;
+    if (pluginManager) {
+      pluginManager.on('theme:reset', () => {
+        console.log('🔄 收到主题重置事件，重新应用系统主题');
+        applyTheme();
+      });
+    }
+  } catch (error) {
+    console.error('❌ 插件系统初始化失败:', error);
+  }
+  
   // 应用语言
   // TODO: 实现国际化
 });
 
 function applyTheme() {
   const theme = settingsStore.theme;
+  const htmlElement = document.documentElement;
+  
   if (theme === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
+    htmlElement.classList.add('dark');
+  } else if (theme === 'light') {
+    htmlElement.classList.remove('dark');
+  } else if (theme === 'auto') {
+    // 自动模式：根据系统偏好设置
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      htmlElement.classList.add('dark');
+    } else {
+      htmlElement.classList.remove('dark');
+    }
   }
 }
 
 // 监听设置变化
 settingsStore.$subscribe(() => {
   applyTheme();
+});
+
+// 监听系统主题变化（仅在 auto 模式下）
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+mediaQuery.addEventListener('change', () => {
+  if (settingsStore.theme === 'auto') {
+    applyTheme();
+  }
 });
 </script>
 

@@ -234,6 +234,200 @@
         </div>
       </div>
       
+      <!-- 插件设置 -->
+      <div v-if="activeTab === 'plugins'" class="space-y-6">
+        <!-- 插件系统设置 -->
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">🔌 插件系统设置</h3>
+          
+          <div class="space-y-4">
+            <!-- 显示插件图标 -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  显示插件图标
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  在侧边栏中显示插件管理入口
+                </p>
+              </div>
+              <div class="toggle-switch">
+                <input
+                  v-model="showPluginIcon"
+                  type="checkbox"
+                  @change="updatePluginSettings"
+                />
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            
+            <!-- 插件快捷键提示 -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  显示快捷键提示
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  在插件管理器中显示快捷键提示
+                </p>
+              </div>
+              <div class="toggle-switch">
+                <input
+                  v-model="showPluginShortcuts"
+                  type="checkbox"
+                  @change="updatePluginSettings"
+                />
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            
+            <!-- 插件通知 -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  插件通知
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  接收插件安装、更新等通知
+                </p>
+              </div>
+              <div class="toggle-switch">
+                <input
+                  v-model="pluginNotifications"
+                  type="checkbox"
+                  @change="updatePluginSettings"
+                />
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            
+            <!-- 开发者模式 -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  开发者模式
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  启用插件开发和调试功能
+                </p>
+              </div>
+              <div class="toggle-switch">
+                <input
+                  v-model="pluginDeveloperMode"
+                  type="checkbox"
+                  @change="updatePluginSettings"
+                />
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 插件管理 -->
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">🎨 已安装插件</h3>
+          
+          <div class="space-y-3">
+            <div v-if="installedPlugins.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <p class="text-sm">暂无已安装插件</p>
+              <p class="text-xs mt-1">前往插件管理器安装插件</p>
+            </div>
+            
+            <div
+              v-for="plugin in installedPlugins"
+              :key="plugin.manifest.id"
+              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ plugin.manifest.name }}</h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ plugin.manifest.description }}</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-500">v{{ plugin.manifest.version }} by {{ plugin.manifest.author }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span 
+                  class="px-2 py-1 text-xs rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': plugin.status === 'enabled',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200': plugin.status === 'installed'
+                  }"
+                >
+                  {{ plugin.status === 'enabled' ? '已启用' : '已安装' }}
+                </span>
+                <button
+                  @click="togglePlugin(plugin)"
+                  class="text-xs px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {{ plugin.status === 'enabled' ? '禁用' : '启用' }}
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 text-center">
+            <button
+              @click="openPluginManager"
+              class="btn btn-primary"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              管理插件
+            </button>
+          </div>
+        </div>
+        
+        <!-- 主题预览 -->
+        <div class="card p-6" v-if="availableThemes.length > 0">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">🎨 插件主题</h3>
+            <button
+              @click="resetToSystemTheme"
+              class="text-xs px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              重置为系统主题
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              v-for="theme in availableThemes"
+              :key="theme.id"
+              @click="applyTheme(theme.id)"
+              class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-primary-300 dark:hover:border-primary-600 transition-colors"
+              :class="{
+                'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-900/20': currentTheme === theme.id
+              }"
+            >
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600" :style="{ backgroundColor: theme.variables['primary-color'] || '#6366f1' }"></div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ theme.name }}</h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ theme.description }}</p>
+                </div>
+              </div>
+              <div class="flex space-x-1">
+                <div class="w-4 h-4 rounded" :style="{ backgroundColor: theme.variables['background-color'] || '#ffffff' }"></div>
+                <div class="w-4 h-4 rounded" :style="{ backgroundColor: theme.variables['surface-color'] || '#f8f9fa' }"></div>
+                <div class="w-4 h-4 rounded" :style="{ backgroundColor: theme.variables['text-color'] || '#212529' }"></div>
+                <div class="w-4 h-4 rounded" :style="{ backgroundColor: theme.variables['accent-color'] || '#6366f1' }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- 复习设置 -->
       <div v-if="activeTab === 'review'" class="space-y-6">
         <div class="card p-6">
@@ -359,11 +553,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { useSettingsStore } from '../stores/settings';
+import { usePluginsStore } from '../stores/plugins';
 import type { Theme, Language } from '../stores/settings';
 
 const { t } = useI18n();
+const router = useRouter();
 const settingsStore = useSettingsStore();
+const pluginsStore = usePluginsStore();
 
 // 响应式状态
 const activeTab = ref('general');
@@ -371,6 +569,7 @@ const activeTab = ref('general');
 const tabs = computed(() => [
   { id: 'general', name: t('settings.tabs.general') },
   { id: 'editor', name: t('settings.tabs.editor') },
+  { id: 'plugins', name: '插件设置' },
   { id: 'review', name: t('settings.tabs.review') },
   { id: 'about', name: t('settings.tabs.about') },
 ]);
@@ -442,6 +641,17 @@ const dailyReviewGoal = computed({
   set: (value: number) => settingsStore.dailyReviewGoal = value
 });
 
+// 插件相关状态
+const showPluginIcon = ref(true);
+const showPluginShortcuts = ref(true);
+const pluginNotifications = ref(true);
+const pluginDeveloperMode = ref(false);
+
+// 插件数据
+const installedPlugins = computed(() => pluginsStore.allPlugins);
+const availableThemes = computed(() => pluginsStore.themesList);
+const currentTheme = ref('nord-theme');
+
 // 方法
 function updateTheme() {
   settingsStore.saveSettings();
@@ -469,6 +679,55 @@ function resetAllSettings() {
   }
 }
 
+// 插件相关方法
+function updatePluginSettings() {
+  // 保存插件设置到本地存储
+  const pluginSettings = {
+    showPluginIcon: showPluginIcon.value,
+    showPluginShortcuts: showPluginShortcuts.value,
+    pluginNotifications: pluginNotifications.value,
+    pluginDeveloperMode: pluginDeveloperMode.value
+  };
+  
+  localStorage.setItem('plugin-settings', JSON.stringify(pluginSettings));
+  console.log('插件设置已保存:', pluginSettings);
+}
+
+async function togglePlugin(plugin: any) {
+  try {
+    if (plugin.status === 'enabled') {
+      await pluginsStore.disablePlugin(plugin.manifest.id);
+    } else {
+      await pluginsStore.enablePlugin(plugin.manifest.id);
+    }
+  } catch (error) {
+    console.error('切换插件状态失败:', error);
+    alert('操作失败，请重试');
+  }
+}
+
+function openPluginManager() {
+  router.push('/plugins');
+}
+
+async function applyTheme(themeId: string) {
+  try {
+    pluginsStore.applyTheme(themeId);
+    currentTheme.value = themeId;
+  } catch (error) {
+    console.error('应用主题失败:', error);
+  }
+}
+
+async function resetToSystemTheme() {
+  try {
+    pluginsStore.resetTheme();
+    currentTheme.value = 'default';
+  } catch (error) {
+    console.error('重置主题失败:', error);
+  }
+}
+
 async function selectWorkspaceDirectory() {
   try {
     const result = await window.electronAPI.fs.showOpenDirectoryDialog();
@@ -485,8 +744,29 @@ async function selectWorkspaceDirectory() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   settingsStore.loadSettings();
+  
+  // 加载插件设置
+  try {
+    const savedPluginSettings = localStorage.getItem('plugin-settings');
+    if (savedPluginSettings) {
+      const settings = JSON.parse(savedPluginSettings);
+      showPluginIcon.value = settings.showPluginIcon ?? true;
+      showPluginShortcuts.value = settings.showPluginShortcuts ?? true;
+      pluginNotifications.value = settings.pluginNotifications ?? true;
+      pluginDeveloperMode.value = settings.pluginDeveloperMode ?? false;
+    }
+  } catch (error) {
+    console.error('加载插件设置失败:', error);
+  }
+  
+  // 初始化插件系统
+  try {
+    await pluginsStore.initialize();
+  } catch (error) {
+    console.error('初始化插件系统失败:', error);
+  }
 });
 </script>
 
