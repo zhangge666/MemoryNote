@@ -66,6 +66,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('fs:rename', oldPath, newPath),
     exists: (itemPath: string) => ipcRenderer.invoke('fs:exists', itemPath),
     showOpenDirectoryDialog: () => ipcRenderer.invoke('fs:showOpenDirectoryDialog'),
+    getAttachmentsDir: () => ipcRenderer.invoke('fs:getAttachmentsDir'),
+    saveImage: (imageData: string, fileName: string) => ipcRenderer.invoke('fs:saveImage', imageData, fileName),
   },
 });
 
@@ -112,6 +114,8 @@ export interface ElectronAPI {
     rename: (oldPath: string, newPath: string) => Promise<boolean>;
     exists: (itemPath: string) => Promise<boolean>;
     showOpenDirectoryDialog: () => Promise<any>;
+    getAttachmentsDir: () => Promise<string>;
+    saveImage: (imageData: string, fileName: string) => Promise<string>;
   };
 }
 

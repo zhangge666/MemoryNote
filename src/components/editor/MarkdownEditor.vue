@@ -100,9 +100,9 @@
             ⚠️ 大文档
           </span>
           
-          <!-- 图片缓存状态 -->
-          <span v-if="imageCache.size > 0" class="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded text-xs" :title="`已缓存 ${imageCache.size} 张图片`">
-            🖼️ {{ imageCache.size }}
+          <!-- 图片存储信息 -->
+          <span class="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded text-xs">
+            📁 Obsidian式存储
           </span>
         </div>
         
@@ -297,10 +297,9 @@ const previewScrollTop = ref(0);
 // Milkdown 相关状态
 const isWysiwygMode = ref(true); // 默认为所见即所得模式
 let milkdownEditor: Editor | null = null;
+let isUpdatingMilkdown = false;
 
-// 图片处理相关状态
-const imageCounter = ref(0);
-const imageCache = new Map<string, string>(); // 用于缓存图片数据
+// 图片处理相关状态（已改为Obsidian式存储，不再需要缓存）
 
 // 查找替换相关状态
 const showFindReplace = ref(false);
@@ -316,7 +315,7 @@ const isContentLarge = computed(() => {
 });
 
 const hasLargeImages = computed(() => {
-  return content.value.includes('data:image/') || imageCache.size > 0;
+  return content.value.includes('![[') && content.value.length > 50000; // 简单检测是否有图片且内容较大
 });
 
 // 查找替换相关状态
@@ -724,17 +723,28 @@ async function initMilkdownEditor() {
           editable: () => true,
           attributes: {
             class: 'milkdown-editor-content prose prose-gray dark:prose-invert max-w-none outline-none'
-          }
+          },
+          // 配置编辑器行为，减少自动格式化
+          transformPastedHTML: (html: string) => html,
+          clipboardTextParser: (text: string) => text
         });
         
         // 监听编辑器内容变化
         ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
-          // 需要将返回的markdown内容转换回我们的图片引用格式
-          const convertedMarkdown = convertImageRefsFromMarkdown(markdown);
-          if (convertedMarkdown !== content.value) {
-            content.value = convertedMarkdown;
-            emit('update:modelValue', convertedMarkdown);
-            emit('change', convertedMarkdown);
+          // 只有在非更新状态下才处理编辑器的变化
+          if (!isUpdatingMilkdown) {
+            // 清理Milkdown生成的额外换行符，保持与文本模式一致
+            let cleanedMarkdown = markdown
+              .replace(/\n\n+/g, '\n\n') // 将多个连续换行符简化为最多两个
+              .replace(/^\n+/, '') // 移除开头的换行符
+              .replace(/\n+$/, ''); // 移除结尾的换行符
+            
+            const convertedMarkdown = convertImageRefsFromMarkdown(cleanedMarkdown);
+            if (convertedMarkdown !== content.value) {
+              content.value = convertedMarkdown;
+              emit('update:modelValue', convertedMarkdown);
+              emit('change', convertedMarkdown);
+            }
           }
         });
         
@@ -797,30 +807,33 @@ function toggleWysiwygMode() {
   }
 }
 
-// 图片处理函数
-function handleImagePaste(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    // 生成唯一的图片ID
-    imageCounter.value++;
-    const imageId = `img_${Date.now()}_${imageCounter.value}`;
-    const imageName = file.name || `image_${imageId}.${file.type.split('/')[1] || 'png'}`;
+// 图片处理函数 - Obsidian式存储
+async function handleImagePaste(file: File): Promise<string> {
+  try {
+    // 生成时间戳和随机数作为文件名
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const random = Math.random().toString(36).substring(2, 8);
+    const extension = file.type.split('/')[1] || 'png';
+    const fileName = `${timestamp}_${random}.${extension}`;
     
     // 读取文件并转换为base64
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Data = e.target?.result as string;
-      
-      // 缓存图片数据
-      imageCache.set(imageId, base64Data);
-      
-      // 返回简化的图片引用
-      const imageRef = `![${imageName}](image://${imageId})`;
-      console.log('图片已缓存:', imageId, '大小:', Math.round(base64Data.length / 1024), 'KB');
-      resolve(imageRef);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+    const base64Data = await new Promise<string>((resolve, reject) => {
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    
+    // 保存图片到本地附件目录
+    const savedPath = await window.electronAPI.fs.saveImage(base64Data, fileName);
+    console.log('图片已保存到:', savedPath);
+    
+    // 返回Obsidian式引用格式
+    return `![[${fileName}]]`;
+  } catch (error) {
+    console.error('保存图片失败:', error);
+    throw error;
+  }
 }
 
 // 处理图片粘贴事件
@@ -882,14 +895,12 @@ async function handlePasteWithImages(event: ClipboardEvent) {
   }
 }
 
-// 处理图片显示 - 将缓存的图片数据转换回来用于预览
+// 处理图片显示 - 将Obsidian式图片引用转换为实际路径
 function processContentForDisplay(content: string): string {
-  return content.replace(/!\[([^\]]*)\]\(image:\/\/([^)]+)\)/g, (match, alt, imageId) => {
-    const cachedData = imageCache.get(imageId);
-    if (cachedData) {
-      return `![${alt}](${cachedData})`;
-    }
-    return `![${alt}](图片加载失败: ${imageId})`;
+  // 处理Obsidian式图片引用 ![[filename.ext]]
+  return content.replace(/!\[\[([^\]]+)\]\]/g, (match, fileName) => {
+    // 使用相对路径或绝对路径，根据需要调整
+    return `![${fileName}](attachments/${fileName})`;
   });
 }
 
@@ -899,44 +910,29 @@ function exportContentWithImages(content: string): string {
   return processContentForDisplay(content);
 }
 
-// 将包含base64图片的markdown转换回我们的引用格式
+// Obsidian式图片处理不需要转换，直接返回原内容
 function convertImageRefsFromMarkdown(markdown: string): string {
-  return markdown.replace(/!\[([^\]]*)\]\(data:image\/[^;]+;base64,([^)]+)\)/g, (match, alt, base64) => {
-    const fullDataUrl = match.match(/!\[([^\]]*)\]\((data:image\/[^)]+)\)/)?.[2];
-    if (fullDataUrl) {
-      // 查找是否已经缓存了这个图片
-      for (const [imageId, cachedData] of imageCache.entries()) {
-        if (cachedData === fullDataUrl) {
-          return `![${alt}](image://${imageId})`;
-        }
-      }
-      
-      // 如果没有找到，创建新的缓存条目
-      imageCounter.value++;
-      const imageId = `img_${Date.now()}_${imageCounter.value}`;
-      imageCache.set(imageId, fullDataUrl);
-      return `![${alt}](image://${imageId})`;
-    }
-    return match;
-  });
+  // 对于Obsidian式引用，不需要特殊处理，直接返回
+  return markdown;
 }
 
 // 监听内容变化，同步到Milkdown编辑器
-watch(content, async (newValue) => {
-  if (isWysiwygMode.value && milkdownEditor) {
+watch(content, async (newValue, oldValue) => {
+  if (isWysiwygMode.value && milkdownEditor && newValue !== oldValue && !isUpdatingMilkdown) {
     try {
-      // 获取当前编辑器的内容
+      isUpdatingMilkdown = true;
       const processedNewValue = processContentForDisplay(newValue || '');
       
-      await milkdownEditor.action((ctx) => {
-        const currentValue = ctx.get(defaultValueCtx);
-        if (currentValue !== processedNewValue) {
-          // 只有当内容真正不同时才更新，并使用处理过的内容
-          ctx.set(defaultValueCtx, processedNewValue);
-        }
-      });
+      // 销毁现有编辑器并重新创建以确保内容正确加载
+      milkdownEditor.destroy();
+      milkdownEditor = null;
+      
+      await nextTick();
+      await initMilkdownEditor();
     } catch (error) {
       console.error('Error updating Milkdown content:', error);
+    } finally {
+      isUpdatingMilkdown = false;
     }
   }
 });
@@ -1167,8 +1163,7 @@ onUnmounted(() => {
     milkdownEditor = null;
   }
   
-  // 清理图片缓存
-  imageCache.clear();
+  // 清理工作（Obsidian式存储不需要清理缓存）
 });
 </script>
 

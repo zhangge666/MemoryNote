@@ -203,7 +203,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useFilesStore } from '../stores/files';
+import { useFilesStore, type FileItem } from '../stores/files';
 import { useAppStore } from '../stores/app';
 import { useSettingsStore } from '../stores/settings';
 import MarkdownEditor from '../components/editor/MarkdownEditor.vue';
@@ -255,8 +255,8 @@ async function loadFile() {
         noteTitle.value = title;
         hasChanges.value = false;
         
-        // 确保标签页存在
-        const tabId = btoa(filePath).replace(/[+=\/]/g, '');
+        // 确保标签页存在 - 使用安全的Unicode Base64编码
+        const tabId = btoa(encodeURIComponent(filePath)).replace(/[+=\/]/g, '');
         const existingTab = appStore.openTabs.find(tab => tab.id === tabId);
         if (!existingTab) {
           appStore.openTab({
@@ -382,14 +382,51 @@ async function deleteNote() {
   }
 }
 
-async function renameNote(newName: string) {
-  if (!currentNote.value) return;
+async function renameNote() {
+  if (!currentFilePath.value) return;
+  
+  const newName = prompt('请输入新的文件名:', noteTitle.value);
+  if (!newName || newName.trim() === '') return;
   
   try {
-    noteTitle.value = newName;
-    await saveNote();
+    const newFileName = newName.trim() + '.md';
+    const currentFileItem: FileItem = {
+      name: currentFileName.value,
+      path: currentFilePath.value,
+      isDirectory: false,
+      isFile: true,
+      size: 0,
+      modified: new Date(),
+      created: new Date()
+    };
+    
+    const newPath = await filesStore.renameItem(currentFileItem, newFileName);
+    
+    // 更新当前文件信息
+    currentFilePath.value = newPath;
+    currentFileName.value = newFileName;
+    noteTitle.value = newName.trim();
+    
+    // 更新路由
+    router.replace({
+      query: {
+        filePath: newPath,
+        fileName: newFileName
+      }
+    });
+    
+    // 更新标签页标题
+    const currentTab = appStore.openTabs.find(tab => tab.filePath === currentFilePath.value);
+    if (currentTab) {
+      currentTab.title = newName.trim();
+      currentTab.filePath = newPath;
+    }
+    
+    showMoreOptions.value = false;
+    alert('重命名成功！');
   } catch (error) {
     console.error('重命名笔记失败:', error);
+    alert('重命名失败: ' + (error instanceof Error ? error.message : '未知错误'));
   }
 }
 

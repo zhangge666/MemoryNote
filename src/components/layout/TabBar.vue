@@ -117,8 +117,8 @@ async function createNewNote() {
     // 刷新文件树
     await filesStore.refreshTree();
     
-    // 创建标签页
-    const tabId = btoa(filePath).replace(/[+=\/]/g, '');
+    // 创建标签页 - 使用安全的Unicode Base64编码
+    const tabId = btoa(encodeURIComponent(filePath)).replace(/[+=\/]/g, '');
     appStore.openTab({
       id: tabId,
       title: `新建笔记-${timestamp}`,

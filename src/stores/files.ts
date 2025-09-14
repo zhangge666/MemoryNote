@@ -218,7 +218,21 @@ export const useFilesStore = defineStore('files', () => {
 
   async function renameItem(item: FileItem, newName: string) {
     try {
-      const newPath = path.join(path.dirname(item.path), newName);
+      // 清理新名称，移除路径分隔符，确保只是重命名而不是移动
+      const cleanNewName = newName.replace(/[\/\\]/g, '');
+      if (!cleanNewName.trim()) {
+        throw new Error('文件名不能为空');
+      }
+      
+      const parentDir = path.dirname(item.path);
+      const newPath = path.join(parentDir, cleanNewName);
+      
+      // 检查新路径是否已存在
+      const exists = await window.electronAPI.fs.exists(newPath);
+      if (exists) {
+        throw new Error('目标文件名已存在');
+      }
+      
       await window.electronAPI.fs.rename(item.path, newPath);
       
       if (useTreeView.value) {
@@ -230,7 +244,8 @@ export const useFilesStore = defineStore('files', () => {
       return newPath;
     } catch (err) {
       console.error('Failed to rename item:', err);
-      throw new Error('重命名失败');
+      const errorMessage = err instanceof Error ? err.message : '重命名失败';
+      throw new Error(errorMessage);
     }
   }
 

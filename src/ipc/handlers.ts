@@ -234,6 +234,49 @@ export function setupIpcHandlers(dbManager: DatabaseManager) {
     }
   });
 
+  // 获取附件目录
+  ipcMain.handle('fs:getAttachmentsDir', async () => {
+    try {
+      const appDataPath = app.getPath('userData');
+      const attachmentsDir = path.join(appDataPath, 'Warehouse', 'attachments');
+      
+      // 确保附件目录存在
+      try {
+        await fs.access(attachmentsDir);
+      } catch {
+        await fs.mkdir(attachmentsDir, { recursive: true });
+      }
+      
+      return attachmentsDir;
+    } catch (error) {
+      console.error('Error getting attachments directory:', error);
+      throw error;
+    }
+  });
+
+  // 保存图片文件到附件目录
+  ipcMain.handle('fs:saveImage', async (_, imageData: string, fileName: string) => {
+    try {
+      const appDataPath = app.getPath('userData');
+      const attachmentsDir = path.join(appDataPath, 'Warehouse', 'attachments');
+      
+      // 确保附件目录存在
+      await fs.mkdir(attachmentsDir, { recursive: true });
+      
+      // 从base64数据中提取真实的图片数据
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      const filePath = path.join(attachmentsDir, fileName);
+      await fs.writeFile(filePath, buffer);
+      
+      return filePath;
+    } catch (error) {
+      console.error('保存图片失败:', error);
+      throw error;
+    }
+  });
+
   // 读取目录内容
   ipcMain.handle('fs:readDir', async (_, dirPath: string) => {
     try {

@@ -534,8 +534,8 @@ async function openFile(file: FileItem) {
     // 获取文件名（不含扩展名）作为标签标题
     const fileName = file.name.replace(/\.(md|markdown)$/i, '');
     
-    // 创建或激活标签页
-    const tabId = btoa(file.path).replace(/[+=\/]/g, ''); // 使用base64编码路径作为安全的唯一标识
+    // 创建或激活标签页 - 使用安全的Unicode Base64编码
+    const tabId = btoa(encodeURIComponent(file.path)).replace(/[+=\/]/g, ''); // 先URI编码再base64编码
     appStore.openTab({
       id: tabId,
       title: fileName,
