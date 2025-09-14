@@ -46,12 +46,12 @@
     </div>
     
     <!-- 状态栏 -->
-    <StatusBar />
+    <StatusBar ref="statusBarRef" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, provide } from 'vue';
 import TitleBar from './components/layout/TitleBar.vue';
 import Sidebar from './components/layout/Sidebar.vue';
 import FilePanel from './components/layout/FilePanel.vue';
@@ -63,6 +63,24 @@ import { useAppStore } from './stores/app';
 
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
+
+// StatusBar交互接口
+const statusBarRef = ref<InstanceType<typeof StatusBar>>();
+
+// 提供StatusBar控制方法给子组件
+const statusBarController = {
+  updateCursorPosition: (line: number, column: number) => {
+    statusBarRef.value?.updateCursorPosition(line, column);
+  },
+  updateEditorMode: (mode: 'wysiwyg' | 'source' | 'preview' | null) => {
+    statusBarRef.value?.updateEditorMode(mode);
+  },
+  updateSyncStatus: (status: 'synced' | 'syncing' | 'error' | 'offline') => {
+    statusBarRef.value?.updateSyncStatus(status);
+  }
+};
+
+provide('statusBarController', statusBarController);
 
 // 面板大小控制
 const filePanelWidth = ref(320); // 文件面板默认宽度

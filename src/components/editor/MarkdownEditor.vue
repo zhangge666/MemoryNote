@@ -165,6 +165,8 @@
           @input="onInput"
           @keydown="onKeydown"
           @paste="onTextareaPaste"
+          @click="updateCursorInfo"
+          @keyup="updateCursorInfo"
         ></textarea>
         
         <!-- 行号 -->
@@ -191,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue';
 import MarkdownIt from 'markdown-it';
 import { 
   defaultValueCtx, 
@@ -232,6 +234,13 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+// StatusBar控制器注入
+const statusBarController = inject<{
+  updateCursorPosition: (line: number, column: number) => void;
+  updateEditorMode: (mode: 'wysiwyg' | 'source' | 'preview' | null) => void;
+  updateSyncStatus: (status: 'synced' | 'syncing' | 'error' | 'offline') => void;
+}>('statusBarController');
 
 // Markdown-it 实例用于预览模式
 const md = new MarkdownIt({
@@ -274,12 +283,16 @@ function setEditorMode(mode: EditorMode) {
   const previousMode = editorMode.value;
   editorMode.value = mode;
   
+  // 更新StatusBar的编辑器模式显示
+  statusBarController?.updateEditorMode(mode);
+  
   nextTick(() => {
     if (mode === 'wysiwyg' && previousMode !== 'wysiwyg') {
       initMilkdownEditor();
     } else if (mode === 'source' && previousMode !== 'source') {
       if (textareaRef.value) {
         textareaRef.value.focus();
+        updateCursorInfo();
       }
     }
   });
@@ -295,8 +308,16 @@ watch(() => props.modelValue, (newValue) => {
 
 watch(content, (newContent) => {
   if (!isUpdatingContent.value) {
+    // 标记为正在保存
+    updateSaveStatus('syncing');
+    
     emit('update:modelValue', newContent);
     emit('change', newContent);
+    
+    // 模拟保存完成（实际项目中这应该在真正保存完成后调用）
+    setTimeout(() => {
+      updateSaveStatus('synced');
+    }, 500);
   }
 });
 
@@ -742,17 +763,48 @@ function convertImageRefsFromMarkdown(markdown: string): string {
   return markdown;
 }
 
+// 更新光标信息
+function updateCursorInfo() {
+  if (!textareaRef.value || editorMode.value !== 'source') return;
+  
+  const textarea = textareaRef.value;
+  const cursorPosition = textarea.selectionStart;
+  const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+  const lines = textBeforeCursor.split('\n');
+  const currentLine = lines.length;
+  const currentColumn = lines[lines.length - 1].length + 1;
+  
+  statusBarController?.updateCursorPosition(currentLine, currentColumn);
+}
+
+// 更新保存状态
+function updateSaveStatus(status: 'synced' | 'syncing' | 'error' | 'offline') {
+  statusBarController?.updateSyncStatus(status);
+}
+
 // 生命周期钩子
 onMounted(() => {
+  // 初始化StatusBar状态
+  statusBarController?.updateEditorMode(editorMode.value);
+  statusBarController?.updateSyncStatus('synced');
+  
   // 默认启动WYSIWYG模式
   if (editorMode.value === 'wysiwyg') {
     nextTick(() => {
       initMilkdownEditor();
     });
+  } else if (editorMode.value === 'source') {
+    nextTick(() => {
+      updateCursorInfo();
+    });
   }
 });
 
 onUnmounted(() => {
+  // 清理StatusBar状态
+  statusBarController?.updateEditorMode(null);
+  statusBarController?.updateCursorPosition(1, 1);
+  
   // 清理Milkdown编辑器
   if (milkdownEditor) {
     milkdownEditor.destroy();
