@@ -206,6 +206,7 @@ export interface PluginInstance {
   settings: Record<string, any>;
   loadedAt?: Date;
   enabledAt?: Date;
+  api?: PluginAPI; // 插件启用时创建的API实例
 }
 
 // 插件事件

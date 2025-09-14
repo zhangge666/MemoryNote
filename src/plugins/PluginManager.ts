@@ -128,6 +128,9 @@ export class PluginManager extends EventEmitter {
       // 创建插件API
       const api = this.createPluginAPI(pluginId);
       
+      // 存储API实例到插件实例中
+      instance.api = api;
+      
       // 调用插件的加载方法
       await instance.plugin.onLoad(api);
       
@@ -179,6 +182,9 @@ export class PluginManager extends EventEmitter {
       
       // 清理插件注册的资源
       this.cleanupPluginResources(pluginId);
+      
+      // 清理API实例
+      instance.api = undefined;
       
       instance.status = PluginStatus.DISABLED;
       this.state.enabledPlugins.delete(pluginId);

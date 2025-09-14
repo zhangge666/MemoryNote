@@ -97,18 +97,48 @@ async function loadPluginPage() {
     pageConfig.value = pageData.config;
     pageComponent.value = markRaw(pageData.component);
     
-    // 获取插件ID（从页面ID中提取）
-    const pluginId = pageId.value.split('-')[0];
+    // 从页面ID中提取插件ID（页面ID格式：pluginId-pageId）
+    const pageIdParts = pageId.value.split('-');
+    const pluginId = pageIdParts.slice(0, -1).join('-'); // 支持插件ID包含连字符的情况
+    
+    console.log('🔍 提取插件ID:', pluginId, '从页面ID:', pageId.value);
+    
     const plugin = pluginsStore.getPlugin(pluginId);
     
-    if (plugin?.instance) {
-      // 创建插件API实例
-      pluginAPI.value = plugin.instance.api;
+    if (plugin) {
+      console.log('✅ 找到插件实例:', plugin.manifest.name);
+      
+      // 获取插件API实例
+      if (plugin.api) {
+        pluginAPI.value = plugin.api;
+        console.log('✅ 获取到插件API');
+      } else {
+        console.warn('⚠️ 插件API不存在，插件可能未启用');
+        // 创建一个基本的API对象避免null错误
+        pluginAPI.value = {
+          workspace: {
+            showNotification: (message: string) => console.log('通知:', message)
+          }
+        };
+      }
       
       // 如果插件有自定义的页面props
-      if (typeof plugin.instance.getPageProps === 'function') {
-        componentProps.value = plugin.instance.getPageProps(pageData.config.id) || {};
+      if (typeof plugin.plugin.getPageProps === 'function') {
+        try {
+          componentProps.value = plugin.plugin.getPageProps(pageData.config.id) || {};
+        } catch (error) {
+          console.warn('获取页面props失败:', error);
+          componentProps.value = {};
+        }
       }
+    } else {
+      console.warn('⚠️ 未找到插件:', pluginId);
+      // 创建一个基本的API对象避免null错误
+      pluginAPI.value = {
+        workspace: {
+          showNotification: (message: string) => console.log('通知:', message)
+        }
+      };
     }
     
     console.log('✅ 插件页面加载成功:', pageConfig.value.title);
