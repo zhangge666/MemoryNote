@@ -255,6 +255,8 @@ export interface PluginAPI {
     off: (event: string, handler: Function) => void;
     emit: (event: string, ...args: any[]) => void;
   };
+
+  // 存储系统已移除 - 插件使用 settings API 进行数据持久化
 }
 
 // 插件基础接口

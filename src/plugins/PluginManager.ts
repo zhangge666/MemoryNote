@@ -199,6 +199,15 @@ export class PluginManager extends EventEmitter {
     }
 
     try {
+      console.log(`🔄 开始禁用插件: ${instance.manifest.name}`);
+      
+      // 立即更新状态以防止进一步的操作
+      instance.status = PluginStatus.DISABLED;
+      this.state.enabledPlugins.delete(pluginId);
+      
+      // 立即触发禁用事件，让UI能够及时响应
+      this.emit('plugin:disabled', { type: 'disabled', pluginId } as PluginEvent);
+      
       // 调用禁用方法（如果存在）
       if (instance.plugin.onDisable) {
         await instance.plugin.onDisable();
@@ -210,18 +219,17 @@ export class PluginManager extends EventEmitter {
       // 清理API实例
       instance.api = undefined;
       
-      instance.status = PluginStatus.DISABLED;
-      this.state.enabledPlugins.delete(pluginId);
-      
       // 保存启用状态
       await this.saveEnabledPlugins();
       
-      console.log(`🔌 插件已禁用: ${instance.manifest.name}`);
-      this.emit('plugin:disabled', { type: 'disabled', pluginId } as PluginEvent);
+      console.log(`✅ 插件已禁用: ${instance.manifest.name}`);
       
       return true;
     } catch (error) {
       console.error(`❌ 插件禁用失败: ${pluginId}`, error);
+      // 如果禁用失败，恢复状态
+      instance.status = PluginStatus.ENABLED;
+      this.state.enabledPlugins.add(pluginId);
       return false;
     }
   }
@@ -664,7 +672,17 @@ export class PluginManager extends EventEmitter {
           const settings = this.pluginSettings.get(pluginId) || {};
           settings[key] = value;
           this.pluginSettings.set(pluginId, settings);
+          
+          // 更新插件实例的设置
+          const instance = this.plugins.get(pluginId);
+          if (instance) {
+            instance.settings[key] = value;
+          }
+          
           await this.savePluginSettings(pluginId, settings);
+          
+          // 触发设置更新事件
+          this.emit('plugin:settings-updated', { pluginId, key, value });
         },
         registerSection: (items) => {
           // TODO: 实现设置界面注册
@@ -832,7 +850,9 @@ export class PluginManager extends EventEmitter {
         emit: (event: string, ...args: any[]) => {
           this.emit(event, ...args);
         }
-      }
+      },
+
+      // 存储系统已移除 - 插件使用 settings API 进行数据持久化
     };
   }
 
@@ -907,10 +927,20 @@ export class PluginManager extends EventEmitter {
     
     // 清理侧边栏按钮
     if (instance && instance.sidebarButton) {
-      this.sidebarButtons.delete(instance.sidebarButton.id);
-      console.log(`  ✅ 移除侧边栏按钮: ${instance.sidebarButton.title}`);
-      this.emit('sidebar-button:unregistered', { pluginId, buttonId: instance.sidebarButton.id });
+      const buttonId = instance.sidebarButton.id;
+      const buttonTitle = instance.sidebarButton.title;
+      
+      // 立即从管理器中移除
+      this.sidebarButtons.delete(buttonId);
       instance.sidebarButton = undefined;
+      
+      console.log(`  ✅ 移除侧边栏按钮: ${buttonTitle} (${buttonId})`);
+      
+      // 触发注销事件
+      this.emit('sidebar-button:unregistered', { pluginId, buttonId });
+      
+      // 额外触发一个通用的UI更新事件
+      this.emit('plugin:ui-update', { pluginId, type: 'sidebar-button-removed' });
     }
     
     // 触发清理事件

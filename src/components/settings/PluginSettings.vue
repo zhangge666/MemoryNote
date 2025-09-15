@@ -37,6 +37,7 @@
               </label>
               <input
                 v-model="settingsValues[setting.key]"
+                @input="handleSettingChange(setting.key, settingsValues[setting.key])"
                 type="text"
                 :placeholder="setting.placeholder"
                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-700"
@@ -53,6 +54,7 @@
               </label>
               <input
                 v-model.number="settingsValues[setting.key]"
+                @input="handleSettingChange(setting.key, settingsValues[setting.key])"
                 type="number"
                 :min="setting.min"
                 :max="setting.max"
@@ -76,6 +78,7 @@
               </div>
               <input
                 v-model="settingsValues[setting.key]"
+                @change="handleSettingChange(setting.key, settingsValues[setting.key])"
                 type="checkbox"
                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
@@ -88,6 +91,7 @@
               </label>
               <select
                 v-model="settingsValues[setting.key]"
+                @change="handleSettingChange(setting.key, settingsValues[setting.key])"
                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-700"
               >
                 <option
@@ -130,14 +134,15 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ setting.label || setting.name }}: {{ settingsValues[setting.key] }}
               </label>
-              <input
-                v-model.number="settingsValues[setting.key]"
-                type="range"
-                :min="setting.min"
-                :max="setting.max"
-                :step="setting.step"
-                class="mt-1 block w-full"
-              />
+                <input
+                  v-model.number="settingsValues[setting.key]"
+                  @input="handleSettingChange(setting.key, settingsValues[setting.key])"
+                  type="range"
+                  :min="setting.min"
+                  :max="setting.max"
+                  :step="setting.step"
+                  class="mt-1 block w-full"
+                />
               <p v-if="setting.description" class="text-xs text-gray-500 dark:text-gray-400">
                 {{ setting.description }}
               </p>
@@ -228,32 +233,18 @@ function loadPluginSettings() {
   }
 }
 
-// 保存设置
-async function saveSettings() {
+// 移除了批量保存方法，现在设置实时保存
+
+// 处理设置变化 - 实时保存
+async function handleSettingChange(key: string, value: any) {
   if (!plugin.value) return;
   
   try {
-    // 保存每个设置项
-    for (const [key, value] of Object.entries(settingsValues.value)) {
-      if (plugin.value.api) {
-        await plugin.value.api.settings.set(key, value);
-      }
-    }
-    
     // 通知插件设置已更改
-    for (const [key, value] of Object.entries(settingsValues.value)) {
-      try {
-        await plugin.value.plugin.onSettingChange(key, value);
-      } catch (error) {
-        console.error(`通知插件设置变更失败 [${key}]:`, error);
-      }
-    }
-    
-    console.log('插件设置已保存:', props.pluginId);
-    
+    await plugin.value.plugin.onSettingChange(key, value);
+    console.log(`✅ 插件设置已更新: ${key} = ${value}`);
   } catch (error) {
-    console.error('保存插件设置失败:', error);
-    throw error;
+    console.error(`❌ 插件设置更新失败 [${key}]:`, error);
   }
 }
 
@@ -263,7 +254,10 @@ function resetSettings() {
   
   const values: Record<string, any> = {};
   settingsItems.value.forEach(item => {
-    values[item.key] = item.default;
+    const defaultValue = item.default ?? item.value;
+    values[item.key] = defaultValue;
+    // 实时保存重置的值
+    handleSettingChange(item.key, defaultValue);
   });
   settingsValues.value = values;
 }
@@ -277,13 +271,24 @@ watch(() => plugin.value, () => {
   loadPluginSettings();
 });
 
+// 监听插件设置更新事件
+watch(() => plugin.value?.settings, () => {
+  if (plugin.value) {
+    // 当插件设置更新时，重新加载设置值
+    const values: Record<string, any> = {};
+    settingsItems.value.forEach(item => {
+      values[item.key] = plugin.value?.settings[item.key] ?? item.value ?? item.default;
+    });
+    settingsValues.value = values;
+  }
+}, { deep: true });
+
 onMounted(() => {
   loadPluginSettings();
 });
 
 // 暴露方法给父组件
 defineExpose({
-  saveSettings,
   resetSettings
 });
 </script>

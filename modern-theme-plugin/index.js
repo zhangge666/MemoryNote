@@ -55,7 +55,7 @@ class ModernThemePlugin {
     this.currentTheme = 'nord-dark';
     this.api = null;
     this.settings = {
-      selectedTheme: 'nord-dark',
+      selectedTheme: 'system-default', // 默认不覆盖系统主题
       autoSwitchTime: false,
       lightThemeTime: '06:00',
       darkThemeTime: '18:00',
@@ -74,10 +74,13 @@ class ModernThemePlugin {
         description: '选择要应用的主题',
         type: 'select',
         value: this.settings.selectedTheme,
-        options: Object.keys(this.themes).map(key => ({
-          value: key,
-          label: this.themes[key].name
-        }))
+        options: [
+          { value: 'system-default', label: '系统默认主题' },
+          ...Object.keys(this.themes).map(key => ({
+            value: key,
+            label: this.themes[key].name
+          }))
+        ]
       },
       {
         key: 'autoSwitchTime',
@@ -129,13 +132,17 @@ class ModernThemePlugin {
     return '主题设置';
   }
 
-  onSettingChange(key, value) {
+  async onSettingChange(key, value) {
     console.log(`🎨 [现代主题] 设置更改: ${key} = ${value}`);
     this.settings[key] = value;
     
-    // 保存设置
-    if (this.api && this.api.storage) {
-      this.api.storage.setItem('modern-theme-settings', JSON.stringify(this.settings));
+    // 保存设置 - 使用插件设置API
+    if (this.api && this.api.settings) {
+      try {
+        await this.api.settings.set(key, value);
+      } catch (error) {
+        console.error('🎨 [现代主题] 保存设置失败:', error);
+      }
     }
     
     // 应用更改
@@ -176,8 +183,14 @@ class ModernThemePlugin {
     // 注册主题
     this.registerThemes();
     
-    // 应用当前主题
-    this.applyTheme(this.settings.selectedTheme);
+    // 只有在用户明确选择了非默认主题时才应用
+    // 避免插件启用时覆盖系统主题
+    if (this.settings.selectedTheme && this.settings.selectedTheme !== 'system-default') {
+      console.log(`🎨 [现代主题] 恢复用户选择的主题: ${this.settings.selectedTheme}`);
+      this.applyTheme(this.settings.selectedTheme);
+    } else {
+      console.log('🎨 [现代主题] 保持系统默认主题');
+    }
     
     // 启动自动切换（如果启用）
     if (this.settings.autoSwitchTime) {
@@ -212,19 +225,25 @@ class ModernThemePlugin {
     // 重置为默认主题
     this.resetToDefaultTheme();
     
-    // 注销侧边栏按钮
+    // 注销侧边栏按钮（插件管理器会自动清理，这里手动清理确保及时性）
     if (this.api && this.api.sidebar) {
-      this.api.sidebar.unregisterButton();
+      try {
+        this.api.sidebar.unregisterButton();
+      } catch (error) {
+        console.warn('🎨 [现代主题] 注销侧边栏按钮时出错:', error);
+      }
     }
   }
 
   async loadSettings() {
-    if (this.api && this.api.storage) {
+    if (this.api && this.api.settings) {
       try {
-        const saved = await this.api.storage.getItem('modern-theme-settings');
-        if (saved) {
-          this.settings = { ...this.settings, ...JSON.parse(saved) };
+        // 使用插件设置API加载各个设置项
+        for (const key of Object.keys(this.settings)) {
+          const value = await this.api.settings.get(key, this.settings[key]);
+          this.settings[key] = value;
         }
+        console.log('🎨 [现代主题] 设置加载完成:', this.settings);
       } catch (error) {
         console.warn('🎨 [现代主题] 加载设置失败:', error);
       }
@@ -366,6 +385,13 @@ class ModernThemePlugin {
   }
 
   applyTheme(themeKey) {
+    // 处理系统默认主题
+    if (themeKey === 'system-default') {
+      console.log('🎨 [现代主题] 恢复系统默认主题');
+      this.resetToDefaultTheme();
+      return;
+    }
+
     const theme = this.themes[themeKey];
     if (!theme) {
       console.warn(`🎨 [现代主题] 主题不存在: ${themeKey}`);
@@ -394,6 +420,17 @@ class ModernThemePlugin {
 
   generateCSSVariables(theme) {
     return {
+      // 应用程序使用的CSS变量名称
+      '--primary-color': theme.colors.primary,
+      '--primary-700': theme.colors.primary, // 稍深的主色调
+      '--accent-color': theme.colors.accent,
+      '--background-color': theme.colors.background,
+      '--surface-color': theme.colors.surface,
+      '--text-color': theme.colors.text,
+      '--text-muted': theme.colors.secondary,
+      '--border-color': theme.colors.secondary,
+      
+      // 插件专用变量（保持兼容性）
       '--theme-primary': theme.colors.primary,
       '--theme-secondary': theme.colors.secondary,
       '--theme-accent': theme.colors.accent,
@@ -406,15 +443,40 @@ class ModernThemePlugin {
 
   applyCSSVariables(vars) {
     const root = document.documentElement;
+    console.log('🎨 [现代主题] 应用CSS变量:', vars);
+    
     Object.keys(vars).forEach(key => {
       root.style.setProperty(key, vars[key]);
+      console.log(`  ✅ ${key}: ${vars[key]}`);
     });
+    
+    // 验证变量是否已应用
+    setTimeout(() => {
+      console.log('🔍 [现代主题] 验证CSS变量应用:');
+      console.log('  --primary-color:', getComputedStyle(root).getPropertyValue('--primary-color'));
+      console.log('  --background-color:', getComputedStyle(root).getPropertyValue('--background-color'));
+      console.log('  --text-color:', getComputedStyle(root).getPropertyValue('--text-color'));
+    }, 100);
   }
 
   applyThemeClass(type) {
     const body = document.body;
+    const html = document.documentElement;
+    
+    // 移除旧的主题类
     body.classList.remove('theme-light', 'theme-dark');
+    
+    // 添加新的主题类
     body.classList.add(`theme-${type}`);
+    
+    // 同步Tailwind的dark模式类
+    if (type === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+    
+    console.log(`🎨 [现代主题] 应用主题类: theme-${type}, dark模式: ${type === 'dark'}`);
   }
 
   getBorderRadiusValue() {
@@ -441,20 +503,38 @@ class ModernThemePlugin {
   }
 
   showQuickThemeSwitcher() {
-    // 显示快速主题切换器（可以是下拉菜单或模态框）
+    // 显示快速主题切换器
     console.log('🎨 [现代主题] 显示快速主题切换器');
     
-    if (this.api && this.api.ui && this.api.ui.showContextMenu) {
-      const themeOptions = Object.keys(this.themes).map(key => ({
-        label: this.themes[key].name,
-        icon: '<div class="w-3 h-3 rounded-full" style="background-color: ' + this.themes[key].colors.primary + '"></div>',
-        onClick: () => {
-          this.applyTheme(key);
-          this.onSettingChange('selectedTheme', key);
-        }
-      }));
-      
-      this.api.ui.showContextMenu(themeOptions);
+    // 获取所有可用主题（排除系统默认）
+    const themeKeys = Object.keys(this.themes);
+    let nextTheme;
+    let themeName;
+    
+    if (this.settings.selectedTheme === 'system-default') {
+      // 如果当前是系统默认，切换到第一个主题
+      nextTheme = themeKeys[0];
+      themeName = this.themes[nextTheme]?.name;
+      console.log(`🎨 [现代主题] 从系统默认主题切换到 ${themeName}`);
+    } else {
+      // 在主题间循环切换
+      const currentIndex = themeKeys.indexOf(this.settings.selectedTheme);
+      const nextIndex = (currentIndex + 1) % themeKeys.length;
+      nextTheme = themeKeys[nextIndex];
+      themeName = this.themes[nextTheme]?.name;
+      console.log(`🎨 [现代主题] 从 ${this.themes[this.settings.selectedTheme]?.name} 切换到 ${themeName}`);
+    }
+    
+    // 应用下一个主题
+    this.applyTheme(nextTheme);
+    this.onSettingChange('selectedTheme', nextTheme);
+    
+    // 显示通知
+    if (this.api && this.api.workspace && this.api.workspace.showNotification) {
+      this.api.workspace.showNotification(
+        `已切换到主题: ${themeName}`,
+        'success'
+      );
     }
   }
 
@@ -529,12 +609,18 @@ class ModernThemePlugin {
     // 重置为系统默认主题
     const root = document.documentElement;
     const body = document.body;
+    const html = document.documentElement;
     
     // 移除所有主题相关的CSS变量和类
     body.classList.remove('theme-light', 'theme-dark');
     
-    // 清除CSS变量
+    // 清除所有插件设置的CSS变量
     const varsToRemove = [
+      // 应用程序变量
+      '--primary-color', '--primary-700', '--accent-color',
+      '--background-color', '--surface-color', '--text-color',
+      '--text-muted', '--border-color',
+      // 插件变量
       '--theme-primary', '--theme-secondary', '--theme-accent',
       '--theme-background', '--theme-surface', '--theme-text',
       '--theme-border-radius', '--theme-transition-duration'
@@ -544,7 +630,8 @@ class ModernThemePlugin {
       root.style.removeProperty(varName);
     });
     
-    console.log('🎨 [现代主题] 已重置为默认主题');
+    // 不要移除 html.dark 类，让系统主题控制
+    console.log('🎨 [现代主题] 已重置为系统默认主题');
   }
 }
 

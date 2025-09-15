@@ -197,6 +197,13 @@ const visiblePluginButtons = computed(() => {
     
     return registeredButtons
       .filter(button => {
+        // 安全检查：只显示启用插件的按钮
+        const pluginInstance = manager.getPlugin(button.pluginId);
+        if (!pluginInstance || pluginInstance.status !== 'enabled') {
+          console.log(`🔒 过滤掉未启用插件的按钮: ${button.pluginId} (状态: ${pluginInstance?.status || 'not found'})`);
+          return false;
+        }
+        
         // 检查设置中是否允许显示（默认为true）
         return sidebarSettings[button.pluginId] !== false;
       })
@@ -255,6 +262,26 @@ function handlePluginButtonClick(button: any) {
     const manager = pluginsStore.pluginManager;
     if (!manager) {
       console.warn('插件管理器不可用');
+      return;
+    }
+    
+    // 安全检查：确认插件仍然是启用状态
+    const pluginInstance = manager.getPlugin(button.pluginId);
+    if (!pluginInstance) {
+      console.error(`🚫 插件 ${button.pluginId} 不存在，拒绝执行按钮操作`);
+      return;
+    }
+    
+    if (pluginInstance.status !== 'enabled') {
+      console.error(`🚫 插件 ${button.pluginId} 未启用 (状态: ${pluginInstance.status})，拒绝执行按钮操作`);
+      // 触发UI更新以移除过时的按钮
+      pluginPagesUpdateTrigger.value++;
+      return;
+    }
+    
+    // 验证API实例存在
+    if (!pluginInstance.api) {
+      console.error(`🚫 插件 ${button.pluginId} API实例不存在，拒绝执行按钮操作`);
       return;
     }
     
@@ -333,6 +360,12 @@ watch(() => pluginsStore.isManagerReady, (isReady) => {
     });
     
     manager.on('sidebar-button:updated', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    // 监听插件UI更新事件
+    manager.on('plugin:ui-update', (event) => {
+      console.log('🔄 插件UI更新事件:', event);
       pluginPagesUpdateTrigger.value++;
     });
     

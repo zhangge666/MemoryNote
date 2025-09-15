@@ -74,24 +74,10 @@
     <!-- 右侧内容区域 -->
     <div class="flex-1 flex flex-col">
       <!-- 顶部操作栏 -->
-      <div class="bg-white dark:bg-dark-800 border-b border-gray-200 dark:border-dark-600 px-6 py-4 flex items-center justify-between">
+      <div class="bg-white dark:bg-dark-800 border-b border-gray-200 dark:border-dark-600 px-6 py-4">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
           {{ currentCategoryTitle }}
         </h2>
-        <div class="flex items-center space-x-2">
-          <button
-            @click="resetCurrentSettings"
-            class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
-          >
-            重置
-          </button>
-          <button
-            @click="saveCurrentSettings"
-            class="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-          >
-            保存
-          </button>
-        </div>
       </div>
       
       <!-- 设置内容 -->
@@ -234,17 +220,8 @@ function handleOpenPluginSettings(pluginId: string) {
   activeCategory.value = `plugin-${pluginId}`;
 }
 
-// 重置当前设置
-function resetCurrentSettings() {
-  // TODO: 实现重置逻辑
-  console.log('重置设置:', activeCategory.value);
-}
-
-// 保存当前设置
-function saveCurrentSettings() {
-  // TODO: 实现保存逻辑
-  console.log('保存设置:', activeCategory.value);
-}
+// 删除了多余的重置和保存方法
+// 插件设置现在由插件自己实时管理
 
 onMounted(async () => {
   // 初始化插件系统
