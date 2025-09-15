@@ -18,6 +18,12 @@ const routes: RouteRecordRaw[] = [
     props: true,
   },
   {
+    path: '/note-editor',
+    name: 'NoteEditorGeneric',
+    component: NoteEditor,
+    props: true,
+  },
+  {
     path: '/review',
     name: 'ReviewCenter',
     component: ReviewCenter,

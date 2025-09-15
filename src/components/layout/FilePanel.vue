@@ -240,6 +240,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFilesStore } from '../../stores/files';
+import { useTabManagerStore } from '../../stores/tabManager';
 import { useAppStore } from '../../stores/app';
 import type { FileItem, TreeNode } from '../../stores/files';
 import TreeNodeComponent from '../ui/TreeNode.vue';
@@ -247,6 +248,7 @@ import ContextMenu from '../ui/ContextMenu.vue';
 
 const router = useRouter();
 const filesStore = useFilesStore();
+const tabManager = useTabManagerStore();
 const appStore = useAppStore();
 
 // 响应式状态
@@ -518,7 +520,7 @@ async function confirmRename() {
     
     // 更新标签页信息（如果该文件已在标签页中打开）
     if (renamingItem.value.isFile) {
-      appStore.updateFilePathInTabs(oldPath, newPath, finalName);
+      tabManager.updateFilePathInTabs(oldPath, newPath, finalName);
     }
     
     await filesStore.refreshTree();
@@ -553,13 +555,12 @@ async function openFile(file: FileItem) {
     // 获取文件名（不含扩展名）作为标签标题
     const fileName = file.name.replace(/\.(md|markdown)$/i, '');
     
-    // 创建或激活标签页 - 使用安全的Unicode Base64编码
-    const tabId = btoa(encodeURIComponent(file.path)).replace(/[+=\/]/g, ''); // 先URI编码再base64编码
-    appStore.openTab({
-      id: tabId,
+    // 创建或激活标签页
+    tabManager.openTab({
       title: fileName,
       type: 'note',
-      filePath: file.path // 保存原始文件路径
+      filePath: file.path,
+      route: '/note-editor'
     });
     
     // 导航到笔记编辑页面

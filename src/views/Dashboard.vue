@@ -225,7 +225,7 @@ import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../stores/notes';
 import { useReviewsStore } from '../stores/reviews';
 import { useSettingsStore } from '../stores/settings';
-import { useAppStore } from '../stores/app';
+import { useTabManagerStore } from '../stores/tabManager';
 import type { Note } from '../database/DatabaseManager';
 
 const { t } = useI18n();
@@ -233,7 +233,7 @@ const router = useRouter();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
 const settingsStore = useSettingsStore();
-const appStore = useAppStore();
+const tabManager = useTabManagerStore();
 
 // 计算属性
 const totalNotes = computed(() => notesStore.notes.length);
@@ -278,10 +278,11 @@ function getPreviewText(content: string): string {
 
 function openNote(note: Note) {
   notesStore.setCurrentNote(note);
-  appStore.openTab({
-    id: note.id!.toString(),
+  tabManager.openTab({
     title: note.title,
-    type: 'note'
+    type: 'note',
+    filePath: `note-${note.id}.md`,
+    route: `/note/${note.id}`
   });
   router.push(`/note/${note.id}`);
 }

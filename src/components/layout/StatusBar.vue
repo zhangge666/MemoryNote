@@ -105,6 +105,7 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
+import { useTabManagerStore } from '../../stores/tabManager';
 import { useAppStore } from '../../stores/app';
 import { useFilesStore } from '../../stores/files';
 import { useSettingsStore } from '../../stores/settings';
@@ -113,9 +114,10 @@ const { t } = useI18n();
 const route = useRoute();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
-const appStore = useAppStore();
+const tabManager = useTabManagerStore();
 const filesStore = useFilesStore();
 const settingsStore = useSettingsStore();
+const appStore = useAppStore();
 
 // 响应式状态
 const syncStatus = ref<'synced' | 'syncing' | 'error' | 'offline'>('synced');
@@ -138,7 +140,7 @@ const totalFiles = computed(() => {
   return filesStore.flattenedTree.filter(node => !node.isDirectory).length;
 });
 const dueReviewsCount = computed(() => reviewsStore.dueReviews.length);
-const openTabsCount = computed(() => appStore.openTabs.length);
+const openTabsCount = computed(() => tabManager.totalTabCount);
 
 // 计算属性 - 工作区状态
 const workspaceStatus = computed(() => {

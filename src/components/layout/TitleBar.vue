@@ -30,21 +30,6 @@
           <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
         </svg>
       </button>
-      
-      <!-- 分屏模式切换按钮 -->
-      <button
-        @click="toggleSplitMode"
-        class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-        :class="{ 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300': isSplitModeEnabled }"
-        :title="isSplitModeEnabled ? '关闭分屏模式' : '启用分屏模式'"
-      >
-        <svg v-if="!isSplitModeEnabled" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M3 3h8v18H3V3zm10 0h8v18h-8V3z"/>
-        </svg>
-        <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M3 3h18v18H3V3z"/>
-        </svg>
-      </button>
     </div>
     
     <!-- 中间：标题 -->
@@ -141,23 +126,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAppStore } from '../../stores/app';
 import { useSettingsStore } from '../../stores/settings';
-import { useSplitPanesStore } from '../../stores/splitPanes';
 
 const route = useRoute();
 const { t } = useI18n();
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
-const splitPanesStore = useSplitPanesStore();
 
 const showUserMenu = ref(false);
-
-// 获取标签页管理器引用（从父组件注入）
-const getTabManager = inject<() => any>('getTabManager', () => null);
 
 // 计算属性
 const currentTitle = computed(() => {
@@ -179,10 +159,6 @@ const userInitial = computed(() => {
   return settingsStore.userName.charAt(0).toUpperCase();
 });
 
-const isSplitModeEnabled = computed(() => {
-  return splitPanesStore.splitEnabled;
-});
-
 // 方法
 function toggleFilePanel() {
   appStore.toggleFilePanel();
@@ -195,24 +171,6 @@ function toggleRightSidebar() {
 function toggleSearch() {
   // TODO: 实现搜索面板切换
   console.log('切换搜索面板');
-}
-
-function toggleSplitMode() {
-  const tabManager = getTabManager();
-  if (tabManager) {
-    if (isSplitModeEnabled.value) {
-      tabManager.disableSplitMode();
-    } else {
-      tabManager.enableSplitMode();
-    }
-  } else {
-    // 直接使用store
-    if (isSplitModeEnabled.value) {
-      splitPanesStore.disableSplit();
-    } else {
-      splitPanesStore.enableSplit();
-    }
-  }
 }
 
 function goToPersonalSpace() {

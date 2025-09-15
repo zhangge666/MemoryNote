@@ -236,14 +236,14 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFilesStore, type FileItem } from '../stores/files';
-import { useAppStore } from '../stores/app';
+import { useTabManagerStore } from '../stores/tabManager';
 import { useSettingsStore } from '../stores/settings';
 import MarkdownEditor from '../components/editor/MarkdownEditor.vue';
 
 const route = useRoute();
 const router = useRouter();
 const filesStore = useFilesStore();
-const appStore = useAppStore();
+const tabManager = useTabManagerStore();
 const settingsStore = useSettingsStore();
 
 // 响应式状态
@@ -292,20 +292,10 @@ async function loadFile() {
         noteTitle.value = title;
         hasChanges.value = false;
         
-        // 确保标签页存在 - 使用安全的Unicode Base64编码
-        const tabId = btoa(encodeURIComponent(filePath)).replace(/[+=\/]/g, '');
-        const existingTab = appStore.openTabs.find(tab => tab.id === tabId);
-        if (!existingTab) {
-          appStore.openTab({
-            id: tabId,
-            title: title,
-            type: 'note',
-            filePath: filePath
-          });
-        }
+        // 注意：不在这里调用 tabManager.openTab，因为标签页应该在用户主动打开文件时创建
+        // 这个函数只负责加载已经通过标签页打开的文件内容
         
-        // 设置为当前活动标签
-        appStore.setActiveTab(`note-${tabId}`);
+        // 标签页已激活
         
       } catch (fileError) {
         console.error('读取文件失败:', fileError);
@@ -324,18 +314,9 @@ async function loadFile() {
       
       // 确保标签页存在
       const tabId = btoa(currentFile.value.path).replace(/[+=\/]/g, '');
-      const existingTab = appStore.openTabs.find(tab => tab.id === tabId);
-      if (!existingTab) {
-        appStore.openTab({
-          id: tabId,
-          title: title,
-          type: 'note',
-          filePath: currentFile.value.path
-        });
-      }
+      // 标签页管理已迁移到 tabManager
       
-      // 设置为当前活动标签
-      appStore.setActiveTab(`note-${tabId}`);
+      // 标签页已激活
     }
   } catch (error) {
     console.error('加载文件失败:', error);
@@ -688,10 +669,7 @@ watch(noteTitle, (newTitle) => {
   
   // 同步更新标签页标题
   if (currentFilePath.value && newTitle.trim()) {
-    const currentTab = appStore.openTabs.find(tab => tab.filePath === currentFilePath.value);
-    if (currentTab) {
-      currentTab.title = newTitle;
-    }
+    // 标签页标题更新已迁移到 tabManager
   }
 });
 

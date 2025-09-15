@@ -45,9 +45,9 @@
       <main class="main-work-area flex-1 flex flex-col overflow-hidden min-w-0">
         <!-- 主内容容器 -->
         <div class="flex-1 flex overflow-hidden">
-          <!-- 通用标签页管理器 -->
+          <!-- 多标签页管理器 -->
           <div class="flex-1 overflow-hidden">
-            <UniversalTabManager ref="tabManagerRef" />
+            <MultiTabManager ref="tabManagerRef" />
           </div>
           
           <!-- 主工作区插件挂载区域 -->
@@ -99,17 +99,21 @@ import TitleBar from './components/layout/TitleBar.vue';
 import Sidebar from './components/layout/Sidebar.vue';
 import FilePanel from './components/layout/FilePanel.vue';
 import StatusBar from './components/layout/StatusBar.vue';
-import UniversalTabManager from './components/layout/UniversalTabManager.vue';
+import MultiTabManager from './components/layout/MultiTabManager.vue';
 import ResizeHandle from './components/ui/ResizeHandle.vue';
 import RightSidebar from './components/layout/RightSidebar.vue';
 import PluginMountArea from './components/plugins/PluginMountArea.vue';
 import { useSettingsStore } from './stores/settings';
 import { useAppStore } from './stores/app';
 import { usePluginsStore } from './stores/plugins';
+import { useTabManagerStore } from './stores/tabManager';
+import { useRouter } from 'vue-router';
 
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
 const pluginsStore = usePluginsStore();
+const tabManager = useTabManagerStore();
+const router = useRouter();
 
 // 检查是否有主工作区插件
 const hasMainAreaPlugins = computed(() => {
@@ -213,6 +217,9 @@ onMounted(async () => {
   // 应用主题
   applyTheme();
   
+  // 恢复标签页布局
+  await restoreTabsOnStartup();
+  
   // 初始化插件系统
   try {
     await pluginsStore.initialize();
@@ -270,6 +277,80 @@ function applyTheme() {
     } else {
       htmlElement.classList.remove('dark');
     }
+  }
+}
+
+// 恢复标签页布局并导航到活动标签页
+async function restoreTabsOnStartup() {
+  try {
+    console.log('🔄 开始恢复标签页布局...');
+    
+    // 加载保存的标签页布局
+    tabManager.loadLayout();
+    
+    // 检查是否有活动的标签页
+    const activeTab = tabManager.activeTab;
+    const totalTabs = tabManager.totalTabCount;
+    
+    console.log('📊 标签页恢复状态:', {
+      totalTabs,
+      activeTab: activeTab?.title,
+      activeTabRoute: activeTab?.route
+    });
+    
+    if (activeTab && activeTab.route) {
+      // 如果有活动标签页，导航到该标签页
+      console.log('✅ 恢复到活动标签页:', activeTab.title);
+      
+      // 根据标签页类型构造路由参数
+      if (activeTab.type === 'note' && activeTab.filePath) {
+        const fileName = activeTab.title + '.md';
+        await router.push({
+          path: activeTab.route,
+          query: { 
+            filePath: activeTab.filePath,
+            fileName: fileName
+          }
+        });
+      } else {
+        await router.push(activeTab.route);
+      }
+    } else if (totalTabs === 0) {
+      // 如果没有任何标签页，导航到仪表盘并创建仪表盘标签页
+      console.log('📋 没有标签页，创建仪表盘标签页');
+      
+      tabManager.openTab({
+        title: '仪表盘',
+        type: 'dashboard',
+        route: '/'
+      });
+      
+      await router.push('/');
+    } else {
+      // 有标签页但没有活动标签页，激活第一个标签页
+      const firstTabWithPane = tabManager.allTabs[0];
+      if (firstTabWithPane) {
+        console.log('🔄 激活第一个标签页:', firstTabWithPane.title);
+        tabManager.setActiveTab(firstTabWithPane.id, firstTabWithPane.paneId);
+        
+        if (firstTabWithPane.type === 'note' && firstTabWithPane.filePath) {
+          const fileName = firstTabWithPane.title + '.md';
+          await router.push({
+            path: firstTabWithPane.route,
+            query: { 
+              filePath: firstTabWithPane.filePath,
+              fileName: fileName
+            }
+          });
+        } else if (firstTabWithPane.route) {
+          await router.push(firstTabWithPane.route);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ 标签页恢复失败:', error);
+    // 恢复失败时，默认导航到仪表盘
+    await router.push('/');
   }
 }
 

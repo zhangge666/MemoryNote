@@ -4,8 +4,8 @@
     <nav class="flex-1 p-2">
       <div class="space-y-1">
         <!-- 文档 -->
-        <router-link
-          to="/"
+        <button
+          @click="openDashboard"
           class="nav-icon-item"
           :class="{ 'nav-icon-item-active': isDocumentSection }"
           :title="t('nav.documents')"
@@ -15,7 +15,7 @@
             <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 014 11.5V5zM7.5 10a.5.5 0 01.5-.5h4a.5.5 0 010 1H8a.5.5 0 01-.5-.5zm.5-2.5a.5.5 0 000 1h4a.5.5 0 000-1H8z" clip-rule="evenodd"/>
           </svg>
           <span v-if="notesCount > 0" class="nav-icon-badge">{{ notesCount }}</span>
-        </router-link>
+        </button>
         
         <!-- 订阅 -->
         <button class="nav-icon-item" @click="showSubscriptions" :title="t('nav.subscriptions')">
@@ -25,8 +25,8 @@
         </button>
         
         <!-- 复习计划 -->
-        <router-link
-          to="/review"
+        <button
+          @click="openReview"
           class="nav-icon-item"
           :class="{ 'nav-icon-item-active': $route.name === 'ReviewCenter' }"
           :title="t('nav.review')"
@@ -35,7 +35,7 @@
             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
           </svg>
           <span v-if="dueReviewsCount > 0" class="nav-icon-badge bg-red-500 text-white">{{ dueReviewsCount }}</span>
-        </router-link>
+        </button>
         
         <!-- 日记 -->
         <button class="nav-icon-item" @click="showDiary" :title="t('nav.diary')">
@@ -47,10 +47,10 @@
         
         <!-- 插件页面 -->
         <template v-if="pluginPages.length > 0">
-          <router-link
+          <button
             v-for="page in pluginPages"
             :key="page.id"
-            :to="`/plugin/${page.id}`"
+            @click="openPluginPage(page)"
             class="nav-icon-item"
             :class="{ 'nav-icon-item-active': $route.params.pageId === page.id }"
             :title="page.title"
@@ -59,7 +59,7 @@
             <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
             </svg>
-          </router-link>
+          </button>
         </template>
 
         <!-- 插件功能按钮 -->
@@ -109,8 +109,8 @@
     
     <!-- 底部设置按钮 -->
     <div class="p-2 border-t border-gray-200 dark:border-dark-600">
-      <router-link
-        to="/settings"
+      <button
+        @click="openSettings"
         class="nav-icon-item"
         :class="{ 'nav-icon-item-active': $route.name === 'Settings' }"
         :title="t('nav.settings')"
@@ -118,7 +118,7 @@
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
         </svg>
-      </router-link>
+      </button>
     </div>
   </div>
 </template>
@@ -131,7 +131,7 @@ import { useAppStore } from '../../stores/app';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
 import { usePluginsStore } from '../../stores/plugins';
-import { useSplitPanesStore } from '../../stores/splitPanes';
+import { useTabManagerStore } from '../../stores/tabManager';
 
 const router = useRouter();
 const route = useRoute();
@@ -140,7 +140,7 @@ const appStore = useAppStore();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
 const pluginsStore = usePluginsStore();
-const splitPanesStore = useSplitPanesStore();
+const tabManager = useTabManagerStore();
 
 // 获取标签页管理器引用
 const getTabManager = inject<() => any>('getTabManager', () => null);
@@ -221,21 +221,70 @@ const visiblePluginButtons = computed(() => {
 
 // 通用标签页打开函数
 function openUniversalTab(tab: { id: string; title: string; type: string; filePath?: string; route?: string }) {
-  const tabManager = getTabManager();
+  console.log('🔧 openUniversalTab 调用:', tab);
   
-  if (tabManager && tabManager.useSplitPanes.value) {
-    // 分屏模式：在当前活动面板中打开
-    const activePaneId = splitPanesStore.activePaneId || 'main';
-    splitPanesStore.openTabInPane(activePaneId, tab);
-  } else {
-    // 传统模式：使用appStore
-    appStore.openTab(tab);
-  }
+  // 使用新的标签页管理器
+  tabManager.openTab({
+    title: tab.title,
+    type: tab.type as any,
+    filePath: tab.filePath,
+    route: tab.route
+  });
   
   // 导航到对应路由
   if (tab.route) {
     router.push(tab.route);
   }
+}
+
+// 打开仪表盘
+function openDashboard() {
+  openUniversalTab({
+    id: 'dashboard',
+    title: '仪表盘',
+    type: 'dashboard',
+    route: '/'
+  });
+}
+
+// 打开复习中心
+function openReview() {
+  openUniversalTab({
+    id: 'review',
+    title: '复习中心',
+    type: 'review',
+    route: '/review'
+  });
+}
+
+// 打开设置
+function openSettings() {
+  openUniversalTab({
+    id: 'settings',
+    title: '设置',
+    type: 'settings',
+    route: '/settings'
+  });
+}
+
+// 打开插件页面
+function openPluginPage(page: any) {
+  const tabData: any = {
+    id: page.id,
+    title: page.title,
+    type: 'plugin',
+    route: `/plugin/${page.id}`
+  };
+  
+  // 如果有pluginId，添加到标签页数据中
+  if (page.pluginId) {
+    tabData.pluginId = page.pluginId;
+  }
+  
+  tabManager.openTab(tabData);
+  
+  // 导航到对应路由
+  router.push(tabData.route);
 }
 
 // 方法
@@ -250,14 +299,17 @@ async function createNewNote() {
     
     // 使用通用标签页系统打开新笔记
     const noteTab = {
-      id: newNote.id!.toString(),
       title: newNote.title,
       type: 'note',
       filePath: `note-${newNote.id}`,
       route: `/note/${newNote.id}`
     };
     
-    openUniversalTab(noteTab);
+    // 直接使用tabManager.openTab，不要使用openUniversalTab
+    tabManager.openTab(noteTab);
+    
+    // 导航到对应路由
+    router.push(noteTab.route);
   } catch (error) {
     console.error('创建笔记失败:', error);
   }

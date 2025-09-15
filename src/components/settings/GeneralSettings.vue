@@ -332,11 +332,13 @@ import { ref, onMounted, watch } from 'vue';
 import { useSettingsStore } from '../../stores/settings';
 import { useFilesStore } from '../../stores/files';
 import { useAppStore } from '../../stores/app';
+import { useTabManagerStore } from '../../stores/tabManager';
 import ToggleSwitch from '../ui/ToggleSwitch.vue';
 
 const settingsStore = useSettingsStore();
 const filesStore = useFilesStore();
 const appStore = useAppStore();
+const tabManager = useTabManagerStore();
 
 // 设置项
 const theme = ref('auto');
@@ -559,10 +561,7 @@ async function updateGlobalStatesAfterWorkspaceChange() {
     console.log('🧹 清理应用状态...');
     
     // 关闭所有打开的标签页
-    const tabsToClose = [...appStore.openTabs];
-    tabsToClose.forEach(tab => {
-      appStore.closeTab(`${tab.type}-${tab.id}`);
-    });
+    tabManager.closeAllTabs();
     
     // 清理当前文件和错误状态
     appStore.setCurrentFile(null);
