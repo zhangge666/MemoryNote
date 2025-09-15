@@ -2,8 +2,7 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import Dashboard from '../views/Dashboard.vue';
 import NoteEditor from '../views/NoteEditor.vue';
 import ReviewCenter from '../views/ReviewCenter.vue';
-import Settings from '../views/Settings.vue';
-import PluginManager from '../views/PluginManager.vue';
+import SettingsWindow from '../views/SettingsWindow.vue';
 import PluginPage from '../views/PluginPage.vue';
 
 const routes: RouteRecordRaw[] = [
@@ -26,12 +25,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/settings',
     name: 'Settings',
-    component: Settings,
-  },
-  {
-    path: '/plugins',
-    name: 'PluginManager',
-    component: PluginManager,
+    component: SettingsWindow,
   },
   {
     path: '/plugin/:pageId',

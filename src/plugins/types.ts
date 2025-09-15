@@ -11,6 +11,7 @@ export interface PluginPageConfig {
   component?: string; // 组件文件路径
   showInSidebar?: boolean; // 是否在侧边栏显示
   sidebarOrder?: number; // 侧边栏显示顺序
+  mountLocation?: MountLocation; // 挂载位置
   permissions?: PluginPermission[]; // 页面所需权限
 }
 
@@ -35,14 +36,29 @@ export enum PluginStatus {
   LOADING = 'loading'
 }
 
+// 挂载位置枚举
+export enum MountLocation {
+  LEFT_SIDEBAR = 'left_sidebar',      // 左侧文件列表区域
+  MAIN_AREA = 'main_area',            // 主工作区
+  RIGHT_SIDEBAR = 'right_sidebar'     // 右侧栏
+}
+
 // 插件类型
 export enum PluginType {
-  THEME = 'theme',
-  COMMAND = 'command',
-  UI = 'ui',
-  EDITOR = 'editor',
-  UTILITY = 'utility',
-  PAGE = 'page' // 新增：页面类型插件
+  THEME = 'theme',                    // 主题插件
+  COMMAND = 'command',                // 命令插件
+  UI = 'ui',                         // UI增强插件
+  EDITOR = 'editor',                 // 编辑器插件
+  UTILITY = 'utility',               // 实用工具插件
+  PAGE = 'page',                     // 页面类型插件
+  MARKDOWN_RENDERER = 'markdown_renderer',  // Markdown渲染插件
+  WORKSPACE_ENHANCEMENT = 'workspace_enhancement', // 工作区增强插件
+  FILE_MANAGER = 'file_manager',     // 文件管理工具
+  BACKUP_TOOL = 'backup_tool',       // 备份工具插件
+  IMPORT_EXPORT = 'import_export',   // 导入导出工具
+  CODE_HIGHLIGHTER = 'code_highlighter', // 代码高亮插件
+  TASK_MANAGER = 'task_manager',     // 任务管理插件
+  NOTE_TEMPLATES = 'note_templates'   // 笔记模板插件
 }
 
 // 插件清单文件
@@ -51,17 +67,36 @@ export interface PluginManifest {
   name: string;
   version: string;
   description: string;
+  detailed_description?: string;  // 详细描述
   author: string;
   type: PluginType;
   main: string; // 主要入口文件
   permissions: PluginPermission[];
   dependencies?: string[];
-  minAppVersion: string;
+  minAppVersion?: string;
   icon?: string;
   homepage?: string;
   repository?: string;
   keywords?: string[];
-  pages?: PluginPageConfig[]; // 插件页面配置
+  screenshots?: string[];        // 截图
+  changelog?: string;            // 更新日志
+  pages?: PluginPageConfig[];    // 插件页面配置
+  sidebar_icon?: {               // 侧边栏图标配置
+    show: boolean;
+    icon?: string;
+    position?: number;
+    action?: 'default' | 'toggle_sidebar' | 'command' | 'page_navigation'; // 点击行为
+  };
+  mount_preferences?: {          // 挂载偏好设置
+    default_location: MountLocation;
+    allowed_locations: MountLocation[];
+    auto_mount?: boolean;        // 是否自动挂载
+  };
+  engines?: {                    // 引擎版本要求
+    memorynote?: string;         // 如: ">=1.0.0"
+    node?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 // 主题配置
@@ -129,6 +164,12 @@ export interface PluginAPI {
     openFile: (path: string) => Promise<void>;
     createFile: (path: string, content: string) => Promise<void>;
     showNotification: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+    getActiveEditor: () => any;
+    insertText: (text: string) => void;
+    getSelectedText: () => string;
+    replaceSelectedText: (text: string) => void;
+    getCursorPosition: () => { line: number; column: number };
+    setCursorPosition: (line: number, column: number) => void;
   };
   
   // 命令系统
@@ -167,6 +208,13 @@ export interface PluginAPI {
     getRegistered: () => PluginPageConfig[];
   };
   
+  // 侧边栏按钮系统
+  sidebar: {
+    registerButton: (button: Omit<SidebarButton, 'id' | 'pluginId'>) => string;
+    unregisterButton: () => void;
+    updateButton: (updates: Partial<Omit<SidebarButton, 'id' | 'pluginId'>>) => void;
+  };
+  
   // 设置系统
   settings: {
     get: (key: string, defaultValue?: any) => Promise<any>;
@@ -174,6 +222,33 @@ export interface PluginAPI {
     registerSection: (items: PluginSettingItem[]) => void;
   };
   
+  // 编辑器增强
+  editor: {
+    registerRenderer: (type: string, renderer: Function) => void;
+    registerStyle: (name: string, cssRules: string) => void;
+    addToolbarButton: (button: any) => void;
+    registerCodeHighlighter: (language: string, highlighter: Function) => void;
+  };
+
+  // 文件系统操作
+  fs: {
+    readFile: (path: string) => Promise<string>;
+    writeFile: (path: string, content: string) => Promise<boolean>;
+    listDirectory: (path: string) => Promise<any[]>;
+    copyFile: (src: string, dest: string) => Promise<boolean>;
+    deleteFile: (path: string) => Promise<boolean>;
+    createDirectory: (path: string) => Promise<boolean>;
+    exists: (path: string) => Promise<boolean>;
+  };
+
+  // 挂载系统
+  mount: {
+    registerComponent: (location: MountLocation, component: any) => void;
+    unregisterComponent: (location: MountLocation, componentId: string) => void;
+    unregisterAll: () => void;
+    getComponentsAt: (location: MountLocation) => any[];
+  };
+
   // 事件系统
   events: {
     on: (event: string, handler: Function) => void;
@@ -192,9 +267,12 @@ export interface Plugin {
   onEnable?(): void | Promise<void>;
   onDisable?(): void | Promise<void>;
   
-  // 插件配置
-  getSettings?(): PluginSettingItem[];
-  onSettingChange?(key: string, value: any): void | Promise<void>;
+  // 插件配置（必需）
+  getSettings(): PluginSettingItem[];
+  onSettingChange(key: string, value: any): void | Promise<void>;
+  
+  // 获取插件设置页面标题（可选，默认使用插件名称）
+  getSettingsTitle?(): string;
 }
 
 // 插件实例信息
@@ -207,6 +285,21 @@ export interface PluginInstance {
   loadedAt?: Date;
   enabledAt?: Date;
   api?: PluginAPI; // 插件启用时创建的API实例
+  mountedComponents?: Map<MountLocation, any[]>; // 挂载的组件
+  registeredStyles?: string[]; // 注册的样式ID列表
+  registeredRenderers?: Map<string, Function>; // 注册的渲染器
+  sidebarButton?: SidebarButton; // 注册的侧边栏按钮
+}
+
+// 侧边栏按钮接口
+export interface SidebarButton {
+  id: string;
+  pluginId: string;
+  title: string;
+  tooltip?: string;
+  icon?: string;
+  position?: number;
+  onClick: () => void;
 }
 
 // 插件事件

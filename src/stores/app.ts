@@ -7,6 +7,8 @@ export const useAppStore = defineStore('app', () => {
   const currentView = ref('dashboard');
   const showSidebar = ref(true);
   const showFilePanel = ref(true);
+  const showRightSidebar = ref(false);
+  const rightSidebarWidth = ref(320);
   const activeTab = ref<string | null>(null);
   const openTabs = ref<Array<{ id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }>>([]);
 
@@ -31,6 +33,14 @@ export const useAppStore = defineStore('app', () => {
 
   function toggleFilePanel() {
     showFilePanel.value = !showFilePanel.value;
+  }
+
+  function toggleRightSidebar() {
+    showRightSidebar.value = !showRightSidebar.value;
+  }
+
+  function setRightSidebarWidth(width: number) {
+    rightSidebarWidth.value = width;
   }
 
   function openTab(tab: { id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }) {
@@ -100,6 +110,8 @@ export const useAppStore = defineStore('app', () => {
     currentView,
     showSidebar,
     showFilePanel,
+    showRightSidebar,
+    rightSidebarWidth,
     activeTab,
     openTabs,
     currentFile,
@@ -110,6 +122,8 @@ export const useAppStore = defineStore('app', () => {
     setError,
     toggleSidebar,
     toggleFilePanel,
+    toggleRightSidebar,
+    setRightSidebarWidth,
     openTab,
     closeTab,
     setActiveTab,

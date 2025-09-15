@@ -1,0 +1,40 @@
+{
+  "id": "modern-theme-plugin",
+  "name": "现代主题包",
+  "version": "1.0.0",
+  "description": "提供多种现代化的主题样式",
+  "detailed_description": "这是一个现代主题插件，提供了多种精美的主题样式，包括深色模式、浅色模式和彩色主题。支持实时切换和个性化定制。",
+  "author": "MemoryNote Team",
+  "homepage": "https://github.com/memorynote/modern-theme-plugin",
+  "repository": "https://github.com/memorynote/modern-theme-plugin.git",
+  "license": "MIT",
+  "type": "theme",
+  "main": "index.js",
+  "keywords": [
+    "theme",
+    "ui",
+    "style",
+    "dark-mode",
+    "modern"
+  ],
+  "screenshots": [
+    "screenshots/dark-theme.png",
+    "screenshots/light-theme.png",
+    "screenshots/colorful-theme.png"
+  ],
+  "changelog": {
+    "1.0.0": "初始版本，支持多种现代主题"
+  },
+  "sidebar_icon": {
+    "show": true,
+    "icon": "<svg class=\"w-4 h-4\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M4 2a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 2h2v11H4V4zm6-2a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V4a2 2 0 00-2-2h-2zm0 2h2v11h-2V4zm6-2a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V4a2 2 0 00-2-2h-2zm0 2h2v11h-2V4z\" clip-rule=\"evenodd\"/></svg>",
+    "position": "top",
+    "action": "toggle_theme_panel"
+  },
+  "mount_preferences": ["right_sidebar"],
+  "permissions": ["theme", "ui", "storage"],
+  "dependencies": {},
+  "engines": {
+    "memorynote": ">=1.0.0"
+  }
+}

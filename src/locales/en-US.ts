@@ -48,6 +48,7 @@ export default {
   // Title bar
   titleBar: {
     toggleFilePanel: 'Toggle File Panel',
+    toggleRightSidebar: 'Toggle Right Sidebar',
     search: 'Search',
     minimize: 'Minimize',
     maximize: 'Maximize',

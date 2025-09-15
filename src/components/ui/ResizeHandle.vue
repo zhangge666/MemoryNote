@@ -25,6 +25,7 @@ interface Props {
   minSize?: number;
   maxSize?: number;
   currentSize?: number;
+  reverse?: boolean; // 反向拖拽，用于右侧栏
 }
 
 interface Emits {
@@ -39,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   minSize: 100,
   maxSize: 800,
   currentSize: 320,
+  reverse: false,
 });
 
 const emit = defineEmits<Emits>();
@@ -86,7 +88,13 @@ function handleResize(event: MouseEvent) {
   // 使用 requestAnimationFrame 优化性能
   rafId = requestAnimationFrame(() => {
     const currentPos = props.direction === 'horizontal' ? event.clientX : event.clientY;
-    const delta = currentPos - startPos;
+    let delta = currentPos - startPos;
+    
+    // 如果是反向拖拽（右侧栏），反转delta值
+    if (props.reverse) {
+      delta = -delta;
+    }
+    
     const newSize = startSize + delta;
     
     // 限制大小范围

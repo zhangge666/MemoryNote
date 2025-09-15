@@ -226,6 +226,76 @@ export const usePluginsStore = defineStore('plugins', () => {
     }
   }
 
+  async function uninstallPlugin(pluginId: string): Promise<boolean> {
+    if (!pluginManager.value) return false;
+
+    try {
+      // 先禁用插件
+      await disablePlugin(pluginId);
+      
+      // 然后卸载插件
+      const success = await unloadPlugin(pluginId);
+      
+      if (success) {
+        // 通过IPC删除插件文件
+        if (window.electronAPI && window.electronAPI.plugins) {
+          try {
+            await window.electronAPI.plugins.uninstallPlugin(pluginId);
+          } catch (ipcError) {
+            console.warn('删除插件文件失败:', ipcError);
+            // 即使文件删除失败，我们仍然认为卸载成功，因为插件已经从内存中移除
+          }
+        }
+      }
+      
+      return success;
+    } catch (err) {
+      console.error('卸载插件失败:', err);
+      error.value = err instanceof Error ? err.message : '卸载失败';
+      return false;
+    }
+  }
+
+  async function installPluginFromFile(file: File): Promise<boolean> {
+    if (!pluginManager.value) {
+      throw new Error('插件管理器未初始化');
+    }
+
+    try {
+      isLoading.value = true;
+      error.value = null;
+
+      // 通过IPC安装插件
+      if (!window.electronAPI || !window.electronAPI.plugins) {
+        throw new Error('Electron API 不可用');
+      }
+
+      // 将文件转换为ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      // 调用IPC方法安装插件
+      const result = await window.electronAPI.plugins.installFromBuffer(uint8Array, file.name);
+      
+      if (!result.success) {
+        throw new Error(result.message || '安装失败');
+      }
+
+      // 重新加载插件列表
+      await refreshPlugins();
+      
+      console.log('插件安装成功:', result.pluginId);
+      return true;
+
+    } catch (err) {
+      console.error('安装插件失败:', err);
+      error.value = err instanceof Error ? err.message : '安装失败';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   async function executeCommand(commandId: string): Promise<boolean> {
     if (!pluginManager.value) return false;
     return await pluginManager.value.executeCommand(commandId);
@@ -477,6 +547,8 @@ export const usePluginsStore = defineStore('plugins', () => {
     enablePlugin,
     disablePlugin,
     unloadPlugin,
+    uninstallPlugin,
+    installPluginFromFile,
     executeCommand,
     applyTheme,
     resetTheme,

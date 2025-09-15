@@ -9,10 +9,12 @@ import type {
   Shortcut,
   ThemeConfig,
   UIComponent,
-  PluginPageConfig
+  PluginPageConfig,
+  SidebarButton
 } from './types';
 import { PluginPermission, PluginType, PluginStatus } from './types';
 import { EventEmitter } from './EventEmitter';
+import { logger } from '../utils/logger';
 
 /**
  * 插件管理器 - 负责插件的加载、卸载、管理等核心功能
@@ -25,6 +27,7 @@ export class PluginManager extends EventEmitter {
   private uiComponents = new Map<string, UIComponent>();
   private pluginPages = new Map<string, { config: PluginPageConfig, component: any }>();
   private pluginSettings = new Map<string, Record<string, any>>();
+  private sidebarButtons = new Map<string, SidebarButton>(); // 存储侧边栏按钮
   private currentTheme: string = 'default';
   
   // 响应式状态
@@ -37,7 +40,7 @@ export class PluginManager extends EventEmitter {
 
   constructor(private appVersion: string) {
     super();
-    console.log('🔌 插件管理器初始化');
+    logger.system.info('插件管理器初始化', { version: appVersion });
   }
 
   /**
@@ -53,9 +56,9 @@ export class PluginManager extends EventEmitter {
       // 恢复上次启用的插件
       await this.loadEnabledPlugins();
       
-      console.log(`✅ 插件系统初始化完成，已加载 ${this.plugins.size} 个插件`);
+      logger.system.info(`插件系统初始化完成，已加载 ${this.plugins.size} 个插件`);
     } catch (error) {
-      console.error('❌ 插件系统初始化失败:', error);
+      logger.system.error('插件系统初始化失败', error);
       this.state.error = error instanceof Error ? error.message : '初始化失败';
     } finally {
       this.state.isLoading = false;
@@ -76,8 +79,9 @@ export class PluginManager extends EventEmitter {
       this.validateManifest(manifest);
       
       // 检查版本兼容性
-      if (!this.isVersionCompatible(manifest.minAppVersion)) {
-        throw new Error(`插件 ${manifest.name} 需要应用版本 ${manifest.minAppVersion} 或更高`);
+      const minVersion = manifest.minAppVersion || manifest.engines?.memorynote?.replace('>=', '').trim();
+      if (minVersion && !this.isVersionCompatible(minVersion)) {
+        throw new Error(`插件 ${manifest.name} 需要应用版本 ${minVersion} 或更高`);
       }
       
       // 加载插件主文件
@@ -97,12 +101,12 @@ export class PluginManager extends EventEmitter {
       this.plugins.set(manifest.id, instance);
       this.state.loadedPlugins.set(manifest.id, instance);
       
-      console.log(`📦 插件已加载: ${manifest.name} v${manifest.version}`);
+      logger.plugin.info(manifest.id, `插件已加载: ${manifest.name} v${manifest.version}`);
       this.emit('plugin:loaded', { type: 'loaded', pluginId: manifest.id } as PluginEvent);
       
       return instance;
     } catch (error) {
-      console.error('❌ 插件加载失败:', error);
+      logger.plugin.error('unknown', '插件加载失败', error);
       return null;
     }
   }
@@ -125,11 +129,31 @@ export class PluginManager extends EventEmitter {
     try {
       instance.status = PluginStatus.LOADING;
       
+      // 检查插件是否实现了必需的设置方法
+      if (!instance.plugin.getSettings || typeof instance.plugin.getSettings !== 'function') {
+        throw new Error('插件必须实现 getSettings() 方法才能启用');
+      }
+      
+      if (!instance.plugin.onSettingChange || typeof instance.plugin.onSettingChange !== 'function') {
+        throw new Error('插件必须实现 onSettingChange() 方法才能启用');
+      }
+      
       // 创建插件API
       const api = this.createPluginAPI(pluginId);
       
       // 存储API实例到插件实例中
       instance.api = api;
+      
+      // 初始化插件资源容器
+      if (!instance.mountedComponents) {
+        instance.mountedComponents = new Map();
+      }
+      if (!instance.registeredStyles) {
+        instance.registeredStyles = [];
+      }
+      if (!instance.registeredRenderers) {
+        instance.registeredRenderers = new Map();
+      }
       
       // 调用插件的加载方法
       await instance.plugin.onLoad(api);
@@ -146,12 +170,12 @@ export class PluginManager extends EventEmitter {
       // 保存启用状态
       await this.saveEnabledPlugins();
       
-      console.log(`✅ 插件已启用: ${instance.manifest.name}`);
+      logger.plugin.info(pluginId, `插件已启用: ${instance.manifest.name}`);
       this.emit('plugin:enabled', { type: 'enabled', pluginId } as PluginEvent);
       
       return true;
     } catch (error) {
-      console.error(`❌ 插件启用失败: ${pluginId}`, error);
+      logger.plugin.error(pluginId, '插件启用失败', error);
       instance.status = PluginStatus.ERROR;
       instance.error = error instanceof Error ? error.message : '启用失败';
       this.emit('plugin:error', { type: 'error', pluginId, payload: error } as PluginEvent);
@@ -421,18 +445,85 @@ export class PluginManager extends EventEmitter {
       
       workspace: {
         getCurrentFile: async () => {
-          // 实现获取当前文件
-          return null;
+          try {
+            const appStore = (window as any).__APP_STORE__;
+            if (appStore && appStore.currentFile) {
+              const currentFile = appStore.currentFile;
+              const content = await window.electronAPI.fs.readFile(currentFile.path);
+              return { 
+                path: currentFile.path, 
+                name: currentFile.name,
+                content: content 
+              };
+            }
+            return null;
+          } catch (error) {
+            console.error('获取当前文件失败:', error);
+            return null;
+          }
         },
         openFile: async (path: string) => {
-          // 实现打开文件
+          try {
+            const router = (window as any).__VUE_ROUTER__;
+            if (router) {
+              const encodedPath = encodeURIComponent(path);
+              await router.push(`/note/${encodedPath}`);
+            } else {
+              console.warn('路由系统不可用，无法打开文件');
+            }
+          } catch (error) {
+            console.error('打开文件失败:', error);
+          }
         },
         createFile: async (path: string, content: string) => {
-          // 实现创建文件
+          try {
+            await window.electronAPI.fs.writeFile(path, content);
+            // 刷新文件树
+            const filesStore = (window as any).__FILES_STORE__;
+            if (filesStore && filesStore.loadFileTree) {
+              await filesStore.loadFileTree();
+            }
+          } catch (error) {
+            console.error('创建文件失败:', error);
+            throw error;
+          }
         },
-        showNotification: (message: string, type = 'info') => {
-          // 实现通知显示
-          console.log(`[${type.toUpperCase()}] ${message}`);
+        showNotification: (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+          try {
+            this.showPluginNotification(message, type);
+          } catch (error) {
+            console.error('显示通知失败:', error);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+          }
+        },
+        getActiveEditor: () => {
+          return (window as any).__ACTIVE_EDITOR__ || null;
+        },
+        insertText: (text: string) => {
+          const editor = (window as any).__ACTIVE_EDITOR__;
+          if (editor && editor.insertText) {
+            editor.insertText(text);
+          }
+        },
+        getSelectedText: () => {
+          const editor = (window as any).__ACTIVE_EDITOR__;
+          return editor?.getSelectedText?.() || '';
+        },
+        replaceSelectedText: (text: string) => {
+          const editor = (window as any).__ACTIVE_EDITOR__;
+          if (editor && editor.replaceSelectedText) {
+            editor.replaceSelectedText(text);
+          }
+        },
+        getCursorPosition: () => {
+          const editor = (window as any).__ACTIVE_EDITOR__;
+          return editor?.getCursorPosition?.() || { line: 1, column: 1 };
+        },
+        setCursorPosition: (line: number, column: number) => {
+          const editor = (window as any).__ACTIVE_EDITOR__;
+          if (editor && editor.setCursorPosition) {
+            editor.setCursorPosition(line, column);
+          }
         }
       },
       
@@ -513,6 +604,57 @@ export class PluginManager extends EventEmitter {
         }
       },
       
+      sidebar: {
+        registerButton: (buttonConfig: Omit<SidebarButton, 'id' | 'pluginId'>) => {
+          const instance = this.plugins.get(pluginId);
+          if (!instance) {
+            throw new Error(`插件 ${pluginId} 未找到`);
+          }
+          
+          // 检查插件是否已经注册了侧边栏按钮
+          if (instance.sidebarButton) {
+            console.warn(`插件 ${pluginId} 已经注册了侧边栏按钮，将替换现有按钮`);
+            this.sidebarButtons.delete(instance.sidebarButton.id);
+          }
+          
+          const buttonId = `${pluginId}-sidebar-btn`;
+          const button: SidebarButton = {
+            id: buttonId,
+            pluginId,
+            ...buttonConfig
+          };
+          
+          this.sidebarButtons.set(buttonId, button);
+          instance.sidebarButton = button;
+          
+          console.log(`🔘 插件 ${pluginId} 注册侧边栏按钮:`, button.title);
+          this.emit('sidebar-button:registered', { pluginId, button });
+          
+          return buttonId;
+        },
+        
+        unregisterButton: () => {
+          const instance = this.plugins.get(pluginId);
+          if (instance && instance.sidebarButton) {
+            this.sidebarButtons.delete(instance.sidebarButton.id);
+            console.log(`🔘 插件 ${pluginId} 注销侧边栏按钮`);
+            this.emit('sidebar-button:unregistered', { pluginId, buttonId: instance.sidebarButton.id });
+            instance.sidebarButton = undefined;
+          }
+        },
+        
+        updateButton: (updates: Partial<Omit<SidebarButton, 'id' | 'pluginId'>>) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance && instance.sidebarButton) {
+            const button = { ...instance.sidebarButton, ...updates };
+            this.sidebarButtons.set(button.id, button);
+            instance.sidebarButton = button;
+            console.log(`🔘 插件 ${pluginId} 更新侧边栏按钮`);
+            this.emit('sidebar-button:updated', { pluginId, button });
+          }
+        }
+      },
+      
       settings: {
         get: async (key: string, defaultValue?: any) => {
           const settings = this.pluginSettings.get(pluginId) || {};
@@ -525,7 +667,158 @@ export class PluginManager extends EventEmitter {
           await this.savePluginSettings(pluginId, settings);
         },
         registerSection: (items) => {
-          // 实现设置界面注册
+          // TODO: 实现设置界面注册
+          console.log('注册设置界面:', items);
+        }
+      },
+
+      // 编辑器增强
+      editor: {
+        registerRenderer: (type: string, renderer: Function) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance) {
+            if (!instance.registeredRenderers) {
+              instance.registeredRenderers = new Map();
+            }
+            instance.registeredRenderers.set(type, renderer);
+            console.log(`✅ 插件 ${pluginId} 注册渲染器: ${type}`);
+          }
+        },
+        registerStyle: (name: string, cssRules: string) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance) {
+            const styleId = `plugin-${pluginId}-${name}`;
+            const existingStyle = document.getElementById(styleId);
+            
+            if (existingStyle) {
+              existingStyle.textContent = cssRules;
+            } else {
+              const style = document.createElement('style');
+              style.id = styleId;
+              style.setAttribute('data-plugin', pluginId);
+              style.textContent = cssRules;
+              document.head.appendChild(style);
+            }
+            
+            if (!instance.registeredStyles) {
+              instance.registeredStyles = [];
+            }
+            if (!instance.registeredStyles.includes(styleId)) {
+              instance.registeredStyles.push(styleId);
+            }
+            
+            console.log(`✅ 插件 ${pluginId} 注册样式: ${name}`);
+          }
+        },
+        addToolbarButton: (button: any) => {
+          console.log(`插件 ${pluginId} 添加工具栏按钮:`, button);
+        },
+        registerCodeHighlighter: (language: string, highlighter: Function) => {
+          console.log(`插件 ${pluginId} 注册代码高亮器: ${language}`);
+        }
+      },
+
+      // 文件系统操作
+      fs: {
+        readFile: async (path: string) => {
+          try {
+            return await window.electronAPI.fs.readFile(path);
+          } catch (error) {
+            console.error('读取文件失败:', error);
+            throw error;
+          }
+        },
+        writeFile: async (path: string, content: string) => {
+          try {
+            await window.electronAPI.fs.writeFile(path, content);
+            return true;
+          } catch (error) {
+            console.error('写入文件失败:', error);
+            return false;
+          }
+        },
+        listDirectory: async (path: string) => {
+          console.warn('listDirectory 功能尚未实现');
+          return [];
+        },
+        copyFile: async (src: string, dest: string) => {
+          console.warn('copyFile 功能尚未实现');
+          return false;
+        },
+        deleteFile: async (path: string) => {
+          console.warn('deleteFile 功能尚未实现');
+          return false;
+        },
+        createDirectory: async (path: string) => {
+          console.warn('createDirectory 功能尚未实现');
+          return false;
+        },
+        exists: async (path: string) => {
+          console.warn('exists 功能尚未实现');
+          return false;
+        }
+      },
+
+      // 挂载系统
+      mount: {
+        registerComponent: (location: any, component: any) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance) {
+            if (!instance.mountedComponents) {
+              instance.mountedComponents = new Map();
+            }
+            
+            let components = instance.mountedComponents.get(location);
+            if (!components) {
+              components = [];
+              instance.mountedComponents.set(location, components);
+            }
+            
+            components.push(component);
+            console.log(`✅ 插件 ${pluginId} 挂载组件到 ${location}`);
+            
+            // 触发挂载事件
+            this.emit('component:mounted', { pluginId, location, component });
+          }
+        },
+        unregisterComponent: (location: any, componentId: string) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance && instance.mountedComponents) {
+            const components = instance.mountedComponents.get(location);
+            if (components) {
+              const index = components.findIndex((c: any) => c.id === componentId);
+              if (index > -1) {
+                components.splice(index, 1);
+                console.log(`✅ 插件 ${pluginId} 卸载组件 ${componentId} 从 ${location}`);
+                
+                // 触发卸载事件
+                this.emit('component:unmounted', { pluginId, location, componentId });
+              }
+            }
+          }
+        },
+        unregisterAll: () => {
+          const instance = this.plugins.get(pluginId);
+          if (instance && instance.mountedComponents) {
+            // 遍历所有挂载位置，卸载所有组件
+            for (const [location, components] of instance.mountedComponents.entries()) {
+              for (const component of components) {
+                console.log(`🔄 插件 ${pluginId} 卸载组件 ${component.id || 'unknown'} 从 ${location}`);
+                this.emit('component:unmounted', { pluginId, location, componentId: component.id });
+              }
+            }
+            
+            // 清空所有挂载的组件
+            instance.mountedComponents.clear();
+            console.log(`✅ 插件 ${pluginId} 已卸载所有挂载的组件`);
+          }
+        },
+        getComponentsAt: (location: any) => {
+          const instance = this.plugins.get(pluginId);
+          if (instance && instance.mountedComponents) {
+            return instance.mountedComponents.get(location) || [];
+          }
+          return [];
         }
       },
       
@@ -544,10 +837,15 @@ export class PluginManager extends EventEmitter {
   }
 
   private cleanupPluginResources(pluginId: string): void {
+    console.log(`🧹 清理插件资源: ${pluginId}`);
+    
+    const instance = this.plugins.get(pluginId);
+    
     // 清理命令
     for (const [id, command] of this.commands) {
       if (id.startsWith(pluginId + ':')) {
         this.commands.delete(id);
+        console.log(`  ✅ 移除命令: ${id}`);
       }
     }
     
@@ -555,6 +853,7 @@ export class PluginManager extends EventEmitter {
     for (const [key, shortcut] of this.shortcuts) {
       if (shortcut.commandId.startsWith(pluginId + ':')) {
         this.shortcuts.delete(key);
+        console.log(`  ✅ 移除快捷键: ${key}`);
       }
     }
     
@@ -562,6 +861,7 @@ export class PluginManager extends EventEmitter {
     for (const [id, component] of this.uiComponents) {
       if (id.startsWith(pluginId + ':')) {
         this.uiComponents.delete(id);
+        console.log(`  ✅ 移除UI组件: ${id}`);
       }
     }
     
@@ -569,8 +869,54 @@ export class PluginManager extends EventEmitter {
     for (const [id, theme] of this.themes) {
       if (id.startsWith(pluginId + ':')) {
         this.themes.delete(id);
+        console.log(`  ✅ 移除主题: ${id}`);
       }
     }
+    
+    // 清理挂载的组件
+    if (instance && instance.mountedComponents) {
+      instance.mountedComponents.clear();
+      console.log(`  ✅ 清理挂载组件`);
+    }
+    
+    // 清理注册的样式
+    if (instance && instance.registeredStyles) {
+      instance.registeredStyles.forEach(styleId => {
+        const styleElement = document.getElementById(styleId);
+        if (styleElement) {
+          styleElement.remove();
+          console.log(`  ✅ 移除样式: ${styleId}`);
+        }
+      });
+      instance.registeredStyles = [];
+    }
+    
+    // 清理注册的渲染器
+    if (instance && instance.registeredRenderers) {
+      instance.registeredRenderers.clear();
+      console.log(`  ✅ 清理渲染器`);
+    }
+    
+    // 清理页面注册
+    for (const [pageId, pageData] of this.pluginPages) {
+      if (pageId.startsWith(pluginId + '-')) {
+        this.pluginPages.delete(pageId);
+        console.log(`  ✅ 移除页面: ${pageId}`);
+      }
+    }
+    
+    // 清理侧边栏按钮
+    if (instance && instance.sidebarButton) {
+      this.sidebarButtons.delete(instance.sidebarButton.id);
+      console.log(`  ✅ 移除侧边栏按钮: ${instance.sidebarButton.title}`);
+      this.emit('sidebar-button:unregistered', { pluginId, buttonId: instance.sidebarButton.id });
+      instance.sidebarButton = undefined;
+    }
+    
+    // 触发清理事件
+    this.emit('plugin:resources-cleaned', { pluginId, type: 'cleanup' });
+    
+    console.log(`🧹 插件 ${pluginId} 资源清理完成`);
   }
 
   private async loadInstalledPlugins(): Promise<void> {
@@ -783,6 +1129,10 @@ export class PluginManager extends EventEmitter {
    * 检查版本兼容性
    */
   private isVersionCompatible(minVersion: string): boolean {
+    if (!minVersion || !this.appVersion) {
+      return true; // 如果没有版本要求或应用版本未知，默认兼容
+    }
+    
     // 简化的版本比较，实际项目中应该使用semver库
     const currentParts = this.appVersion.split('.').map(n => parseInt(n));
     const minParts = minVersion.split('.').map(n => parseInt(n));
@@ -815,6 +1165,141 @@ export class PluginManager extends EventEmitter {
 
   public getAllPluginPages(): Map<string, { config: PluginPageConfig, component: any }> {
     return new Map(this.pluginPages);
+  }
+
+  // 显示插件通知
+  private showPluginNotification(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+    // 创建简单的通知元素
+    const notification = document.createElement('div');
+    notification.className = `plugin-notification plugin-notification-${type}`;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 10000;
+      animation: slideInRight 0.3s ease-out;
+      max-width: 300px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    `;
+    
+    // 根据类型设置背景色
+    switch (type) {
+      case 'success':
+        notification.style.backgroundColor = '#10b981';
+        break;
+      case 'warning':
+        notification.style.backgroundColor = '#f59e0b';
+        break;
+      case 'error':
+        notification.style.backgroundColor = '#ef4444';
+        break;
+      default:
+        notification.style.backgroundColor = '#3b82f6';
+    }
+    
+    notification.textContent = message;
+    
+    // 添加样式
+    if (!document.getElementById('plugin-notification-styles')) {
+      const style = document.createElement('style');
+      style.id = 'plugin-notification-styles';
+      style.textContent = `
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+      notification.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  // 卸载插件组件从指定位置
+  public unmountPluginFromLocation(pluginId: string, location: any) {
+    const instance = this.plugins.get(pluginId);
+    if (instance && instance.mountedComponents) {
+      instance.mountedComponents.delete(location);
+      console.log(`✅ 插件 ${pluginId} 从 ${location} 卸载所有组件`);
+      
+      // 触发卸载事件
+      this.emit('plugin:unmounted', { pluginId, location });
+    }
+  }
+
+  /**
+   * 获取所有注册的侧边栏按钮
+   */
+  public getRegisteredSidebarButtons(): SidebarButton[] {
+    return Array.from(this.sidebarButtons.values())
+      .sort((a, b) => (a.position || 999) - (b.position || 999));
+  }
+
+  /**
+   * 获取指定插件的侧边栏按钮
+   */
+  public getPluginSidebarButton(pluginId: string): SidebarButton | null {
+    const instance = this.plugins.get(pluginId);
+    return instance?.sidebarButton || null;
+  }
+
+  /**
+   * 获取所有注册的快捷键
+   */
+  public getAllShortcuts(): Shortcut[] {
+    return Array.from(this.shortcuts.values());
+  }
+
+  /**
+   * 更新快捷键
+   */
+  public updateShortcut(oldKey: string, newKey: string): boolean {
+    const shortcut = this.shortcuts.get(oldKey);
+    if (!shortcut) return false;
+    
+    // 检查新快捷键是否已被占用
+    if (this.shortcuts.has(newKey)) return false;
+    
+    // 删除旧的快捷键
+    this.shortcuts.delete(oldKey);
+    
+    // 注册新的快捷键
+    const newShortcut = { ...shortcut, key: newKey };
+    this.shortcuts.set(newKey, newShortcut);
+    this.setupKeyboardListener(newShortcut);
+    
+    return true;
   }
 
 }

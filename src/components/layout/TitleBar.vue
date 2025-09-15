@@ -41,6 +41,18 @@
     
     <!-- 右侧：用户头像和窗口控制 -->
     <div class="flex items-center space-x-2" style="-webkit-app-region: no-drag">
+      <!-- 右侧栏切换按钮 -->
+      <button
+        @click="toggleRightSidebar"
+        class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+        :class="{ 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300': appStore.showRightSidebar }"
+        :title="t('titleBar.toggleRightSidebar')"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 16a1 1 0 01-1-1v-5a1 1 0 011-1h6a1 1 0 110 2h-6v4a1 1 0 01-1 1z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      
       <!-- 用户头像 -->
       <div class="relative">
         <button
@@ -150,6 +162,10 @@ const userInitial = computed(() => {
 // 方法
 function toggleFilePanel() {
   appStore.toggleFilePanel();
+}
+
+function toggleRightSidebar() {
+  appStore.toggleRightSidebar();
 }
 
 function toggleSearch() {

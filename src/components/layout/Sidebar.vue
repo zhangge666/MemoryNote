@@ -44,19 +44,6 @@
           </svg>
         </button>
         
-        <!-- 插件管理 -->
-        <router-link
-          v-if="showPluginIcon"
-          to="/plugins"
-          class="nav-icon-item"
-          :class="{ 'nav-icon-item-active': $route.name === 'PluginManager' }"
-          :title="'插件管理'"
-        >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-          </svg>
-          <span v-if="pluginsCount > 0" class="nav-icon-badge bg-primary-500 text-white">{{ pluginsCount }}</span>
-        </router-link>
         
         <!-- 插件页面 -->
         <template v-if="pluginPages.length > 0">
@@ -73,6 +60,22 @@
               <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
             </svg>
           </router-link>
+        </template>
+
+        <!-- 插件功能按钮 -->
+        <template v-if="visiblePluginButtons.length > 0">
+          <button
+            v-for="button in visiblePluginButtons"
+            :key="`plugin-btn-${button.pluginId}`"
+            @click="handlePluginButtonClick(button)"
+            class="nav-icon-item"
+            :title="button.tooltip || button.title"
+          >
+            <div v-if="button.icon" v-html="button.icon" class="w-5 h-5"></div>
+            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+            </svg>
+          </button>
         </template>
         
       </div>
@@ -175,6 +178,35 @@ const pluginPages = computed(() => {
   }
 });
 
+// 可见的插件侧边栏按钮
+const visiblePluginButtons = computed(() => {
+  // 依赖更新触发器以确保响应式更新
+  pluginPagesUpdateTrigger.value;
+  
+  if (!pluginsStore.isManagerReady) {
+    return [];
+  }
+  
+  try {
+    const manager = pluginsStore.pluginManager;
+    if (!manager) return [];
+    
+    // 从插件管理器获取注册的侧边栏按钮
+    const registeredButtons = manager.getRegisteredSidebarButtons?.() || [];
+    const sidebarSettings = JSON.parse(localStorage.getItem('plugin-sidebar-settings') || '{}');
+    
+    return registeredButtons
+      .filter(button => {
+        // 检查设置中是否允许显示（默认为true）
+        return sidebarSettings[button.pluginId] !== false;
+      })
+      .sort((a, b) => (a.position || 999) - (b.position || 999));
+  } catch (error) {
+    console.error('获取插件侧边栏按钮失败:', error);
+    return [];
+  }
+});
+
 // 方法
 async function createNewNote() {
   try {
@@ -215,6 +247,28 @@ function showSubscriptions() {
   console.log('显示订阅');
 }
 
+// 处理插件按钮点击
+function handlePluginButtonClick(button: any) {
+  try {
+    console.log('插件按钮点击:', button.title, button);
+    
+    const manager = pluginsStore.pluginManager;
+    if (!manager) {
+      console.warn('插件管理器不可用');
+      return;
+    }
+    
+    // 执行按钮的点击处理函数
+    if (button.onClick && typeof button.onClick === 'function') {
+      button.onClick();
+    } else {
+      console.warn('按钮没有定义点击处理函数:', button);
+    }
+  } catch (error) {
+    console.error('处理插件按钮点击失败:', error);
+  }
+}
+
 function showDiary() {
   // TODO: 实现日记功能
   console.log('显示日记');
@@ -236,6 +290,12 @@ onMounted(() => {
   } catch (error) {
     console.error('加载插件设置失败:', error);
   }
+
+  // 监听侧边栏设置变化
+  window.addEventListener('plugin-sidebar-settings-changed', () => {
+    // 触发响应式更新
+    pluginPagesUpdateTrigger.value++;
+  });
 });
 
 // 监听插件管理器就绪状态
@@ -260,6 +320,19 @@ watch(() => pluginsStore.isManagerReady, (isReady) => {
     });
     
     manager.on('plugin:disabled', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    // 监听侧边栏按钮注册/注销事件
+    manager.on('sidebar-button:registered', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    manager.on('sidebar-button:unregistered', () => {
+      pluginPagesUpdateTrigger.value++;
+    });
+    
+    manager.on('sidebar-button:updated', () => {
       pluginPagesUpdateTrigger.value++;
     });
     

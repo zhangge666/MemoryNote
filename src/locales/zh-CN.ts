@@ -48,6 +48,7 @@ export default {
   // 标题栏
   titleBar: {
     toggleFilePanel: '切换文件列表',
+    toggleRightSidebar: '切换右侧栏',
     search: '搜索',
     minimize: '最小化',
     maximize: '最大化',

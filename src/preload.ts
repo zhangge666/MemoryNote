@@ -80,7 +80,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('plugins:writeFile', pluginId, filePath, content),
     installFromZip: (zipPath: string) => 
       ipcRenderer.invoke('plugins:installFromZip', zipPath),
+    installFromBuffer: (buffer: Uint8Array, filename: string) => 
+      ipcRenderer.invoke('plugins:installFromBuffer', buffer, filename),
     uninstall: (pluginId: string) => 
+      ipcRenderer.invoke('plugins:uninstall', pluginId),
+    uninstallPlugin: (pluginId: string) => 
       ipcRenderer.invoke('plugins:uninstall', pluginId),
     getSettings: (pluginId: string) => 
       ipcRenderer.invoke('plugins:getSettings', pluginId),
@@ -145,7 +149,9 @@ export interface ElectronAPI {
     readFile: (pluginId: string, filePath: string) => Promise<string>;
     writeFile: (pluginId: string, filePath: string, content: string) => Promise<boolean>;
     installFromZip: (zipPath: string) => Promise<{ success: boolean; message: string }>;
+    installFromBuffer: (buffer: Uint8Array, filename: string) => Promise<{ success: boolean; message: string; pluginId?: string }>;
     uninstall: (pluginId: string) => Promise<boolean>;
+    uninstallPlugin: (pluginId: string) => Promise<boolean>;
     getSettings: (pluginId: string) => Promise<any>;
     saveSettings: (pluginId: string, settings: any) => Promise<boolean>;
     executeCommand: (pluginId: string, command: string, args: string[]) => Promise<any>;

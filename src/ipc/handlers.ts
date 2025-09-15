@@ -592,6 +592,101 @@ export function setupIpcHandlers(dbManager: DatabaseManager) {
     }
   });
 
+  // 从Buffer安装插件（用于文件上传）
+  ipcMain.handle('plugins:installFromBuffer', async (_, buffer: Uint8Array, filename: string) => {
+    try {
+      console.log('开始从Buffer安装插件:', filename);
+      
+      // 1. 验证文件名和大小
+      if (!filename.toLowerCase().endsWith('.zip')) {
+        throw new Error('文件格式不正确，需要ZIP文件');
+      }
+      
+      if (buffer.length === 0) {
+        throw new Error('文件为空，请检查文件是否损坏');
+      }
+      
+      if (buffer.length > 50 * 1024 * 1024) { // 50MB限制
+        throw new Error('插件包过大，请检查文件大小（最大50MB）');
+      }
+
+      // 2. 验证ZIP文件魔数
+      if (buffer.length >= 4) {
+        const magicNumber = (buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24)) >>> 0;
+        if (magicNumber !== 0x04034b50 && magicNumber !== 0x06054b50) {
+          throw new Error('文件不是有效的ZIP格式，请检查文件是否损坏或格式是否正确');
+        }
+      }
+
+      // 3. 获取插件目录
+      const userDataPath = app.getPath('userData');
+      const pluginsDir = path.join(userDataPath, 'plugins');
+      
+      // 确保插件目录存在
+      await fs.mkdir(pluginsDir, { recursive: true });
+
+      // 4. 创建临时ZIP文件
+      const tempZipPath = path.join(pluginsDir, '.temp-' + Date.now() + '.zip');
+      await fs.writeFile(tempZipPath, buffer);
+
+      try {
+        // 5. 创建临时解压目录
+        const tempDir = path.join(pluginsDir, '.temp-extract-' + Date.now());
+        await fs.mkdir(tempDir, { recursive: true });
+
+        try {
+          // 6. 解压ZIP文件
+          console.log('解压插件到临时目录:', tempDir);
+          await extractZipFile(tempZipPath, tempDir);
+
+          // 7. 查找和验证manifest.json
+          const manifest = await findAndValidateManifest(tempDir);
+          console.log('找到插件manifest:', manifest.name, 'v' + manifest.version);
+
+          // 8. 检查插件是否已存在
+          const targetPluginDir = path.join(pluginsDir, manifest.id);
+          const pluginExists = await fs.access(targetPluginDir).then(() => true).catch(() => false);
+          
+          if (pluginExists) {
+            // 备份现有插件
+            const backupDir = path.join(pluginsDir, manifest.id + '.backup-' + Date.now());
+            await fs.rename(targetPluginDir, backupDir);
+            console.log('备份现有插件到:', backupDir);
+          }
+
+          // 9. 移动插件到最终位置
+          await fs.rename(tempDir, targetPluginDir);
+          console.log('插件安装完成:', targetPluginDir);
+
+          return { 
+            success: true, 
+            message: `插件 "${manifest.name}" v${manifest.version} 安装成功`,
+            pluginId: manifest.id,
+            manifest: manifest
+          };
+
+        } catch (error) {
+          // 清理临时解压目录
+          await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+          throw error;
+        }
+
+      } catch (error) {
+        throw error;
+      } finally {
+        // 清理临时ZIP文件
+        await fs.rm(tempZipPath, { force: true }).catch(() => {});
+      }
+
+    } catch (error) {
+      console.error('插件安装失败:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : '安装失败' 
+      };
+    }
+  });
+
   // 卸载插件
   ipcMain.handle('plugins:uninstall', async (_, pluginId: string) => {
     try {

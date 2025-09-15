@@ -1,10 +1,10 @@
 <template>
-  <div id="app" class="h-screen flex flex-col overflow-hidden">
+  <div id="app" class="h-screen flex flex-col">
     <!-- 自定义标题栏 -->
     <TitleBar />
     
     <!-- 主内容区域 -->
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex overflow-hidden" style="min-height: 0;">
       <!-- 侧边栏 - 固定宽度，不需要拖拽 -->
       <Sidebar v-if="appStore.showSidebar" />
       
@@ -17,7 +17,15 @@
         }"
         :style="{ width: appStore.showFilePanel ? `${filePanelWidth}px` : '0px' }"
       >
-        <FilePanel v-if="appStore.showFilePanel" class="file-panel-content" />
+        <div v-if="appStore.showFilePanel" class="file-panel-content h-full flex flex-col">
+          <!-- 文件面板主要内容 -->
+          <FilePanel class="flex-1" />
+          
+          <!-- 左侧栏插件挂载区域 -->
+          <div class="border-t border-gray-200 dark:border-gray-700">
+            <PluginMountArea location="left_sidebar" />
+          </div>
+        </div>
       </div>
       
       <!-- 拖拽栏 - 独立于文件面板 -->
@@ -38,15 +46,53 @@
         <!-- 标签页 -->
         <TabBar />
         
-        <!-- 路由视图 -->
-        <div class="flex-1 overflow-hidden">
-          <router-view />
+        <!-- 主内容容器 -->
+        <div class="flex-1 flex overflow-hidden">
+          <!-- 路由视图 -->
+          <div class="flex-1 overflow-hidden">
+            <router-view />
+          </div>
+          
+          <!-- 主工作区插件挂载区域 -->
+          <div v-if="hasMainAreaPlugins" class="main-area-plugins border-l border-gray-200 dark:border-gray-700 w-80">
+            <PluginMountArea location="main_area" />
+          </div>
         </div>
       </main>
+      
+      <!-- 右侧拖拽栏 -->
+      <ResizeHandle 
+        v-if="appStore.showRightSidebar"
+        direction="horizontal" 
+        :min-size="200" 
+        :max-size="600"
+        :current-size="rightSidebarWidth"
+        :reverse="true"
+        @resize="handleRightSidebarResize"
+        @resizeStart="handleResizeStart"
+        @resizeEnd="handleResizeEnd"
+        @reset="resetRightSidebarSize"
+      />
+      
+      <!-- 右侧栏 -->
+      <div 
+        class="right-sidebar-wrapper"
+        :class="{ 
+          'right-sidebar-hidden': !appStore.showRightSidebar,
+          'right-sidebar-no-transition': isResizing
+        }"
+        :style="{ width: appStore.showRightSidebar ? `${rightSidebarWidth}px` : '0px' }"
+      >
+        <RightSidebar 
+          v-if="appStore.showRightSidebar" 
+          class="right-sidebar-content"
+          @close="appStore.toggleRightSidebar"
+        />
+      </div>
     </div>
     
     <!-- 状态栏 -->
-    <StatusBar ref="statusBarRef" />
+    <StatusBar ref="statusBarRef" class="flex-shrink-0" />
   </div>
 </template>
 
@@ -58,6 +104,8 @@ import FilePanel from './components/layout/FilePanel.vue';
 import StatusBar from './components/layout/StatusBar.vue';
 import TabBar from './components/layout/TabBar.vue';
 import ResizeHandle from './components/ui/ResizeHandle.vue';
+import RightSidebar from './components/layout/RightSidebar.vue';
+import PluginMountArea from './components/plugins/PluginMountArea.vue';
 import { useSettingsStore } from './stores/settings';
 import { useAppStore } from './stores/app';
 import { usePluginsStore } from './stores/plugins';
@@ -65,6 +113,16 @@ import { usePluginsStore } from './stores/plugins';
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
 const pluginsStore = usePluginsStore();
+
+// 检查是否有主工作区插件
+const hasMainAreaPlugins = computed(() => {
+  if (!pluginsStore.pluginManager) return false;
+  
+  return pluginsStore.enabledPluginsList.some(plugin => {
+    const mountLocation = plugin.manifest.mount_preferences?.default_location;
+    return mountLocation === 'main_area';
+  });
+});
 
 // StatusBar交互接口
 const statusBarRef = ref<InstanceType<typeof StatusBar>>();
@@ -86,6 +144,7 @@ provide('statusBarController', statusBarController);
 
 // 面板大小控制
 const filePanelWidth = ref(320); // 文件面板默认宽度
+const rightSidebarWidth = ref(320); // 右侧栏默认宽度
 const isResizing = ref(false); // 拖拽状态
 
 // 调整大小处理函数
@@ -119,12 +178,27 @@ function resetFilePanelSize() {
   localStorage.setItem('filePanelWidth', '320');
 }
 
+// 右侧栏大小控制
+function handleRightSidebarResize(size: number) {
+  rightSidebarWidth.value = size;
+}
+
+function resetRightSidebarSize() {
+  rightSidebarWidth.value = 320;
+  localStorage.setItem('rightSidebarWidth', '320');
+}
+
 // 从本地存储恢复面板大小
 function restorePanelSizes() {
   const savedFilePanelWidth = localStorage.getItem('filePanelWidth');
+  const savedRightSidebarWidth = localStorage.getItem('rightSidebarWidth');
   
   if (savedFilePanelWidth) {
     filePanelWidth.value = parseInt(savedFilePanelWidth);
+  }
+  
+  if (savedRightSidebarWidth) {
+    rightSidebarWidth.value = parseInt(savedRightSidebarWidth);
   }
 }
 
@@ -245,5 +319,33 @@ mediaQuery.addEventListener('change', () => {
 .main-work-area {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 400px;
+}
+
+/* 右侧栏包装器 - 负责动画 */
+.right-sidebar-wrapper {
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+/* 拖拽时禁用动画 */
+.right-sidebar-no-transition {
+  transition: none !important;
+}
+
+/* 右侧栏内容 - 实际内容容器 */
+.right-sidebar-content {
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+.dark .right-sidebar-content {
+  background: rgb(31 41 55);
+}
+
+/* 隐藏状态 */
+.right-sidebar-hidden {
+  border-left: none;
 }
 </style>
