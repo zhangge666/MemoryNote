@@ -43,14 +43,11 @@
       
       <!-- 主编辑区域 -->
       <main class="main-work-area flex-1 flex flex-col overflow-hidden min-w-0">
-        <!-- 标签页 -->
-        <TabBar />
-        
         <!-- 主内容容器 -->
         <div class="flex-1 flex overflow-hidden">
-          <!-- 路由视图 -->
+          <!-- 通用标签页管理器 -->
           <div class="flex-1 overflow-hidden">
-            <router-view />
+            <UniversalTabManager ref="tabManagerRef" />
           </div>
           
           <!-- 主工作区插件挂载区域 -->
@@ -102,7 +99,7 @@ import TitleBar from './components/layout/TitleBar.vue';
 import Sidebar from './components/layout/Sidebar.vue';
 import FilePanel from './components/layout/FilePanel.vue';
 import StatusBar from './components/layout/StatusBar.vue';
-import TabBar from './components/layout/TabBar.vue';
+import UniversalTabManager from './components/layout/UniversalTabManager.vue';
 import ResizeHandle from './components/ui/ResizeHandle.vue';
 import RightSidebar from './components/layout/RightSidebar.vue';
 import PluginMountArea from './components/plugins/PluginMountArea.vue';
@@ -126,6 +123,7 @@ const hasMainAreaPlugins = computed(() => {
 
 // StatusBar交互接口
 const statusBarRef = ref<InstanceType<typeof StatusBar>>();
+const tabManagerRef = ref<InstanceType<typeof UniversalTabManager>>();
 
 // 提供StatusBar控制方法给子组件
 const statusBarController = {
@@ -141,6 +139,9 @@ const statusBarController = {
 };
 
 provide('statusBarController', statusBarController);
+
+// 提供标签页管理器访问方法
+provide('getTabManager', () => tabManagerRef.value);
 
 // 面板大小控制
 const filePanelWidth = ref(320); // 文件面板默认宽度

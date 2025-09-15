@@ -124,21 +124,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, inject } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAppStore } from '../../stores/app';
 import { useNotesStore } from '../../stores/notes';
 import { useReviewsStore } from '../../stores/reviews';
 import { usePluginsStore } from '../../stores/plugins';
-import { useAppStore } from '../../stores/app';
+import { useSplitPanesStore } from '../../stores/splitPanes';
 
 const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
+const appStore = useAppStore();
 const notesStore = useNotesStore();
 const reviewsStore = useReviewsStore();
-const appStore = useAppStore();
 const pluginsStore = usePluginsStore();
+const splitPanesStore = useSplitPanesStore();
+
+// 获取标签页管理器引用
+const getTabManager = inject<() => any>('getTabManager', () => null);
 
 // 计算属性
 const notesCount = computed(() => notesStore.notes.length);
@@ -214,6 +219,25 @@ const visiblePluginButtons = computed(() => {
   }
 });
 
+// 通用标签页打开函数
+function openUniversalTab(tab: { id: string; title: string; type: string; filePath?: string; route?: string }) {
+  const tabManager = getTabManager();
+  
+  if (tabManager && tabManager.useSplitPanes.value) {
+    // 分屏模式：在当前活动面板中打开
+    const activePaneId = splitPanesStore.activePaneId || 'main';
+    splitPanesStore.openTabInPane(activePaneId, tab);
+  } else {
+    // 传统模式：使用appStore
+    appStore.openTab(tab);
+  }
+  
+  // 导航到对应路由
+  if (tab.route) {
+    router.push(tab.route);
+  }
+}
+
 // 方法
 async function createNewNote() {
   try {
@@ -224,14 +248,16 @@ async function createNewNote() {
       tags: '',
     });
     
-    // 打开新笔记
-    appStore.openTab({
+    // 使用通用标签页系统打开新笔记
+    const noteTab = {
       id: newNote.id!.toString(),
       title: newNote.title,
-      type: 'note'
-    });
+      type: 'note',
+      filePath: `note-${newNote.id}`,
+      route: `/note/${newNote.id}`
+    };
     
-    router.push(`/note/${newNote.id}`);
+    openUniversalTab(noteTab);
   } catch (error) {
     console.error('创建笔记失败:', error);
   }

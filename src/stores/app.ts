@@ -10,7 +10,7 @@ export const useAppStore = defineStore('app', () => {
   const showRightSidebar = ref(false);
   const rightSidebarWidth = ref(320);
   const activeTab = ref<string | null>(null);
-  const openTabs = ref<Array<{ id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }>>([]);
+  const openTabs = ref<Array<{ id: string; title: string; type: 'note' | 'review' | 'settings' | 'dashboard' | 'plugin'; filePath?: string; route?: string; pluginId?: string }>>([]);
 
   // 当前文件状态
   const currentFile = ref<{ path: string; name: string; content: string } | null>(null);
@@ -43,7 +43,7 @@ export const useAppStore = defineStore('app', () => {
     rightSidebarWidth.value = width;
   }
 
-  function openTab(tab: { id: string; title: string; type: 'note' | 'review' | 'settings'; filePath?: string }) {
+  function openTab(tab: { id: string; title: string; type: 'note' | 'review' | 'settings' | 'dashboard' | 'plugin'; filePath?: string; route?: string; pluginId?: string }) {
     const existingTab = openTabs.value.find(t => t.id === tab.id && t.type === tab.type);
     if (!existingTab) {
       openTabs.value.push(tab);
