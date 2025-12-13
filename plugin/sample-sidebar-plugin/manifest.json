@@ -1,0 +1,61 @@
+{
+  "id": "sample-sidebar-plugin",
+  "name": "Sample Sidebar Plugin",
+  "version": "1.0.0",
+  "author": "MemoryNote Team",
+  "description": "A sample plugin that demonstrates how to add a custom sidebar view to MemoryNote",
+  "main": "index.js",
+  "icon": "🔌",
+  "engines": {
+    "memorynote": ">=1.0.0"
+  },
+  "activationEvents": [
+    "onStartup"
+  ],
+  "contributes": {
+    "views": [
+      {
+        "id": "sample-sidebar-view",
+        "title": "Sample View",
+        "icon": "📊",
+        "location": "sidebar-left"
+      }
+    ],
+    "commands": [
+      {
+        "id": "sample-sidebar.sayHello",
+        "name": "Say Hello",
+        "description": "Display a hello message",
+        "category": "plugin"
+      },
+      {
+        "id": "sample-sidebar.toggleView",
+        "name": "Toggle Sample Sidebar",
+        "description": "Toggle the sample sidebar view",
+        "category": "plugin"
+      }
+    ],
+    "configuration": {
+      "title": "Sample Sidebar Plugin",
+      "properties": {
+        "sampleSidebar.greeting": {
+          "type": "string",
+          "default": "Hello from Sample Plugin!",
+          "description": "The greeting message to display"
+        },
+        "sampleSidebar.showTimestamp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show timestamps in the sidebar"
+        }
+      }
+    }
+  },
+  "keywords": [
+    "sidebar",
+    "sample",
+    "demo"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/memorynote/sample-sidebar-plugin"
+}

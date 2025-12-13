@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS 变量用于主题系统 - 由主题服务动态设置 */
+:root {
+  /* 兼容性映射 - 将主题变量映射到旧的变量名 */
+  --color-primary: var(--theme-primary);
+  --color-primary-light: var(--theme-primary-hover);
+  --color-primary-dark: var(--theme-primary);
+  --color-secondary: var(--theme-secondary);
+  --color-accent: var(--theme-accent);
+  
+  --color-background: var(--theme-background);
+  --color-background-secondary: var(--theme-background-secondary);
+  --color-background-tertiary: var(--theme-background-tertiary);
+  --color-background-glass: var(--theme-background-secondary);
+  --color-hover: var(--theme-background-hover);
+  
+  --color-text: var(--theme-text);
+  --color-text-secondary: var(--theme-text-secondary);
+  --color-text-muted: var(--theme-text-muted);
+  
+  --color-border: var(--theme-border);
+  --color-border-active: var(--theme-border-active);
+  --color-surface: var(--theme-background-secondary);
+  
+  --color-success: var(--theme-success);
+  --color-warning: var(--theme-warning);
+  --color-error: var(--theme-error);
+  --color-info: var(--theme-info);
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 var(--theme-shadow-light);
+  --shadow-md: 0 4px 6px -1px var(--theme-shadow), 0 2px 4px -1px var(--theme-shadow-light);
+  --shadow-lg: 0 10px 15px -3px var(--theme-shadow), 0 4px 6px -2px var(--theme-shadow-light);
+  --shadow-xl: 0 20px 25px -5px var(--theme-shadow), 0 10px 10px -5px var(--theme-shadow-light);
+  
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--theme-secondary) 0%, var(--theme-accent) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%);
+}
+
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--theme-font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif);
+  background: var(--theme-background);
+  color: var(--theme-text);
+  overflow: hidden;
+  font-size: var(--theme-font-size-base, 14px);
+  line-height: var(--theme-line-height-normal, 1.6);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 自定义滚动条 - 更精致 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-scrollbar-thumb);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-scrollbar-track);
+}
+
+/* 禁用用户选择（拖拽时） */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 自定义标题栏区域（无系统边框） */
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+
+.titlebar-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* 按钮基础样式 - 现代化 */
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button svg {
+  flex-shrink: 0;
+  display: block;
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+/* 标题栏样式 - 毛玻璃效果 */
+.titlebar {
+  min-height: 40px;
+  height: 40px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--theme-titlebar-background) !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+  box-shadow: var(--shadow-sm);
+  color: var(--theme-titlebar-text);
+}
+
+.titlebar button {
+  min-width: 32px;
+  min-height: 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--theme-titlebar-text);
+}
+
+.titlebar button:hover {
+  background: var(--theme-background-hover) !important;
+}
+
+.titlebar button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 导航栏样式 - 现代侧边栏 */
+.navbar {
+  min-width: 52px;
+  width: 52px;
+  background: var(--theme-sidebar-background) !important;
+  color: var(--theme-sidebar-text);
+  overflow: visible;
+  position: relative;
+}
+
+/* 导航栏分割线 - 渐变效果 */
+.navbar-divider {
+  position: relative;
+}
+
+.navbar-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  opacity: 0.6;
+}
+
+.nav-button {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  overflow: visible;
+  background: transparent;
+}
+
+/* 左侧高亮指示条 */
+.nav-button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--gradient-primary);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-button.active::before {
+  height: 20px;
+  opacity: 1;
+}
+
+.nav-button svg {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+/* 激活状态 - 图标高亮 */
+.nav-button.active {
+  background: transparent !important;
+}
+
+.nav-button.active svg {
+  color: var(--theme-primary);
+  transform: scale(1.05);
+}
+
+.nav-button:hover:not(.active) {
+  background: var(--theme-sidebar-hover) !important;
+}
+
+.nav-button:active {
+  transform: scale(0.98);
+}
+
+/* 状态栏样式 */
+.statusbar {
+  height: 24px;
+  background: var(--theme-titlebar-background);
+  border-top: 1px solid var(--theme-border);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--theme-text-secondary);
+  user-select: none;
+}
+
+.statusbar-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusbar-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.statusbar-item:hover {
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
+}
+
+.statusbar-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--theme-primary);
+  opacity: 0.8;
+}
+
+.statusbar-divider {
+  width: 1px;
+  height: 12px;
+  background: var(--theme-border);
+  opacity: 0.5;
+}
