@@ -12,6 +12,7 @@ import { registerDialogHandlers } from './main/ipc/dialogHandlers';
 import { registerReviewHandlers } from './main/ipc/reviewHandlers';
 import { registerSearchHandlers, updateSearchService } from './main/ipc/searchHandlers';
 import { registerPluginHandlers, updatePluginManager } from './main/ipc/pluginHandlers';
+import { registerAlgorithmHandlers } from './main/ipc/algorithmHandlers';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -54,6 +55,7 @@ async function initializeServices() {
     registerReviewHandlers();
     registerSearchHandlers(dbManager, fileSystemService);
     registerPluginHandlers();
+    registerAlgorithmHandlers();
   } catch (error) {
     console.error('Failed to initialize services:', error);
     app.quit();

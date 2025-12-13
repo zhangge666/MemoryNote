@@ -32,6 +32,7 @@ import type {
   PluginInstallOptions,
   PluginFilter,
 } from './shared/types/plugin';
+import type { RegisteredAlgorithm } from './main/services/AlgorithmRegistry';
 
 // 暴露基础 Electron API（用于窗口控制等）
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -339,5 +340,36 @@ contextBridge.exposeInMainWorld('ipc', {
     // 刷新插件列表
     refresh: (): Promise<{ success: boolean; error?: string }> =>
       ipcRenderer.invoke('plugin:refresh'),
+  },
+  
+  // 算法管理
+  algorithm: {
+    // 获取可用的复习算法
+    getReviewAlgorithms: (): Promise<{ success: boolean; data?: RegisteredAlgorithm[]; error?: string }> =>
+      ipcRenderer.invoke('algorithm:get-review-algorithms'),
+    
+    // 获取可用的 Diff 算法
+    getDiffAlgorithms: (): Promise<{ success: boolean; data?: RegisteredAlgorithm[]; error?: string }> =>
+      ipcRenderer.invoke('algorithm:get-diff-algorithms'),
+    
+    // 获取当前复习算法
+    getCurrentReview: (): Promise<{ success: boolean; data?: string; error?: string }> =>
+      ipcRenderer.invoke('algorithm:get-current-review'),
+    
+    // 获取当前 Diff 算法
+    getCurrentDiff: (): Promise<{ success: boolean; data?: string; error?: string }> =>
+      ipcRenderer.invoke('algorithm:get-current-diff'),
+    
+    // 设置复习算法
+    setReview: (
+      algorithmId: string
+    ): Promise<{ success: boolean; data?: boolean; error?: string }> =>
+      ipcRenderer.invoke('algorithm:set-review', algorithmId),
+    
+    // 设置 Diff 算法
+    setDiff: (
+      algorithmId: string
+    ): Promise<{ success: boolean; data?: boolean; error?: string }> =>
+      ipcRenderer.invoke('algorithm:set-diff', algorithmId),
   },
 });

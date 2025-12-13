@@ -53,6 +53,24 @@ export interface PluginContributes {
   themes?: string[];
   /** 配置 */
   configuration?: PluginConfiguration;
+  /** 复习算法 */
+  reviewAlgorithms?: PluginAlgorithmContribution[];
+  /** Diff 算法 */
+  diffAlgorithms?: PluginAlgorithmContribution[];
+}
+
+/**
+ * 插件算法贡献
+ */
+export interface PluginAlgorithmContribution {
+  /** 算法唯一标识 */
+  id: string;
+  /** 算法名称 */
+  name: string;
+  /** 算法描述 */
+  description?: string;
+  /** 入口文件（相对于插件根目录） */
+  main: string;
 }
 
 /**

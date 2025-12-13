@@ -250,6 +250,8 @@
       "sm2": "SM-2 Algorithm",
       "anki": "Anki Algorithm",
       "custom": "Custom Algorithm",
+      "diffAlgorithm": "Diff Algorithm",
+      "diffAlgorithmDesc": "Select the algorithm for detecting content changes",
       "granularity": "Granularity",
       "granularityDesc": "Select granularity of review content",
       "paragraph": "Paragraph",

@@ -21,12 +21,38 @@
       </div>
       <select 
         class="setting-select" 
-        :value="algorithm"
-        @change="changeAlgorithm"
+        :value="currentReviewAlgorithmId"
+        @change="changeReviewAlgorithm"
       >
-        <option value="sm2">{{ t('settings.review.sm2') }}</option>
-        <option value="anki">{{ t('settings.review.anki') }}</option>
-        <option value="custom">{{ t('settings.review.custom') }}</option>
+        <option 
+          v-for="algo in reviewAlgorithms" 
+          :key="algo.id" 
+          :value="algo.id"
+        >
+          {{ algo.name }}
+          <template v-if="algo.pluginId !== 'builtin'"> (插件)</template>
+        </option>
+      </select>
+    </div>
+    
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>{{ t('settings.review.diffAlgorithm') }}</span>
+        <span class="setting-description">{{ t('settings.review.diffAlgorithmDesc') }}</span>
+      </div>
+      <select 
+        class="setting-select" 
+        :value="currentDiffAlgorithmId"
+        @change="changeDiffAlgorithm"
+      >
+        <option 
+          v-for="algo in diffAlgorithms" 
+          :key="algo.id" 
+          :value="algo.id"
+        >
+          {{ algo.name }}
+          <template v-if="algo.pluginId !== 'builtin'"> (插件)</template>
+        </option>
       </select>
     </div>
     
@@ -65,29 +91,68 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RegisteredAlgorithm } from '@/types'
 
 const { t } = useI18n()
 
 // 配置项
 const autoGenerateCards = ref(true)
-const algorithm = ref('sm2')
 const granularity = ref('paragraph')
 const syncToCloud = ref(false)
+
+// 算法列表
+const reviewAlgorithms = ref<RegisteredAlgorithm[]>([])
+const diffAlgorithms = ref<RegisteredAlgorithm[]>([])
+const currentReviewAlgorithmId = ref('builtin:sm2')
+const currentDiffAlgorithmId = ref('builtin:simple')
 
 // 加载配置
 onMounted(async () => {
   try {
+    // 加载复习配置
     const config = await window.ipc.config.get('review')
     if (config) {
       autoGenerateCards.value = config.autoGenerateCards ?? true
-      algorithm.value = config.algorithm ?? 'sm2'
       granularity.value = config.granularity ?? 'paragraph'
       syncToCloud.value = config.syncToCloud ?? false
     }
+    
+    // 加载可用算法
+    await loadAlgorithms()
   } catch (error) {
     console.error('Failed to load review config:', error)
   }
 })
+
+// 加载算法列表
+async function loadAlgorithms() {
+  try {
+    // 加载复习算法
+    const reviewRes = await window.ipc.algorithm.getReviewAlgorithms()
+    if (reviewRes.success && reviewRes.data) {
+      reviewAlgorithms.value = reviewRes.data
+    }
+    
+    // 加载 Diff 算法
+    const diffRes = await window.ipc.algorithm.getDiffAlgorithms()
+    if (diffRes.success && diffRes.data) {
+      diffAlgorithms.value = diffRes.data
+    }
+    
+    // 加载当前选中的算法
+    const currentReviewRes = await window.ipc.algorithm.getCurrentReview()
+    if (currentReviewRes.success && currentReviewRes.data) {
+      currentReviewAlgorithmId.value = currentReviewRes.data
+    }
+    
+    const currentDiffRes = await window.ipc.algorithm.getCurrentDiff()
+    if (currentDiffRes.success && currentDiffRes.data) {
+      currentDiffAlgorithmId.value = currentDiffRes.data
+    }
+  } catch (error) {
+    console.error('Failed to load algorithms:', error)
+  }
+}
 
 // 切换自动生成卡片
 async function toggleAutoGenerate() {
@@ -98,23 +163,47 @@ async function toggleAutoGenerate() {
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
-    // Revert the change if save failed
     autoGenerateCards.value = !autoGenerateCards.value
   }
 }
 
-// 更改算法
-async function changeAlgorithm(event: Event) {
+// 更改复习算法
+async function changeReviewAlgorithm(event: Event) {
   const target = event.target as HTMLSelectElement
-  algorithm.value = target.value
+  const newAlgorithmId = target.value
+  const oldAlgorithmId = currentReviewAlgorithmId.value
+  
+  currentReviewAlgorithmId.value = newAlgorithmId
+  
   try {
-    const config = await window.ipc.config.get('review') || {}
-    config.algorithm = algorithm.value
-    await window.ipc.config.set('review', config)
+    const res = await window.ipc.algorithm.setReview(newAlgorithmId)
+    if (!res.success) {
+      console.error('Failed to set review algorithm:', res.error)
+      currentReviewAlgorithmId.value = oldAlgorithmId
+    }
   } catch (error) {
-    console.error('Failed to save review config:', error)
-    // Revert the change if save failed
-    // We would need to get the previous value from config to revert properly
+    console.error('Failed to set review algorithm:', error)
+    currentReviewAlgorithmId.value = oldAlgorithmId
+  }
+}
+
+// 更改 Diff 算法
+async function changeDiffAlgorithm(event: Event) {
+  const target = event.target as HTMLSelectElement
+  const newAlgorithmId = target.value
+  const oldAlgorithmId = currentDiffAlgorithmId.value
+  
+  currentDiffAlgorithmId.value = newAlgorithmId
+  
+  try {
+    const res = await window.ipc.algorithm.setDiff(newAlgorithmId)
+    if (!res.success) {
+      console.error('Failed to set diff algorithm:', res.error)
+      currentDiffAlgorithmId.value = oldAlgorithmId
+    }
+  } catch (error) {
+    console.error('Failed to set diff algorithm:', error)
+    currentDiffAlgorithmId.value = oldAlgorithmId
   }
 }
 
@@ -128,7 +217,6 @@ async function changeGranularity(event: Event) {
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
-    // Revert the change if save failed
   }
 }
 
@@ -141,7 +229,6 @@ async function toggleSyncToCloud() {
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
-    // Revert the change if save failed
     syncToCloud.value = !syncToCloud.value
   }
 }

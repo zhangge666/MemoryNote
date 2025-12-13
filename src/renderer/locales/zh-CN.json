@@ -250,6 +250,8 @@
       "sm2": "SM-2 算法",
       "anki": "Anki 算法",
       "custom": "自定义算法",
+      "diffAlgorithm": "差异算法",
+      "diffAlgorithmDesc": "选择检测内容变更的算法",
       "granularity": "粒度",
       "granularityDesc": "选择复习内容的粒度",
       "paragraph": "段落",

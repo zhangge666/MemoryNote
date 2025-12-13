@@ -8,12 +8,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import AdmZip from 'adm-zip';
 import { ConfigService } from './ConfigService';
+import { AlgorithmRegistry } from './AlgorithmRegistry';
 import type {
   PluginManifest,
   PluginInfo,
   PluginInstallOptions,
   PluginFilter,
 } from '../../shared/types/plugin';
+import type { IReviewAlgorithm, IDiffAlgorithm } from '../../shared/types/review';
 
 /**
  * 插件管理器
@@ -84,6 +86,13 @@ export class PluginManager {
     console.log('[PluginManager] Initializing...');
     await this.scanPlugins();
     console.log(`[PluginManager] Found ${this.plugins.size} plugins`);
+    
+    // 加载已启用插件的算法
+    for (const plugin of this.plugins.values()) {
+      if (plugin.enabled) {
+        await this.loadPluginAlgorithms(plugin);
+      }
+    }
   }
 
   /**
@@ -239,6 +248,9 @@ export class PluginManager {
       };
 
       this.plugins.set(manifest.id, pluginInfo);
+      
+      // 加载插件算法（因为默认是启用的）
+      await this.loadPluginAlgorithms(pluginInfo);
 
       console.log(`[PluginManager] Installed plugin: ${manifest.name} (${manifest.id})`);
       return pluginInfo;
@@ -309,6 +321,9 @@ export class PluginManager {
       throw new Error(`Plugin ${pluginId} not found`);
     }
 
+    // 卸载插件算法
+    AlgorithmRegistry.getInstance().unregisterPluginAlgorithms(pluginId);
+
     // 删除插件目录
     if (fs.existsSync(plugin.path)) {
       fs.rmSync(plugin.path, { recursive: true, force: true });
@@ -330,6 +345,9 @@ export class PluginManager {
     plugin.enabled = true;
     plugin.updatedAt = Date.now();
     await this.savePluginConfig(plugin);
+    
+    // 加载插件算法
+    await this.loadPluginAlgorithms(plugin);
 
     console.log(`[PluginManager] Enabled plugin: ${pluginId}`);
   }
@@ -346,6 +364,9 @@ export class PluginManager {
     plugin.enabled = false;
     plugin.updatedAt = Date.now();
     await this.savePluginConfig(plugin);
+    
+    // 卸载插件算法
+    AlgorithmRegistry.getInstance().unregisterPluginAlgorithms(pluginId);
 
     console.log(`[PluginManager] Disabled plugin: ${pluginId}`);
   }
@@ -368,5 +389,53 @@ export class PluginManager {
    */
   getPluginsDirectory(): string {
     return this.pluginsDir;
+  }
+
+  /**
+   * 加载插件提供的算法
+   */
+  private async loadPluginAlgorithms(plugin: PluginInfo): Promise<void> {
+    const { manifest } = plugin;
+    const registry = AlgorithmRegistry.getInstance();
+
+    // 加载复习算法
+    if (manifest.contributes?.reviewAlgorithms) {
+      for (const contribution of manifest.contributes.reviewAlgorithms) {
+        try {
+          const algorithmPath = path.join(plugin.path, contribution.main);
+          if (fs.existsSync(algorithmPath)) {
+            // 清除缓存以确保重新加载
+            delete require.cache[require.resolve(algorithmPath)];
+            const algorithm = require(algorithmPath) as IReviewAlgorithm;
+            registry.registerReviewAlgorithmFromPlugin(plugin, contribution, algorithm);
+            console.log(`[PluginManager] Loaded review algorithm: ${contribution.name} from ${manifest.name}`);
+          } else {
+            console.warn(`[PluginManager] Review algorithm file not found: ${algorithmPath}`);
+          }
+        } catch (error) {
+          console.error(`[PluginManager] Failed to load review algorithm ${contribution.id}:`, error);
+        }
+      }
+    }
+
+    // 加载 Diff 算法
+    if (manifest.contributes?.diffAlgorithms) {
+      for (const contribution of manifest.contributes.diffAlgorithms) {
+        try {
+          const algorithmPath = path.join(plugin.path, contribution.main);
+          if (fs.existsSync(algorithmPath)) {
+            // 清除缓存以确保重新加载
+            delete require.cache[require.resolve(algorithmPath)];
+            const algorithm = require(algorithmPath) as IDiffAlgorithm;
+            registry.registerDiffAlgorithmFromPlugin(plugin, contribution, algorithm);
+            console.log(`[PluginManager] Loaded diff algorithm: ${contribution.name} from ${manifest.name}`);
+          } else {
+            console.warn(`[PluginManager] Diff algorithm file not found: ${algorithmPath}`);
+          }
+        } catch (error) {
+          console.error(`[PluginManager] Failed to load diff algorithm ${contribution.id}:`, error);
+        }
+      }
+    }
   }
 }

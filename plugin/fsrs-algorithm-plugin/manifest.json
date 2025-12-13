@@ -1,0 +1,29 @@
+{
+  "id": "fsrs-algorithm-plugin",
+  "name": "FSRS Algorithm",
+  "version": "1.0.0",
+  "description": "Free Spaced Repetition Scheduler (FSRS) algorithm plugin for MemoryNote",
+  "author": "MemoryNote Team",
+  "main": "index.js",
+  "engines": {
+    "memorynote": ">=1.0.0"
+  },
+  "contributes": {
+    "reviewAlgorithms": [
+      {
+        "id": "fsrs",
+        "name": "FSRS",
+        "description": "Free Spaced Repetition Scheduler - A modern, optimized spaced repetition algorithm",
+        "main": "algorithms/fsrs.js"
+      }
+    ],
+    "diffAlgorithms": [
+      {
+        "id": "semantic-diff",
+        "name": "Semantic Diff",
+        "description": "Semantic-aware diff algorithm that preserves word boundaries",
+        "main": "algorithms/semantic-diff.js"
+      }
+    ]
+  }
+}

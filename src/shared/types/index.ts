@@ -46,6 +46,8 @@ export interface EditorConfig {
  */
 export interface ReviewConfig {
   algorithm: string;
+  algorithmId?: string; // 插件算法 ID
+  diffAlgorithmId?: string; // Diff 插件算法 ID
   granularity: 'paragraph' | 'sentence' | 'word';
   syncToCloud: boolean;
   autoGenerateCards: boolean; // 是否自动生成复习卡片

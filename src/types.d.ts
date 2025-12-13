@@ -34,6 +34,16 @@ import type {
   PluginFilter,
 } from './shared/types/plugin';
 
+// 算法注册信息
+export interface RegisteredAlgorithm {
+  id: string;
+  name: string;
+  description?: string;
+  pluginId: string;
+  pluginName: string;
+  type: 'review' | 'diff';
+}
+
 // Electron API 类型声明
 export interface ElectronAPI {
   invoke: <T = unknown>(channel: string, ...args: unknown[]) => Promise<IPCResponse<T>>;
@@ -202,6 +212,16 @@ export interface IPCAPI {
     ) => Promise<{ success: boolean; error?: string }>;
     getDirectory: () => Promise<{ success: boolean; data?: string; error?: string }>;
     refresh: () => Promise<{ success: boolean; error?: string }>;
+  };
+  
+  // 算法管理
+  algorithm: {
+    getReviewAlgorithms: () => Promise<{ success: boolean; data?: RegisteredAlgorithm[]; error?: string }>;
+    getDiffAlgorithms: () => Promise<{ success: boolean; data?: RegisteredAlgorithm[]; error?: string }>;
+    getCurrentReview: () => Promise<{ success: boolean; data?: string; error?: string }>;
+    getCurrentDiff: () => Promise<{ success: boolean; data?: string; error?: string }>;
+    setReview: (algorithmId: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
+    setDiff: (algorithmId: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
   };
 }
 
