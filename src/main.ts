@@ -13,6 +13,7 @@ import { registerReviewHandlers } from './main/ipc/reviewHandlers';
 import { registerSearchHandlers, updateSearchService } from './main/ipc/searchHandlers';
 import { registerPluginHandlers, updatePluginManager } from './main/ipc/pluginHandlers';
 import { registerAlgorithmHandlers } from './main/ipc/algorithmHandlers';
+import { registerAIHandlers, updateAIServices } from './main/ipc/aiHandlers';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -56,6 +57,7 @@ async function initializeServices() {
     registerSearchHandlers(dbManager, fileSystemService);
     registerPluginHandlers();
     registerAlgorithmHandlers();
+    registerAIHandlers(dbManager, fileSystemService);
   } catch (error) {
     console.error('Failed to initialize services:', error);
     app.quit();
@@ -117,6 +119,9 @@ async function reinitializeServices() {
     
     // 更新插件管理器
     updatePluginManager();
+    
+    // 更新 AI 服务
+    updateAIServices(dbManager, fileSystemService);
     
     console.log('✅ Services reinitialized');
     return true;

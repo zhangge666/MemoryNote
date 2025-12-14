@@ -445,6 +445,42 @@
     "minutesAgo": "minutes ago",
     "hoursAgo": "hours ago",
     "daysAgo": "days ago"
+  },
+  "ai": {
+    "assistant": "AI Assistant",
+    "title": "AI Assistant",
+    "chat": "Chat",
+    "settings": "Settings",
+    "newSession": "New Session",
+    "clearHistory": "Clear History",
+    "inputPlaceholder": "Enter a question or note content...",
+    "send": "Send",
+    "stopGeneration": "Stop Generation",
+    "thinking": "Thinking...",
+    "error": "Error generating response",
+    "provider": "AI Provider",
+    "model": "Model",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter your API key",
+    "apiEndpoint": "API Endpoint",
+    "apiEndpointPlaceholder": "Optional, for custom endpoints",
+    "temperature": "Temperature",
+    "maxTokens": "Max Tokens",
+    "saveSettings": "Save Settings",
+    "settingsSaved": "Settings saved",
+    "askWithContext": "Answer with knowledge base",
+    "semanticSearch": "Semantic Search",
+    "providers": {
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "local": "Local Model (Ollama)",
+      "custom": "Custom"
+    },
+    "welcome": "Hello! I'm your AI assistant. I can help you search notes, answer questions, or write content. How can I help you?",
+    "relatedNotes": "Related Notes",
+    "noRelatedNotes": "No related notes found",
+    "contextEnabled": "Knowledge base context enabled",
+    "contextDisabled": "Knowledge base context disabled"
   }
 }
 

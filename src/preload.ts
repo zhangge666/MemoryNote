@@ -33,6 +33,14 @@ import type {
   PluginFilter,
 } from './shared/types/plugin';
 import type { RegisteredAlgorithm } from './main/services/AlgorithmRegistry';
+import type {
+  LLMConfig,
+  ChatMessage,
+  VectorSearchResult,
+  VectorIndexStatus,
+  AIAnswerResult,
+  ContentCheckResult,
+} from './shared/types/ai';
 
 // 暴露基础 Electron API（用于窗口控制等）
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -375,5 +383,94 @@ contextBridge.exposeInMainWorld('ipc', {
       algorithmId: string
     ): Promise<{ success: boolean; data?: boolean; error?: string }> =>
       ipcRenderer.invoke('algorithm:set-diff', algorithmId),
+  },
+  
+  // AI 服务
+  ai: {
+    // NLP 相关
+    semanticSearch: (
+      query: string,
+      limit?: number
+    ): Promise<{ success: boolean; data?: VectorSearchResult[]; error?: string }> =>
+      ipcRenderer.invoke('ai:semantic-search', query, limit),
+    
+    getIndexStatus: (): Promise<{ success: boolean; data?: VectorIndexStatus; error?: string }> =>
+      ipcRenderer.invoke('ai:get-index-status'),
+    
+    rebuildIndex: (): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:rebuild-index'),
+    
+    addToIndex: (
+      noteId: string,
+      content: string
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:add-to-index', noteId, content),
+    
+    removeFromIndex: (
+      noteId: string
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:remove-from-index', noteId),
+    
+    // LLM 相关
+    getLLMConfig: (): Promise<{ success: boolean; data?: LLMConfig; error?: string }> =>
+      ipcRenderer.invoke('ai:get-llm-config'),
+    
+    setLLMConfig: (
+      config: LLMConfig
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:set-llm-config', config),
+    
+    validateApiKey: (): Promise<{ success: boolean; data?: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:validate-api-key'),
+    
+    chat: (
+      messages: ChatMessage[],
+      context?: string
+    ): Promise<{ success: boolean; data?: string; error?: string }> =>
+      ipcRenderer.invoke('ai:chat', messages, context),
+    
+    askWithContext: (
+      question: string,
+      limit?: number
+    ): Promise<{ success: boolean; data?: AIAnswerResult; error?: string }> =>
+      ipcRenderer.invoke('ai:ask-with-context', question, limit),
+    
+    checkContent: (
+      content: string,
+      knowledgeBase: string[]
+    ): Promise<{ success: boolean; data?: ContentCheckResult; error?: string }> =>
+      ipcRenderer.invoke('ai:check-content', content, knowledgeBase),
+    
+    // 流式对话
+    chatStreamStart: (
+      messages: ChatMessage[],
+      streamId: string
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:chat-stream-start', messages, streamId),
+    
+    chatStreamCancel: (
+      streamId: string
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:chat-stream-cancel', streamId),
+    
+    // 流式对话事件监听
+    onStreamChunk: (callback: (streamId: string, chunk: string) => void) => {
+      ipcRenderer.on('ai:chat-stream-chunk', (_event, streamId, chunk) => callback(streamId, chunk));
+    },
+    onStreamEnd: (callback: (streamId: string) => void) => {
+      ipcRenderer.on('ai:chat-stream-end', (_event, streamId) => callback(streamId));
+    },
+    onStreamError: (callback: (streamId: string, error: string) => void) => {
+      ipcRenderer.on('ai:chat-stream-error', (_event, streamId, error) => callback(streamId, error));
+    },
+    offStreamChunk: (callback: (streamId: string, chunk: string) => void) => {
+      ipcRenderer.removeListener('ai:chat-stream-chunk', callback as any);
+    },
+    offStreamEnd: (callback: (streamId: string) => void) => {
+      ipcRenderer.removeListener('ai:chat-stream-end', callback as any);
+    },
+    offStreamError: (callback: (streamId: string, error: string) => void) => {
+      ipcRenderer.removeListener('ai:chat-stream-error', callback as any);
+    },
   },
 });

@@ -1624,7 +1624,7 @@ export class PluginManager implements IPluginManager {
 4. 集成 LLM API（OpenAI/本地模型）
 5. 实现知识库问答
 6. 实现错误检测与修正提醒
-7. 实现 AI 助手界面
+7. 实现 AI 助手界面（在伸缩右侧栏的按钮左侧添加AI助手按钮，点击之后在右侧侧边栏展示对应的页面）
 
 **依赖**: 
 - 阶段 7 的笔记管理

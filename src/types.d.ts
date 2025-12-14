@@ -33,6 +33,14 @@ import type {
   PluginInstallOptions,
   PluginFilter,
 } from './shared/types/plugin';
+import type {
+  LLMConfig,
+  ChatMessage,
+  VectorSearchResult,
+  VectorIndexStatus,
+  AIAnswerResult,
+  ContentCheckResult,
+} from './shared/types/ai';
 
 // 算法注册信息
 export interface RegisteredAlgorithm {
@@ -224,6 +232,60 @@ export interface IPCAPI {
     getCurrentDiff: () => Promise<{ success: boolean; data?: string; error?: string }>;
     setReview: (algorithmId: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
     setDiff: (algorithmId: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
+  };
+  
+  // AI 服务
+  ai: {
+    // NLP 相关
+    semanticSearch: (
+      query: string,
+      limit?: number
+    ) => Promise<{ success: boolean; data?: VectorSearchResult[]; error?: string }>;
+    getIndexStatus: () => Promise<{ success: boolean; data?: VectorIndexStatus; error?: string }>;
+    rebuildIndex: () => Promise<{ success: boolean; error?: string }>;
+    addToIndex: (
+      noteId: string,
+      content: string
+    ) => Promise<{ success: boolean; error?: string }>;
+    removeFromIndex: (
+      noteId: string
+    ) => Promise<{ success: boolean; error?: string }>;
+    
+    // LLM 相关
+    getLLMConfig: () => Promise<{ success: boolean; data?: LLMConfig; error?: string }>;
+    setLLMConfig: (
+      config: LLMConfig
+    ) => Promise<{ success: boolean; error?: string }>;
+    validateApiKey: () => Promise<{ success: boolean; data?: boolean; error?: string }>;
+    chat: (
+      messages: ChatMessage[],
+      context?: string
+    ) => Promise<{ success: boolean; data?: string; error?: string }>;
+    askWithContext: (
+      question: string,
+      limit?: number
+    ) => Promise<{ success: boolean; data?: AIAnswerResult; error?: string }>;
+    checkContent: (
+      content: string,
+      knowledgeBase: string[]
+    ) => Promise<{ success: boolean; data?: ContentCheckResult; error?: string }>;
+    
+    // 流式对话
+    chatStreamStart: (
+      messages: ChatMessage[],
+      streamId: string
+    ) => Promise<{ success: boolean; error?: string }>;
+    chatStreamCancel: (
+      streamId: string
+    ) => Promise<{ success: boolean; error?: string }>;
+    
+    // 流式对话事件监听
+    onStreamChunk: (callback: (streamId: string, chunk: string) => void) => void;
+    onStreamEnd: (callback: (streamId: string) => void) => void;
+    onStreamError: (callback: (streamId: string, error: string) => void) => void;
+    offStreamChunk: (callback: (streamId: string, chunk: string) => void) => void;
+    offStreamEnd: (callback: (streamId: string) => void) => void;
+    offStreamError: (callback: (streamId: string, error: string) => void) => void;
   };
 }
 

@@ -19,8 +19,22 @@
       </button>
     </div>
 
-    <!-- 右侧：右侧栏控制 + 窗口控制按钮 -->
+    <!-- 右侧：AI助手 + 右侧栏控制 + 窗口控制按钮 -->
     <div class="flex items-center gap-1 titlebar-no-drag">
+      <!-- AI 助手按钮 -->
+      <button 
+        @click="toggleAIAssistant"
+        class="p-1.5 flex-shrink-0 inline-flex items-center justify-center transition-colors hover:opacity-70"
+        :class="{ 'text-primary': isAIActive }"
+        :title="t('ai.assistant')"
+      >
+        <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/>
+          <path d="M9 9h2v6H9zm4 0h2v6h-2z" fill="currentColor"/>
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+      </button>
+
       <button 
         @click="toggleRightSidebar"
         class="p-1.5 flex-shrink-0 inline-flex items-center justify-center transition-colors hover:opacity-70"
@@ -72,14 +86,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useIPC } from '@renderer/composables/useIPC';
+import { useSidebarStore } from '@renderer/stores/sidebar';
 import { IPCChannel } from '@shared/interfaces/ipc';
 
 const { t } = useI18n();
 const ipc = useIPC();
+const sidebarStore = useSidebarStore();
 const isMaximized = ref(false);
+
+// AI 助手状态
+const isAIActive = computed(() => sidebarStore.rightActiveView === 'ai');
 
 const emit = defineEmits<{
   (e: 'toggle-left-sidebar'): void;
@@ -104,6 +123,19 @@ const toggleLeftSidebar = () => {
 
 const toggleRightSidebar = () => {
   emit('toggle-right-sidebar');
+};
+
+const toggleAIAssistant = () => {
+  // 切换右侧栏视图为AI或待审核卡片
+  if (sidebarStore.rightActiveView === 'ai') {
+    sidebarStore.setRightActiveView('properties');
+  } else {
+    sidebarStore.setRightActiveView('ai');
+    // 确保右侧栏可见
+    if (!sidebarStore.rightVisible) {
+      emit('toggle-right-sidebar');
+    }
+  }
 };
 
 // 监听窗口状态变化

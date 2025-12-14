@@ -83,8 +83,9 @@
         @resize="sidebarStore.setRightWidth"
         @resize-end="sidebarStore.stopResize"
       >
-        <!-- 右侧栏内容 - 待审核卡片 -->
-        <RightSidebar />
+        <!-- 右侧栏内容 - 根据视图切换 -->
+        <AISidebar v-if="sidebarStore.rightActiveView === 'ai'" />
+        <RightSidebar v-else />
       </ResizableSidebar>
     </div>
 
@@ -173,6 +174,7 @@ import ReviewSidebar from '@renderer/components/review/ReviewSidebar.vue';
 import SearchSidebar from '@renderer/components/search/SearchSidebar.vue';
 import PluginSidebar from '@renderer/components/plugin/PluginSidebar.vue';
 import RightSidebar from '@renderer/components/layout/RightSidebar.vue';
+import AISidebar from '@renderer/components/ai/AISidebar.vue';
 import EmptyState from '@renderer/views/EmptyState.vue';
 import WelcomeView from '@renderer/views/WelcomeView.vue';
 import EditorView from '@renderer/views/EditorView.vue';
