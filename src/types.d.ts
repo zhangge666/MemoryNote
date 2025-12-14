@@ -40,6 +40,8 @@ import type {
   VectorIndexStatus,
   AIAnswerResult,
   ContentCheckResult,
+  EmbeddingConfig,
+  EmbeddingProvider,
 } from './shared/types/ai';
 
 // 算法注册信息
@@ -250,6 +252,17 @@ export interface IPCAPI {
     removeFromIndex: (
       noteId: string
     ) => Promise<{ success: boolean; error?: string }>;
+    
+    // Embedding 配置
+    getEmbeddingConfig: () => Promise<{ success: boolean; data?: EmbeddingConfig; error?: string }>;
+    setEmbeddingConfig: (
+      config: EmbeddingConfig
+    ) => Promise<{ success: boolean; error?: string }>;
+    getEmbeddingProviders: () => Promise<{ 
+      success: boolean; 
+      data?: Array<{ id: EmbeddingProvider; name: string; description: string; requiresApiKey: boolean }>;
+      error?: string 
+    }>;
     
     // LLM 相关
     getLLMConfig: () => Promise<{ success: boolean; data?: LLMConfig; error?: string }>;

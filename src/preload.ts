@@ -40,6 +40,8 @@ import type {
   VectorIndexStatus,
   AIAnswerResult,
   ContentCheckResult,
+  EmbeddingConfig,
+  EmbeddingProvider,
 } from './shared/types/ai';
 
 // 暴露基础 Electron API（用于窗口控制等）
@@ -410,6 +412,22 @@ contextBridge.exposeInMainWorld('ipc', {
       noteId: string
     ): Promise<{ success: boolean; error?: string }> =>
       ipcRenderer.invoke('ai:remove-from-index', noteId),
+    
+    // Embedding 配置
+    getEmbeddingConfig: (): Promise<{ success: boolean; data?: EmbeddingConfig; error?: string }> =>
+      ipcRenderer.invoke('ai:get-embedding-config'),
+    
+    setEmbeddingConfig: (
+      config: EmbeddingConfig
+    ): Promise<{ success: boolean; error?: string }> =>
+      ipcRenderer.invoke('ai:set-embedding-config', config),
+    
+    getEmbeddingProviders: (): Promise<{ 
+      success: boolean; 
+      data?: Array<{ id: EmbeddingProvider; name: string; description: string; requiresApiKey: boolean }>;
+      error?: string 
+    }> =>
+      ipcRenderer.invoke('ai:get-embedding-providers'),
     
     // LLM 相关
     getLLMConfig: (): Promise<{ success: boolean; data?: LLMConfig; error?: string }> =>

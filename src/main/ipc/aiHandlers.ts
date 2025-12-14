@@ -16,7 +16,9 @@ import type {
   VectorIndexStatus,
   AIAnswerResult,
   ContentCheckResult,
+  EmbeddingConfig,
 } from '../../shared/types/ai';
+import { getSupportedProviders } from '../services/embedding';
 
 let nlpService: NLPService;
 let llmService: LLMService;
@@ -47,6 +49,8 @@ export function updateAIServices(
   LLMService.resetInstance();
   
   nlpService = NLPService.getInstance(dbManager, fsService);
+  // NLP 服务将在首次使用时懒加载初始化
+  
   llmService = LLMService.getInstance();
   llmService.setNLPService(nlpService);
   
@@ -60,8 +64,10 @@ export function registerAIHandlers(
   dbManager: DatabaseManager,
   fsService: FileSystemService
 ): void {
-  // 初始化服务
+  // 初始化服务（不立即加载 embedding，懒加载）
   nlpService = NLPService.getInstance(dbManager, fsService);
+  // NLP 服务将在首次使用时懒加载初始化
+  
   llmService = LLMService.getInstance();
   llmService.setNLPService(nlpService);
 
@@ -149,6 +155,58 @@ export function registerAIHandlers(
         return { success: true };
       } catch (error: any) {
         console.error('[AIHandlers] Remove from index failed:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  );
+
+  // ==================== Embedding 配置 ====================
+
+  // 获取 Embedding 配置
+  ipcMain.handle(
+    'ai:get-embedding-config',
+    async (): Promise<{ success: boolean; data?: EmbeddingConfig; error?: string }> => {
+      try {
+        const config = nlpService.getEmbeddingConfig();
+        // 隐藏 API 密钥
+        const safeConfig = {
+          ...config,
+          apiKey: config.apiKey ? '***' : undefined,
+        };
+        return { success: true, data: safeConfig };
+      } catch (error: any) {
+        console.error('[AIHandlers] Get embedding config failed:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  );
+
+  // 设置 Embedding 配置
+  ipcMain.handle(
+    'ai:set-embedding-config',
+    async (
+      _event,
+      config: EmbeddingConfig
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        await nlpService.setEmbeddingConfig(config);
+        return { success: true };
+      } catch (error: any) {
+        console.error('[AIHandlers] Set embedding config failed:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  );
+
+  // 获取支持的 Embedding 提供商列表
+  ipcMain.handle(
+    'ai:get-embedding-providers',
+    async (): Promise<{ success: boolean; data?: any[]; error?: string }> => {
+      try {
+        const providers = getSupportedProviders();
+        return { success: true, data: providers };
+      } catch (error: any) {
+        console.error('[AIHandlers] Get embedding providers failed:', error);
         return { success: false, error: error.message };
       }
     }

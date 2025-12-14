@@ -5,6 +5,81 @@
 
 import type { Note } from './note';
 
+// ==================== Embedding 系统 ====================
+
+/**
+ * Embedding 提供商类型
+ */
+export type EmbeddingProvider = 'local' | 'openai' | 'qwen' | 'custom';
+
+/**
+ * Embedding 提供商配置
+ */
+export interface EmbeddingConfig {
+  provider: EmbeddingProvider;
+  apiKey?: string;
+  apiEndpoint?: string;
+  model: string;
+  dimensions?: number;  // 向量维度
+  batchSize?: number;   // 批处理大小
+}
+
+/**
+ * 各提供商默认模型配置
+ */
+export const EMBEDDING_PROVIDER_DEFAULTS: Record<EmbeddingProvider, Omit<EmbeddingConfig, 'apiKey'>> = {
+  local: {
+    provider: 'local',
+    model: 'Xenova/all-MiniLM-L6-v2',
+    dimensions: 384,
+    batchSize: 32,
+  },
+  openai: {
+    provider: 'openai',
+    model: 'text-embedding-3-small',
+    apiEndpoint: 'https://api.openai.com/v1/embeddings',
+    dimensions: 1536,
+    batchSize: 100,
+  },
+  qwen: {
+    provider: 'qwen',
+    model: 'text-embedding-v3',
+    apiEndpoint: 'https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding',
+    dimensions: 1024,
+    batchSize: 25,
+  },
+  custom: {
+    provider: 'custom',
+    model: 'custom-model',
+    dimensions: 768,
+    batchSize: 32,
+  },
+};
+
+/**
+ * Embedding 结果
+ */
+export interface EmbeddingResult {
+  embedding: number[];
+  model: string;
+  usage?: {
+    promptTokens: number;
+    totalTokens: number;
+  };
+}
+
+/**
+ * 批量 Embedding 结果
+ */
+export interface BatchEmbeddingResult {
+  embeddings: number[][];
+  model: string;
+  usage?: {
+    promptTokens: number;
+    totalTokens: number;
+  };
+}
+
 // ==================== NLP 系统 ====================
 
 /**
@@ -24,6 +99,9 @@ export interface VectorIndexStatus {
   indexedDocuments: number;
   lastUpdated: number;
   isBuilding: boolean;
+  embeddingProvider: EmbeddingProvider;
+  model: string;
+  dimensions: number;
 }
 
 // ==================== LLM 系统 ====================
@@ -131,7 +209,7 @@ export interface AIConfig {
  */
 export interface NLPConfig {
   enabled: boolean;
-  embeddingModel: string;
+  embedding: EmbeddingConfig;
   chunkSize: number;
   chunkOverlap: number;
   similarityThreshold: number;
@@ -159,11 +237,16 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
     maxTokens: 2048,
   },
   nlp: {
-    enabled: false,
-    embeddingModel: 'text-embedding-ada-002',
+    enabled: true,
+    embedding: {
+      provider: 'local',
+      model: 'Xenova/all-MiniLM-L6-v2',
+      dimensions: 384,
+      batchSize: 32,
+    },
     chunkSize: 500,
     chunkOverlap: 50,
-    similarityThreshold: 0.7,
+    similarityThreshold: 0.3,
   },
   assistant: {
     systemPrompt: 'You are a helpful AI assistant for the MemoryNote application. Help users with their notes, answer questions about their knowledge base, and provide suggestions for better note-taking.',
@@ -174,6 +257,29 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
 };
 
 // ==================== AI 服务接口 ====================
+
+/**
+ * Embedding 提供商接口
+ */
+export interface IEmbeddingProvider {
+  // 获取配置
+  getConfig(): EmbeddingConfig;
+  
+  // 初始化（加载模型等）
+  initialize(): Promise<void>;
+  
+  // 单文本向量化
+  embed(text: string): Promise<EmbeddingResult>;
+  
+  // 批量向量化
+  embedBatch(texts: string[]): Promise<BatchEmbeddingResult>;
+  
+  // 是否已初始化
+  isReady(): boolean;
+  
+  // 释放资源
+  dispose(): Promise<void>;
+}
 
 /**
  * NLP 服务接口
@@ -192,6 +298,10 @@ export interface INLPService {
   
   // 索引状态
   getIndexStatus(): Promise<VectorIndexStatus>;
+  
+  // 配置管理
+  setEmbeddingConfig(config: EmbeddingConfig): Promise<void>;
+  getEmbeddingConfig(): EmbeddingConfig;
 }
 
 /**

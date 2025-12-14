@@ -100,6 +100,11 @@
           <PluginSettings />
         </div>
 
+        <!-- AI 设置 -->
+        <div v-else-if="activeCategory === 'ai'" class="settings-section">
+          <AISettings />
+        </div>
+
         <!-- 关于 -->
         <div v-else-if="activeCategory === 'about'" class="settings-section">
           <div class="about-info">
@@ -121,6 +126,7 @@ import KeybindingSettings from '@renderer/components/settings/KeybindingSettings
 import ThemeSettings from '@renderer/components/settings/ThemeSettings.vue';
 import ReviewSettings from '@renderer/components/settings/ReviewSettings.vue';
 import PluginSettings from '@renderer/components/settings/PluginSettings.vue';
+import AISettings from '@renderer/components/settings/AISettings.vue';
 import AppButton from '@renderer/components/common/AppButton.vue';
 
 const { t } = useI18n();
@@ -140,6 +146,7 @@ const categories = [
   { id: 'review', icon: '📚', label: 'settings.review.title' },
   { id: 'keybindings', icon: '⌨️', label: 'settings.keybindings' },
   { id: 'plugins', icon: '🧩', label: 'settings.plugins' },
+  { id: 'ai', icon: '🤖', label: 'settings.ai.title' },
   { id: 'about', icon: 'ℹ️', label: 'settings.about' },
 ];
 
@@ -150,9 +157,9 @@ const currentCategory = computed(() => {
 // 加载工作目录配置
 const loadWorkspace = async () => {
   try {
-    const config = await window.electronAPI.invoke('config:get', 'app');
-    if (config && config.workspace) {
-      workspacePath.value = config.workspace;
+    const response = await window.electronAPI.invoke<{ workspace?: string }>('config:get', 'app');
+    if (response.success && response.data?.workspace) {
+      workspacePath.value = response.data.workspace;
     }
   } catch (error) {
     console.error('Failed to load workspace config:', error);
@@ -162,8 +169,10 @@ const loadWorkspace = async () => {
 // 加载删除确认配置
 const loadDeleteConfirmConfig = async () => {
   try {
-    const config = await window.electronAPI.invoke('config:get', 'ui');
-    skipDeleteConfirm.value = config?.skipDeleteConfirm || false;
+    const response = await window.electronAPI.invoke<{ skipDeleteConfirm?: boolean }>('config:get', 'ui');
+    if (response && response.success) {
+      skipDeleteConfirm.value = response.data?.skipDeleteConfirm || false;
+    }
   } catch (error) {
     console.error('Failed to load delete confirm config:', error);
   }
@@ -172,8 +181,8 @@ const loadDeleteConfirmConfig = async () => {
 // 重置删除确认
 const resetDeleteConfirm = async () => {
   try {
-    const config = await window.electronAPI.invoke('config:get', 'ui');
-    const uiConfig = config || {};
+    const response = await window.electronAPI.invoke<{ skipDeleteConfirm?: boolean }>('config:get', 'ui');
+    const uiConfig: { skipDeleteConfirm?: boolean } = (response && response.success) ? response.data || {} : {};
     uiConfig.skipDeleteConfirm = false;
     await window.electronAPI.invoke('config:set', 'ui', uiConfig);
     skipDeleteConfirm.value = false;
@@ -220,7 +229,7 @@ const selectWorkspace = async () => {
         buttons: [t('common.ok'), t('common.cancel')],
       });
 
-      if (response === 0) {
+      if (response.response === 0) {
         // 用户点击了"确定"
         try {
           // 调用热切换工作区

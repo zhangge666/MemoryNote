@@ -15,7 +15,16 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['better-sqlite3', 'chokidar'],
+      external: [
+        'better-sqlite3',
+        'chokidar',
+        '@xenova/transformers',
+        'onnxruntime-node',
+        'onnxruntime-web',
+        'sharp',
+        'vectra',
+        'gpt-3-encoder',
+      ],
     },
   },
 });
