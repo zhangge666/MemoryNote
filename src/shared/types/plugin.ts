@@ -144,15 +144,20 @@ export interface IPlugin {
 }
 
 /**
+ * 插件状态枚举
+ */
+export type PluginStatus = 'scanned' | 'loading' | 'loaded' | 'error' | 'disabled';
+
+/**
  * 插件信息（运行时）
  */
 export interface PluginInfo {
   /** 插件清单 */
   manifest: PluginManifest;
+  /** 插件状态 */
+  status: PluginStatus;
   /** 是否启用 */
   enabled: boolean;
-  /** 是否已加载 */
-  loaded: boolean;
   /** 插件路径 */
   path: string;
   /** 安装时间 */
@@ -161,6 +166,13 @@ export interface PluginInfo {
   updatedAt: number;
   /** 错误信息 */
   error?: string;
+  /** 已加载的算法 ID 列表 */
+  loadedAlgorithms?: string[];
+}
+
+// 为了兼容性，保留 loaded 属性的计算方法
+export function isPluginLoaded(plugin: PluginInfo): boolean {
+  return plugin.status === 'loaded';
 }
 
 /**

@@ -134,6 +134,20 @@ export function registerPluginHandlers(): void {
     }
   );
 
+  // 卸载所有插件
+  ipcMain.handle(
+    'plugin:uninstall-all',
+    async (): Promise<{ success: boolean; data?: { success: number; failed: number }; error?: string }> => {
+      try {
+        const result = await pluginManager.uninstallAllPlugins();
+        return { success: true, data: result };
+      } catch (error: any) {
+        console.error('[PluginHandlers] Uninstall all plugins failed:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  );
+
   // 启用插件
   ipcMain.handle(
     'plugin:enable',

@@ -9,6 +9,7 @@ import type {
   PluginInfo,
   PluginFilter,
 } from '../../shared/types/plugin';
+import { useAlgorithmStore } from './algorithm';
 
 export const usePluginStore = defineStore('plugin', () => {
   // 状态
@@ -152,6 +153,9 @@ export const usePluginStore = defineStore('plugin', () => {
       if (response.success) {
         // 刷新列表
         await loadPlugins();
+        // 刷新算法列表
+        const algorithmStore = useAlgorithmStore();
+        await algorithmStore.refresh();
         return true;
       } else {
         error.value = response.error || 'Failed to uninstall plugin';
@@ -167,17 +171,50 @@ export const usePluginStore = defineStore('plugin', () => {
   }
 
   /**
+   * 卸载所有插件
+   */
+  async function uninstallAllPlugins(): Promise<{ success: number; failed: number } | null> {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const response = await window.ipc.plugin.uninstallAll();
+      if (response.success && response.data) {
+        // 刷新列表
+        await loadPlugins();
+        // 刷新算法列表
+        const algorithmStore = useAlgorithmStore();
+        await algorithmStore.refresh();
+        return response.data;
+      } else {
+        error.value = response.error || 'Failed to uninstall all plugins';
+        return null;
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Failed to uninstall all plugins:', e);
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
    * 启用插件
    */
   async function enablePlugin(pluginId: string): Promise<boolean> {
+    console.log('[PluginStore] Enabling plugin:', pluginId);
     try {
       const response = await window.ipc.plugin.enable(pluginId);
+      console.log('[PluginStore] Enable response:', response);
       if (response.success) {
-        // 更新本地状态
-        const plugin = plugins.value.find(p => p.manifest.id === pluginId);
-        if (plugin) {
-          plugin.enabled = true;
-        }
+        // 重新加载插件列表以获取最新状态
+        await loadPlugins();
+        // 刷新算法列表
+        console.log('[PluginStore] Refreshing algorithm store...');
+        const algorithmStore = useAlgorithmStore();
+        await algorithmStore.refresh();
+        console.log('[PluginStore] Algorithm store refreshed, algorithms:', algorithmStore.reviewAlgorithms);
         return true;
       } else {
         error.value = response.error || 'Failed to enable plugin';
@@ -197,11 +234,11 @@ export const usePluginStore = defineStore('plugin', () => {
     try {
       const response = await window.ipc.plugin.disable(pluginId);
       if (response.success) {
-        // 更新本地状态
-        const plugin = plugins.value.find(p => p.manifest.id === pluginId);
-        if (plugin) {
-          plugin.enabled = false;
-        }
+        // 重新加载插件列表以获取最新状态
+        await loadPlugins();
+        // 刷新算法列表
+        const algorithmStore = useAlgorithmStore();
+        await algorithmStore.refresh();
         return true;
       } else {
         error.value = response.error || 'Failed to disable plugin';
@@ -255,6 +292,7 @@ export const usePluginStore = defineStore('plugin', () => {
     installFromZip,
     selectAndInstall,
     uninstallPlugin,
+    uninstallAllPlugins,
     enablePlugin,
     disablePlugin,
     refresh,

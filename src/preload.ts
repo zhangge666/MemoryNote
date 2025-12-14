@@ -321,6 +321,10 @@ contextBridge.exposeInMainWorld('ipc', {
     ): Promise<{ success: boolean; error?: string }> =>
       ipcRenderer.invoke('plugin:uninstall', pluginId),
     
+    // 卸载所有插件
+    uninstallAll: (): Promise<{ success: boolean; data?: { success: number; failed: number }; error?: string }> =>
+      ipcRenderer.invoke('plugin:uninstall-all'),
+    
     // 启用插件
     enable: (
       pluginId: string

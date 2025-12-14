@@ -42,6 +42,7 @@ export interface RegisteredAlgorithm {
   pluginId: string;
   pluginName: string;
   type: 'review' | 'diff';
+  isBuiltin: boolean;  // 新增：标识是否为内置算法
 }
 
 // Electron API 类型声明
@@ -204,6 +205,7 @@ export interface IPCAPI {
     uninstall: (
       pluginId: string
     ) => Promise<{ success: boolean; error?: string }>;
+    uninstallAll: () => Promise<{ success: boolean; data?: { success: number; failed: number }; error?: string }>;
     enable: (
       pluginId: string
     ) => Promise<{ success: boolean; error?: string }>;

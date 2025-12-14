@@ -20,6 +20,7 @@ import type {
   DailyReviewStats,
   CalendarDay,
   CalendarDayStatus,
+  ReviewAlgorithmResult,
 } from '../../shared/types/review';
 
 /**
@@ -268,7 +269,9 @@ export class ReviewService {
     newContent: string
   ): Promise<ReviewCard[]> {
     const db = getDatabase();
-    const changes = this.diffAlgorithm.diff(oldContent, newContent);
+    // 算法可能返回 Promise（沙箱执行），使用 await 处理
+    const diffResult = this.diffAlgorithm.diff(oldContent, newContent);
+    const changes: DiffChange[] = Array.isArray(diffResult) ? diffResult : await diffResult;
     const cards: ReviewCard[] = [];
 
     for (const change of changes) {
@@ -474,8 +477,9 @@ export class ReviewService {
       throw new Error(`Card not found: ${cardId}`);
     }
 
-    // 使用算法计算新参数
-    const calculated = this.reviewAlgorithm.calculate(card, result);
+    // 使用算法计算新参数（算法可能返回 Promise，沙箱执行）
+    const calcResult = this.reviewAlgorithm.calculate(card, result);
+    const calculated: ReviewAlgorithmResult = 'then' in calcResult ? await calcResult : calcResult;
     const now = Date.now();
 
     // 更新卡片

@@ -4,8 +4,9 @@
  */
 
 import { ipcMain } from 'electron';
-import { AlgorithmRegistry } from '../services/AlgorithmRegistry';
+import { AlgorithmRegistry, ALGORITHM_EVENTS } from '../services/AlgorithmRegistry';
 import { ConfigService } from '../services/ConfigService';
+import { ReviewService } from '../services/ReviewService';
 
 /**
  * 注册算法管理相关的 IPC 处理器
@@ -64,6 +65,12 @@ export function registerAlgorithmHandlers(): void {
       const success = registry.setCurrentReviewAlgorithm(algorithmId);
       
       if (success) {
+        // 应用到 ReviewService（职责分离：Registry 只记录 ID，Handler 负责应用）
+        const algorithm = registry.getReviewAlgorithm(algorithmId);
+        if (algorithm) {
+          ReviewService.getInstance().setReviewAlgorithm(algorithm);
+        }
+        
         // 保存到配置
         const reviewConfig = configService.get('review') || {};
         reviewConfig.algorithmId = algorithmId;
@@ -83,6 +90,12 @@ export function registerAlgorithmHandlers(): void {
       const success = registry.setCurrentDiffAlgorithm(algorithmId);
       
       if (success) {
+        // 应用到 ReviewService（职责分离：Registry 只记录 ID，Handler 负责应用）
+        const algorithm = registry.getDiffAlgorithm(algorithmId);
+        if (algorithm) {
+          ReviewService.getInstance().setDiffAlgorithm(algorithm);
+        }
+        
         // 保存到配置
         const reviewConfig = configService.get('review') || {};
         reviewConfig.diffAlgorithmId = algorithmId;
@@ -93,6 +106,22 @@ export function registerAlgorithmHandlers(): void {
     } catch (error) {
       console.error('[AlgorithmHandlers] Failed to set diff algorithm:', error);
       return { success: false, error: (error as Error).message };
+    }
+  });
+
+  // 监听算法变更事件（处理插件卸载时的自动切换）
+  registry.on(ALGORITHM_EVENTS.CURRENT_CHANGED, ({ type, newId }: { type: string; oldId?: string; newId: string }) => {
+    const reviewService = ReviewService.getInstance();
+    if (type === 'review') {
+      const algorithm = registry.getReviewAlgorithm(newId);
+      if (algorithm) {
+        reviewService.setReviewAlgorithm(algorithm);
+      }
+    } else if (type === 'diff') {
+      const algorithm = registry.getDiffAlgorithm(newId);
+      if (algorithm) {
+        reviewService.setDiffAlgorithm(algorithm);
+      }
     }
   });
 

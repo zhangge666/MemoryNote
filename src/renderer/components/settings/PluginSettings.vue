@@ -18,6 +18,14 @@
         <span class="action-icon">🔄</span>
         {{ t('common.refresh') }}
       </AppButton>
+      <AppButton 
+        variant="danger" 
+        @click="handleUninstallAll"
+        :disabled="isLoading || plugins.length === 0"
+      >
+        <span class="action-icon">🗑️</span>
+        {{ t('plugins.uninstallAll') }}
+      </AppButton>
     </div>
 
     <!-- 错误提示 -->
@@ -155,15 +163,37 @@ async function handleDisable(pluginId: string) {
 
 // 卸载插件
 async function handleUninstall(pluginId: string, pluginName: string) {
-  const confirmed = await window.electronAPI.dialog.showMessage({
+  const result = await window.electronAPI.dialog.showMessage({
     type: 'warning',
     title: t('plugins.uninstallConfirm'),
     message: t('plugins.uninstallConfirmDesc', { name: pluginName }),
     buttons: [t('common.ok'), t('common.cancel')],
   });
 
-  if (confirmed === 0) {
+  if (result.response === 0) {
     await pluginStore.uninstallPlugin(pluginId);
+  }
+}
+
+// 卸载所有插件
+async function handleUninstallAll() {
+  const result = await window.electronAPI.dialog.showMessage({
+    type: 'warning',
+    title: t('plugins.uninstallAllConfirm'),
+    message: t('plugins.uninstallAllConfirmDesc'),
+    buttons: [t('common.ok'), t('common.cancel')],
+  });
+
+  if (result.response === 0) {
+    const uninstallResult = await pluginStore.uninstallAllPlugins();
+    if (uninstallResult) {
+      // 显示结果提示
+      if (uninstallResult.failed === 0) {
+        console.log(t('plugins.uninstallAllSuccess', { success: uninstallResult.success }));
+      } else {
+        console.log(t('plugins.uninstallAllPartial', { success: uninstallResult.success, failed: uninstallResult.failed }));
+      }
+    }
   }
 }
 

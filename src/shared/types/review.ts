@@ -56,7 +56,19 @@ export interface ReviewStats {
 }
 
 /**
+ * 复习算法返回类型
+ */
+export interface ReviewAlgorithmResult {
+  interval: number;
+  difficulty: number;
+  easeFactor: number;
+  repetitions: number;
+  nextReview: number;
+}
+
+/**
  * 复习算法接口（可替换）
+ * 支持同步和异步实现（沙箱执行需要异步）
  */
 export interface IReviewAlgorithm {
   name: string;
@@ -66,24 +78,19 @@ export interface IReviewAlgorithm {
   calculate(
     card: ReviewCard,
     result: ReviewResult
-  ): {
-    interval: number;
-    difficulty: number;
-    easeFactor: number;
-    repetitions: number;
-    nextReview: number;
-  };
+  ): ReviewAlgorithmResult | Promise<ReviewAlgorithmResult>;
 }
 
 /**
  * Diff 算法接口（可替换）
+ * 支持同步和异步实现（沙箱执行需要异步）
  */
 export interface IDiffAlgorithm {
   name: string;
   /**
    * 计算两个文本之间的差异
    */
-  diff(oldText: string, newText: string): DiffChange[];
+  diff(oldText: string, newText: string): DiffChange[] | Promise<DiffChange[]>;
 }
 
 /**

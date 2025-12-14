@@ -21,16 +21,16 @@
       </div>
       <select 
         class="setting-select" 
-        :value="currentReviewAlgorithmId"
+        :value="algorithmStore.currentReviewAlgorithmId"
         @change="changeReviewAlgorithm"
       >
         <option 
-          v-for="algo in reviewAlgorithms" 
+          v-for="algo in algorithmStore.reviewAlgorithms" 
           :key="algo.id" 
           :value="algo.id"
         >
           {{ algo.name }}
-          <template v-if="algo.pluginId !== 'builtin'"> (插件)</template>
+          <template v-if="!algo.isBuiltin"> (插件)</template>
         </option>
       </select>
     </div>
@@ -42,16 +42,16 @@
       </div>
       <select 
         class="setting-select" 
-        :value="currentDiffAlgorithmId"
+        :value="algorithmStore.currentDiffAlgorithmId"
         @change="changeDiffAlgorithm"
       >
         <option 
-          v-for="algo in diffAlgorithms" 
+          v-for="algo in algorithmStore.diffAlgorithms" 
           :key="algo.id" 
           :value="algo.id"
         >
           {{ algo.name }}
-          <template v-if="algo.pluginId !== 'builtin'"> (插件)</template>
+          <template v-if="!algo.isBuiltin"> (插件)</template>
         </option>
       </select>
     </div>
@@ -91,20 +91,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { RegisteredAlgorithm } from '@/types'
+import { useAlgorithmStore } from '@renderer/stores/algorithm'
 
 const { t } = useI18n()
+const algorithmStore = useAlgorithmStore()
 
 // 配置项
 const autoGenerateCards = ref(true)
 const granularity = ref('paragraph')
 const syncToCloud = ref(false)
-
-// 算法列表
-const reviewAlgorithms = ref<RegisteredAlgorithm[]>([])
-const diffAlgorithms = ref<RegisteredAlgorithm[]>([])
-const currentReviewAlgorithmId = ref('builtin:sm2')
-const currentDiffAlgorithmId = ref('builtin:simple')
 
 // 加载配置
 onMounted(async () => {
@@ -117,42 +112,12 @@ onMounted(async () => {
       syncToCloud.value = config.syncToCloud ?? false
     }
     
-    // 加载可用算法
-    await loadAlgorithms()
+    // 加载可用算法（使用 store）
+    await algorithmStore.initialize()
   } catch (error) {
     console.error('Failed to load review config:', error)
   }
 })
-
-// 加载算法列表
-async function loadAlgorithms() {
-  try {
-    // 加载复习算法
-    const reviewRes = await window.ipc.algorithm.getReviewAlgorithms()
-    if (reviewRes.success && reviewRes.data) {
-      reviewAlgorithms.value = reviewRes.data
-    }
-    
-    // 加载 Diff 算法
-    const diffRes = await window.ipc.algorithm.getDiffAlgorithms()
-    if (diffRes.success && diffRes.data) {
-      diffAlgorithms.value = diffRes.data
-    }
-    
-    // 加载当前选中的算法
-    const currentReviewRes = await window.ipc.algorithm.getCurrentReview()
-    if (currentReviewRes.success && currentReviewRes.data) {
-      currentReviewAlgorithmId.value = currentReviewRes.data
-    }
-    
-    const currentDiffRes = await window.ipc.algorithm.getCurrentDiff()
-    if (currentDiffRes.success && currentDiffRes.data) {
-      currentDiffAlgorithmId.value = currentDiffRes.data
-    }
-  } catch (error) {
-    console.error('Failed to load algorithms:', error)
-  }
-}
 
 // 切换自动生成卡片
 async function toggleAutoGenerate() {
@@ -171,40 +136,14 @@ async function toggleAutoGenerate() {
 async function changeReviewAlgorithm(event: Event) {
   const target = event.target as HTMLSelectElement
   const newAlgorithmId = target.value
-  const oldAlgorithmId = currentReviewAlgorithmId.value
-  
-  currentReviewAlgorithmId.value = newAlgorithmId
-  
-  try {
-    const res = await window.ipc.algorithm.setReview(newAlgorithmId)
-    if (!res.success) {
-      console.error('Failed to set review algorithm:', res.error)
-      currentReviewAlgorithmId.value = oldAlgorithmId
-    }
-  } catch (error) {
-    console.error('Failed to set review algorithm:', error)
-    currentReviewAlgorithmId.value = oldAlgorithmId
-  }
+  await algorithmStore.setReviewAlgorithm(newAlgorithmId)
 }
 
 // 更改 Diff 算法
 async function changeDiffAlgorithm(event: Event) {
   const target = event.target as HTMLSelectElement
   const newAlgorithmId = target.value
-  const oldAlgorithmId = currentDiffAlgorithmId.value
-  
-  currentDiffAlgorithmId.value = newAlgorithmId
-  
-  try {
-    const res = await window.ipc.algorithm.setDiff(newAlgorithmId)
-    if (!res.success) {
-      console.error('Failed to set diff algorithm:', res.error)
-      currentDiffAlgorithmId.value = oldAlgorithmId
-    }
-  } catch (error) {
-    console.error('Failed to set diff algorithm:', error)
-    currentDiffAlgorithmId.value = oldAlgorithmId
-  }
+  await algorithmStore.setDiffAlgorithm(newAlgorithmId)
 }
 
 // 更改粒度

@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTabStore } from '@renderer/stores/tab';
 import { useNavigationStore } from '@renderer/stores/navigation';
@@ -36,6 +36,13 @@ import { usePluginStore } from '@renderer/stores/plugin';
 import NavButton from './NavButton.vue';
 import type { PluginView } from '@shared/types/plugin';
 
+// 导航项类型
+interface NavItem {
+  id: string;
+  icon: string;
+  pluginView?: PluginView;
+}
+
 const { t } = useI18n();
 const tabStore = useTabStore();
 const navigationStore = useNavigationStore();
@@ -43,16 +50,8 @@ const sidebarStore = useSidebarStore();
 
 const pluginStore = usePluginStore();
 
-// 加载插件视图
-const pluginViews = ref<PluginView[]>([]);
-
-onMounted(async () => {
-  await pluginStore.initialize();
-  loadPluginViews();
-});
-
-// 加载左侧边栏插件视图
-function loadPluginViews() {
+// 加载插件视图（使用 computed 保持响应式）
+const pluginViews = computed(() => {
   const views: PluginView[] = [];
   for (const plugin of pluginStore.enabledPlugins) {
     if (plugin.manifest.contributes?.views) {
@@ -63,10 +62,14 @@ function loadPluginViews() {
       }
     }
   }
-  pluginViews.value = views;
-}
+  return views;
+});
 
-const topItems = [
+onMounted(async () => {
+  await pluginStore.initialize();
+});
+
+const topItems: NavItem[] = [
   { id: 'notes', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
   { id: 'journal', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
   { id: 'review', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
@@ -74,8 +77,8 @@ const topItems = [
 ];
 
 // 动态生成包含插件视图的导航项
-const topItemsWithPlugins = computed(() => {
-  const items = [...topItems];
+const topItemsWithPlugins = computed((): NavItem[] => {
+  const items: NavItem[] = [...topItems];
   // 添加插件视图
   for (const view of pluginViews.value) {
     items.push({
