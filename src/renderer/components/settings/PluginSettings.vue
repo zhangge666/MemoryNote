@@ -8,7 +8,7 @@
         :disabled="isLoading"
       >
         <span class="action-icon">📦</span>
-        {{ t('plugins.installFromZip') }}
+        {{ t('settings.plugin.installFromZip') }}
       </AppButton>
       <AppButton 
         variant="secondary" 
@@ -24,7 +24,7 @@
         :disabled="isLoading || plugins.length === 0"
       >
         <span class="action-icon">🗑️</span>
-        {{ t('plugins.uninstallAll') }}
+        {{ t('settings.plugin.uninstallAll') }}
       </AppButton>
     </div>
 
@@ -45,8 +45,8 @@
     <div class="plugin-list">
       <div v-if="plugins.length === 0 && !isLoading" class="plugin-empty">
         <span class="empty-icon">🧩</span>
-        <h3>{{ t('plugins.noPlugins') }}</h3>
-        <p>{{ t('plugins.noPluginsDesc') }}</p>
+        <h3>{{ t('settings.plugin.noPlugins') }}</h3>
+        <p>{{ t('settings.plugin.noPluginsDesc') }}</p>
       </div>
 
       <div 
@@ -66,17 +66,17 @@
               class="plugin-status"
               :class="plugin.enabled ? 'enabled' : 'disabled'"
             >
-              {{ plugin.enabled ? t('plugins.enabled') : t('plugins.disabled') }}
+              {{ plugin.enabled ? t('settings.plugin.enabled') : t('settings.plugin.disabled') }}
             </span>
           </div>
           <p class="plugin-description">{{ plugin.manifest.description }}</p>
           <div class="plugin-meta">
             <span class="plugin-author">
-              <span class="meta-label">{{ t('plugins.author') }}:</span>
+              <span class="meta-label">{{ t('settings.plugin.author') }}:</span>
               {{ plugin.manifest.author }}
             </span>
             <span class="plugin-date">
-              <span class="meta-label">{{ t('plugins.installedAt') }}:</span>
+              <span class="meta-label">{{ t('settings.plugin.installedAt') }}:</span>
               {{ formatDate(plugin.installedAt) }}
             </span>
           </div>
@@ -92,7 +92,7 @@
             @click="handleDisable(plugin.manifest.id)"
             :disabled="isLoading"
           >
-            {{ t('plugins.disable') }}
+            {{ t('settings.plugin.disable') }}
           </AppButton>
           <AppButton
             v-else
@@ -101,7 +101,7 @@
             @click="handleEnable(plugin.manifest.id)"
             :disabled="isLoading"
           >
-            {{ t('plugins.enable') }}
+            {{ t('settings.plugin.enable') }}
           </AppButton>
           <AppButton
             variant="danger"
@@ -109,7 +109,7 @@
             @click="handleUninstall(plugin.manifest.id, plugin.manifest.name)"
             :disabled="isLoading"
           >
-            {{ t('plugins.uninstall') }}
+            {{ t('settings.plugin.uninstall') }}
           </AppButton>
         </div>
       </div>
@@ -165,8 +165,8 @@ async function handleDisable(pluginId: string) {
 async function handleUninstall(pluginId: string, pluginName: string) {
   const result = await window.electronAPI.dialog.showMessage({
     type: 'warning',
-    title: t('plugins.uninstallConfirm'),
-    message: t('plugins.uninstallConfirmDesc', { name: pluginName }),
+    title: t('settings.plugin.uninstallConfirm'),
+    message: t('settings.plugin.uninstallConfirmDesc', { name: pluginName }),
     buttons: [t('common.ok'), t('common.cancel')],
   });
 
@@ -179,8 +179,8 @@ async function handleUninstall(pluginId: string, pluginName: string) {
 async function handleUninstallAll() {
   const result = await window.electronAPI.dialog.showMessage({
     type: 'warning',
-    title: t('plugins.uninstallAllConfirm'),
-    message: t('plugins.uninstallAllConfirmDesc'),
+    title: t('settings.plugin.uninstallAllConfirm'),
+    message: t('settings.plugin.uninstallAllConfirmDesc'),
     buttons: [t('common.ok'), t('common.cancel')],
   });
 
@@ -189,9 +189,9 @@ async function handleUninstallAll() {
     if (uninstallResult) {
       // 显示结果提示
       if (uninstallResult.failed === 0) {
-        console.log(t('plugins.uninstallAllSuccess', { success: uninstallResult.success }));
+        console.log(t('settings.plugin.uninstallAllSuccess', { success: uninstallResult.success }));
       } else {
-        console.log(t('plugins.uninstallAllPartial', { success: uninstallResult.success, failed: uninstallResult.failed }));
+        console.log(t('settings.plugin.uninstallAllPartial', { success: uninstallResult.success, failed: uninstallResult.failed }));
       }
     }
   }

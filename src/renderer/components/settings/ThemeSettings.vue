@@ -34,7 +34,7 @@
               <span v-if="!theme.isBuiltin" class="custom-badge">{{ t('common.custom') }}</span>
             </div>
             <div class="theme-meta">
-              <span class="theme-type">{{ theme.type === 'light' ? t('settings.themeLight') : t('settings.themeDark') }}</span>
+              <span class="theme-type">{{ theme.type === 'light' ? t('settings.theme.themeLight') : t('settings.theme.themeDark') }}</span>
               <span class="theme-author">{{ theme.author }}</span>
             </div>
           </div>
