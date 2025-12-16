@@ -67,13 +67,10 @@
           <span>{{ t('settings.theme.followSystem') }}</span>
           <span class="setting-description">{{ t('settings.theme.followSystemDesc') }}</span>
         </div>
-        <button
-          class="toggle-button"
-          :class="{ active: followingSystem }"
-          @click="toggleFollowSystem"
-        >
-          <span class="toggle-slider"></span>
-        </button>
+        <BaseToggle
+        v-model="followingSystem"
+        @update:model-value="handleFollowSystemChange"
+      />
       </div>
     </div>
     
@@ -106,6 +103,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useThemeStore } from '@renderer/stores/theme';
 import CustomThemeEditor from './CustomThemeEditor.vue';
+import BaseToggle from '@renderer/components/common/BaseToggle.vue';
 
 const { t } = useI18n();
 const themeStore = useThemeStore();
@@ -133,10 +131,8 @@ const handleThemeSelect = async (themeId: string) => {
   await themeStore.switchTheme(themeId);
 };
 
-const toggleFollowSystem = () => {
-  followingSystem.value = !followingSystem.value;
-  
-  if (followingSystem.value) {
+const handleFollowSystemChange = (value: boolean) => {
+  if (value) {
     // 开始跟随系统
     unwatchSystem = themeStore.followSystemTheme();
   } else {
@@ -389,39 +385,7 @@ onUnmounted(() => {
   color: var(--theme-text-secondary);
 }
 
-.toggle-button {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--theme-border);
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
 
-.toggle-button:hover {
-  background: var(--theme-border-active);
-}
-
-.toggle-button.active {
-  background: var(--theme-primary);
-}
-
-.toggle-slider {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: white;
-  transition: transform 0.2s ease;
-}
-
-.toggle-button.active .toggle-slider {
-  transform: translateX(20px);
-}
 
 .theme-delete {
   position: absolute;

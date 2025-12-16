@@ -5,11 +5,11 @@
       <svg class="search-icon" viewBox="0 0 20 20" fill="none">
         <path d="M8.5 15a6.5 6.5 0 100-13 6.5 6.5 0 000 13zm6-6.5l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      <input
+      <BaseInput
         v-model="searchQuery"
-        type="text"
+        type="search"
         placeholder="搜索快捷键..."
-        class="search-input"
+        class="search-input-field"
       />
     </div>
 
@@ -43,12 +43,12 @@
           >
             <kbd>{{ formatKeybinding(binding.key) }}</kbd>
           </div>
-          <input
-            v-else
+          <BaseInput
+            v-if="editingKey && editingKey === binding.command"
             v-model="newKeybinding"
             type="text"
-            class="keybinding-input"
             placeholder="按下快捷键..."
+            class="keybinding-input-field"
             @keydown="handleKeybindingInput"
             @blur="cancelEdit"
           />
@@ -126,6 +126,7 @@ import { ref, computed } from 'vue';
 import { getKeybindingService } from '@renderer/services/KeybindingService';
 import { getCommandService } from '@renderer/services/CommandService';
 import { Keybinding } from '@shared/types/command';
+import BaseInput from '@renderer/components/common/BaseInput.vue';
 
 const keybindingService = getKeybindingService();
 const commandService = getCommandService();
@@ -304,7 +305,7 @@ function resetToDefaults() {
   margin: 0 auto;
 }
 
-/* 搜索框 */
+/* 搜索框容器 */
 .search-box {
   position: relative;
   margin-bottom: 1.5rem;
@@ -321,25 +322,8 @@ function resetToDefaults() {
   pointer-events: none;
 }
 
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  background: var(--theme-background-secondary);
-  border: 1px solid var(--theme-border);
-  border-radius: 8px;
-  color: var(--theme-text);
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.search-input::placeholder {
-  color: var(--theme-text-muted);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--theme-primary);
-  box-shadow: 0 0 0 3px var(--theme-primary)20;
+.search-input-field {
+  padding-left: 3rem;
 }
 
 /* 快捷键列表 */
@@ -431,24 +415,10 @@ function resetToDefaults() {
   text-align: center;
 }
 
-.keybinding-input {
-  width: 100%;
-  padding: 0.375rem 0.75rem;
-  background: var(--theme-input-background);
-  border: 2px solid var(--theme-primary);
-  border-radius: 6px;
-  font-family: var(--theme-font-mono);
-  font-size: 0.8125rem;
-  color: var(--theme-text);
-  box-shadow: 0 0 0 3px var(--theme-primary)20;
-}
-
-.keybinding-input:focus {
-  outline: none;
-}
-
-.keybinding-input::placeholder {
-  color: var(--theme-input-placeholder);
+/* 快捷键输入框 */
+.keybinding-input-field {
+  border: 2px solid var(--theme-primary) !important;
+  box-shadow: 0 0 0 3px var(--theme-primary)20 !important;
 }
 
 /* 操作按钮 */

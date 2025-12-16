@@ -2,18 +2,16 @@
   <div class="settings-section">
     <div class="setting-item">
       <label class="setting-label">{{ t('settings.general.language') }}</label>
-      <select class="setting-select">
+      <BaseSelect v-model="currentLanguage" disabled>
         <option value="zh-CN">简体中文</option>
         <option value="en-US">English</option>
-      </select>
+      </BaseSelect>
     </div>
     <div class="setting-item">
       <label class="setting-label">{{ t('settings.general.workspace') }}</label>
       <div class="workspace-input-group">
-        <input 
-          type="text" 
-          class="setting-input workspace-input" 
-          :value="workspacePath" 
+        <BaseInput 
+          v-model="workspacePath"
           readonly 
           :title="workspacePath"
         />
@@ -50,8 +48,13 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppButton from '@renderer/components/common/AppButton.vue';
+import BaseSelect from '@renderer/components/common/BaseSelect.vue';
+import BaseInput from '@renderer/components/common/BaseInput.vue';
 
 const { t } = useI18n();
+
+// 当前语言
+const currentLanguage = ref('zh-CN');
 
 // 工作目录相关
 const workspacePath = ref('');
@@ -196,27 +199,9 @@ defineExpose({
   color: var(--color-text);
 }
 
-.setting-select,
-.setting-input {
-  padding: 0.5rem 0.75rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  color: var(--color-text);
-  font-size: 0.875rem;
-  min-width: 200px;
-}
-
-.setting-select:focus,
-.setting-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.setting-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
+.workspace-input {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 工作目录输入组 */
@@ -224,22 +209,13 @@ defineExpose({
   display: flex;
   gap: 0.5rem;
   align-items: center;
-}
-
-.workspace-input {
   flex: 1;
   min-width: 0;
 }
 
-/* 重置按钮 */
-.reset-button {
-  margin-left: 0.5rem;
-}
-
-.setting-description {
-  display: flex;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+.workspace-input-group :deep(.base-input-wrapper) {
+  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 </style>

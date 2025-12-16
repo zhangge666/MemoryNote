@@ -5,13 +5,7 @@
         <span>{{ t('settings.review.autoGenerateCards') }}</span>
         <span class="setting-description">{{ t('settings.review.autoGenerateCardsDesc') }}</span>
       </div>
-      <button
-        class="toggle-button"
-        :class="{ active: autoGenerateCards }"
-        @click="toggleAutoGenerate"
-      >
-        <span class="toggle-slider"></span>
-      </button>
+      <BaseToggle v-model="autoGenerateCards" @update:model-value="saveAutoGenerate" />
     </div>
     
     <div class="setting-item">
@@ -19,10 +13,9 @@
         <span>{{ t('settings.review.algorithm') }}</span>
         <span class="setting-description">{{ t('settings.review.algorithmDesc') }}</span>
       </div>
-      <select 
-        class="setting-select" 
-        :value="algorithmStore.currentReviewAlgorithmId"
-        @change="changeReviewAlgorithm"
+      <BaseSelect
+        :model-value="algorithmStore.currentReviewAlgorithmId"
+        @update:model-value="changeReviewAlgorithmValue"
       >
         <option 
           v-for="algo in algorithmStore.reviewAlgorithms" 
@@ -32,7 +25,7 @@
           {{ algo.name }}
           <template v-if="!algo.isBuiltin"> (插件)</template>
         </option>
-      </select>
+      </BaseSelect>
     </div>
     
     <div class="setting-item">
@@ -40,10 +33,9 @@
         <span>{{ t('settings.review.diffAlgorithm') }}</span>
         <span class="setting-description">{{ t('settings.review.diffAlgorithmDesc') }}</span>
       </div>
-      <select 
-        class="setting-select" 
-        :value="algorithmStore.currentDiffAlgorithmId"
-        @change="changeDiffAlgorithm"
+      <BaseSelect
+        :model-value="algorithmStore.currentDiffAlgorithmId"
+        @update:model-value="changeDiffAlgorithmValue"
       >
         <option 
           v-for="algo in algorithmStore.diffAlgorithms" 
@@ -53,7 +45,7 @@
           {{ algo.name }}
           <template v-if="!algo.isBuiltin"> (插件)</template>
         </option>
-      </select>
+      </BaseSelect>
     </div>
     
     <div class="setting-item">
@@ -61,15 +53,14 @@
         <span>{{ t('settings.review.granularity') }}</span>
         <span class="setting-description">{{ t('settings.review.granularityDesc') }}</span>
       </div>
-      <select 
-        class="setting-select" 
-        :value="granularity"
-        @change="changeGranularity"
+      <BaseSelect
+        v-model="granularity"
+        @update:model-value="saveGranularity"
       >
         <option value="paragraph">{{ t('settings.review.paragraph') }}</option>
         <option value="sentence">{{ t('settings.review.sentence') }}</option>
         <option value="word">{{ t('settings.review.word') }}</option>
-      </select>
+      </BaseSelect>
     </div>
     
     <div class="setting-item">
@@ -77,13 +68,7 @@
         <span>{{ t('settings.review.syncToCloud') }}</span>
         <span class="setting-description">{{ t('settings.review.syncToCloudDesc') }}</span>
       </div>
-      <button
-        class="toggle-button"
-        :class="{ active: syncToCloud }"
-        @click="toggleSyncToCloud"
-      >
-        <span class="toggle-slider"></span>
-      </button>
+      <BaseToggle v-model="syncToCloud" @update:model-value="saveSyncToCloud" />
     </div>
   </div>
 </template>
@@ -92,6 +77,8 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAlgorithmStore } from '@renderer/stores/algorithm'
+import BaseToggle from '@renderer/components/common/BaseToggle.vue'
+import BaseSelect from '@renderer/components/common/BaseSelect.vue'
 
 const { t } = useI18n()
 const algorithmStore = useAlgorithmStore()
@@ -119,56 +106,48 @@ onMounted(async () => {
   }
 })
 
-// 切换自动生成卡片
-async function toggleAutoGenerate() {
-  autoGenerateCards.value = !autoGenerateCards.value
+// 保存自动生成卡片配置
+async function saveAutoGenerate(value: boolean) {
   try {
     const config = await window.ipc.config.get('review') || {}
-    config.autoGenerateCards = autoGenerateCards.value
+    config.autoGenerateCards = value
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
-    autoGenerateCards.value = !autoGenerateCards.value
+    autoGenerateCards.value = !value
   }
 }
 
 // 更改复习算法
-async function changeReviewAlgorithm(event: Event) {
-  const target = event.target as HTMLSelectElement
-  const newAlgorithmId = target.value
-  await algorithmStore.setReviewAlgorithm(newAlgorithmId)
+async function changeReviewAlgorithmValue(value: string | number) {
+  await algorithmStore.setReviewAlgorithm(value as string)
 }
 
 // 更改 Diff 算法
-async function changeDiffAlgorithm(event: Event) {
-  const target = event.target as HTMLSelectElement
-  const newAlgorithmId = target.value
-  await algorithmStore.setDiffAlgorithm(newAlgorithmId)
+async function changeDiffAlgorithmValue(value: string | number) {
+  await algorithmStore.setDiffAlgorithm(value as string)
 }
 
-// 更改粒度
-async function changeGranularity(event: Event) {
-  const target = event.target as HTMLSelectElement
-  granularity.value = target.value as any
+// 保存粒度配置
+async function saveGranularity(value: string | number) {
   try {
     const config = await window.ipc.config.get('review') || {}
-    config.granularity = granularity.value
+    config.granularity = value
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
   }
 }
 
-// 切换云同步
-async function toggleSyncToCloud() {
-  syncToCloud.value = !syncToCloud.value
+// 保存云同步配置
+async function saveSyncToCloud(value: boolean) {
   try {
     const config = await window.ipc.config.get('review') || {}
-    config.syncToCloud = syncToCloud.value
+    config.syncToCloud = value
     await window.ipc.config.set('review', config)
   } catch (error) {
     console.error('Failed to save review config:', error)
-    syncToCloud.value = !syncToCloud.value
+    syncToCloud.value = !value
   }
 }
 </script>
@@ -203,52 +182,5 @@ async function toggleSyncToCloud() {
   color: var(--color-text-secondary);
 }
 
-.toggle-button {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--color-border);
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
 
-.toggle-button:hover {
-  background: var(--color-border-active);
-}
-
-.toggle-button.active {
-  background: var(--color-primary);
-}
-
-.toggle-slider {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: white;
-  transition: transform 0.2s ease;
-}
-
-.toggle-button.active .toggle-slider {
-  transform: translateX(20px);
-}
-
-.setting-select {
-  padding: 0.5rem 0.75rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  color: var(--color-text);
-  font-size: 0.875rem;
-  min-width: 150px;
-}
-
-.setting-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
 </style>

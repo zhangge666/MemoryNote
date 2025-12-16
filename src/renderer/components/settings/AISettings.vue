@@ -8,11 +8,9 @@
           <label class="setting-label">{{ t('settings.ai.enableAI') }}</label>
           <div class="setting-description">{{ t('settings.ai.enableAIDesc') }}</div>
         </div>
-        <input 
-          type="checkbox" 
-          class="setting-checkbox"
+        <BaseToggle 
           v-model="aiConfig.enabled"
-          @change="saveConfig"
+          @update:model-value="saveConfig"
         />
       </div>
     </div>
@@ -26,11 +24,9 @@
           <label class="setting-label">{{ t('settings.ai.enableNLP') }}</label>
           <div class="setting-description">{{ t('settings.ai.enableNLPDesc') }}</div>
         </div>
-        <input 
-          type="checkbox" 
-          class="setting-checkbox"
+        <BaseToggle 
           v-model="aiConfig.nlp.enabled"
-          @change="saveConfig"
+          @update:model-value="saveConfig"
         />
       </div>
 
@@ -39,10 +35,9 @@
           <label class="setting-label">{{ t('settings.ai.embeddingProvider') }}</label>
           <div class="setting-description">{{ t('settings.ai.embeddingProviderDesc') }}</div>
         </div>
-        <select 
-          class="setting-select"
+        <BaseSelect 
           v-model="aiConfig.nlp.embedding.provider"
-          @change="onProviderChange"
+          @update:model-value="onProviderChange"
         >
           <option 
             v-for="provider in embeddingProviders" 
@@ -51,7 +46,7 @@
           >
             {{ provider.name }}
           </option>
-        </select>
+        </BaseSelect>
       </div>
 
       <!-- API Key 输入框 (仅对需要 API Key 的提供商显示) -->
@@ -60,10 +55,9 @@
           <label class="setting-label">{{ t('settings.ai.apiKey') }}</label>
           <div class="setting-description">{{ t('settings.ai.apiKeyDesc') }}</div>
         </div>
-        <input 
-          type="password" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.nlp.embedding.apiKey"
+          type="password"
           :placeholder="t('settings.ai.apiKeyPlaceholder')"
           @blur="saveConfig"
         />
@@ -75,10 +69,9 @@
           <label class="setting-label">{{ t('settings.ai.customEndpoint') }}</label>
           <div class="setting-description">{{ t('settings.ai.customEndpointDesc') }}</div>
         </div>
-        <input 
-          type="text" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.nlp.embedding.apiEndpoint"
+          type="text"
           :placeholder="t('settings.ai.customEndpointPlaceholder')"
           @blur="saveConfig"
         />
@@ -90,10 +83,9 @@
           <label class="setting-label">{{ t('settings.ai.embeddingModel') }}</label>
           <div class="setting-description">{{ t('settings.ai.embeddingModelDesc') }}</div>
         </div>
-        <input 
-          type="text" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.nlp.embedding.model"
+          type="text"
           :placeholder="getDefaultModel(aiConfig.nlp.embedding.provider)"
           @blur="saveConfig"
         />
@@ -105,10 +97,9 @@
           <label class="setting-label">{{ t('settings.ai.dimensions') }}</label>
           <div class="setting-description">{{ t('settings.ai.dimensionsDesc') }}</div>
         </div>
-        <input 
-          type="number" 
-          class="setting-input"
+        <BaseInput 
           v-model.number="aiConfig.nlp.embedding.dimensions"
+          type="number"
           min="128"
           max="4096"
           @blur="saveConfig"
@@ -121,10 +112,9 @@
           <label class="setting-label">{{ t('settings.ai.similarityThreshold') }}</label>
           <div class="setting-description">{{ t('settings.ai.similarityThresholdDesc') }}</div>
         </div>
-        <input 
-          type="number" 
-          class="setting-input"
+        <BaseInput 
           v-model.number="aiConfig.nlp.similarityThreshold"
+          type="number"
           min="0"
           max="1"
           step="0.01"
@@ -142,16 +132,15 @@
           <label class="setting-label">{{ t('settings.ai.llmProvider') }}</label>
           <div class="setting-description">{{ t('settings.ai.llmProviderDesc') }}</div>
         </div>
-        <select 
-          class="setting-select"
+        <BaseSelect 
           v-model="aiConfig.llm.provider"
-          @change="onLLMProviderChange"
+          @update:model-value="onLLMProviderChange"
         >
           <option value="openai">OpenAI</option>
           <option value="anthropic">Anthropic</option>
           <option value="local">Local (TODO)</option>
           <option value="custom">Custom</option>
-        </select>
+        </BaseSelect>
       </div>
 
       <!-- API Key -->
@@ -160,10 +149,9 @@
           <label class="setting-label">{{ t('settings.ai.apiKey') }}</label>
           <div class="setting-description">{{ t('settings.ai.apiKeyDesc') }}</div>
         </div>
-        <input 
-          type="password" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.llm.apiKey"
+          type="password"
           :placeholder="t('settings.ai.apiKeyPlaceholder')"
           @blur="saveConfig"
         />
@@ -175,10 +163,9 @@
           <label class="setting-label">{{ t('settings.ai.customEndpoint') }}</label>
           <div class="setting-description">{{ t('settings.ai.customLLMEndpointDesc') }}</div>
         </div>
-        <input 
-          type="text" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.llm.apiEndpoint"
+          type="text"
           :placeholder="t('settings.ai.customEndpointPlaceholder')"
           @blur="saveConfig"
         />
@@ -190,10 +177,9 @@
           <label class="setting-label">{{ t('settings.ai.llmModel') }}</label>
           <div class="setting-description">{{ t('settings.ai.llmModelDesc') }}</div>
         </div>
-        <input 
-          type="text" 
-          class="setting-input"
+        <BaseInput 
           v-model="aiConfig.llm.model"
+          type="text"
           :placeholder="getDefaultLLMModel(aiConfig.llm.provider)"
           @blur="saveConfig"
         />
@@ -205,10 +191,9 @@
           <label class="setting-label">{{ t('settings.ai.temperature') }}</label>
           <div class="setting-description">{{ t('settings.ai.temperatureDesc') }}</div>
         </div>
-        <input 
-          type="number" 
-          class="setting-input"
+        <BaseInput 
           v-model.number="aiConfig.llm.temperature"
+          type="number"
           min="0"
           max="2"
           step="0.1"
@@ -222,10 +207,9 @@
           <label class="setting-label">{{ t('settings.ai.maxTokens') }}</label>
           <div class="setting-description">{{ t('settings.ai.maxTokensDesc') }}</div>
         </div>
-        <input 
-          type="number" 
-          class="setting-input"
+        <BaseInput 
           v-model.number="aiConfig.llm.maxTokens"
+          type="number"
           min="1"
           max="32768"
           @blur="saveConfig"
@@ -242,11 +226,9 @@
           <label class="setting-label">{{ t('settings.ai.streamResponses') }}</label>
           <div class="setting-description">{{ t('settings.ai.streamResponsesDesc') }}</div>
         </div>
-        <input 
-          type="checkbox" 
-          class="setting-checkbox"
+        <BaseToggle 
           v-model="aiConfig.assistant.streamResponses"
-          @change="saveConfig"
+          @update:model-value="saveConfig"
         />
       </div>
 
@@ -255,11 +237,9 @@
           <label class="setting-label">{{ t('settings.ai.useKnowledgeBase') }}</label>
           <div class="setting-description">{{ t('settings.ai.useKnowledgeBaseDesc') }}</div>
         </div>
-        <input 
-          type="checkbox" 
-          class="setting-checkbox"
+        <BaseToggle 
           v-model="aiConfig.assistant.useKnowledgeBase"
-          @change="saveConfig"
+          @update:model-value="saveConfig"
         />
       </div>
 
@@ -268,10 +248,9 @@
           <label class="setting-label">{{ t('settings.ai.maxContextNotes') }}</label>
           <div class="setting-description">{{ t('settings.ai.maxContextNotesDesc') }}</div>
         </div>
-        <input 
-          type="number" 
-          class="setting-input"
+        <BaseInput 
           v-model.number="aiConfig.assistant.maxContextNotes"
+          type="number"
           min="1"
           max="20"
           @blur="saveConfig"
@@ -312,6 +291,9 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppButton from '@renderer/components/common/AppButton.vue';
+import BaseToggle from '@renderer/components/common/BaseToggle.vue';
+import BaseSelect from '@renderer/components/common/BaseSelect.vue';
+import BaseInput from '@renderer/components/common/BaseInput.vue';
 import type { AIConfig, EmbeddingProvider } from '@shared/types/ai';
 
 const { t } = useI18n();
@@ -604,28 +586,7 @@ watch(
   line-height: 1.4;
 }
 
-.setting-select,
-.setting-input {
-  width: 200px;
-  padding: 0.5rem 0.75rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  color: var(--color-text);
-  font-size: 0.875rem;
-}
 
-.setting-select:focus,
-.setting-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.setting-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
 
 .settings-actions {
   display: flex;
