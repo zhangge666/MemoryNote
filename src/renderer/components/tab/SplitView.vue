@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="split-view">
     <!-- 单一布局 -->
     <div v-if="layout.type === 'single' && layout.groupId" class="split-single">
@@ -215,7 +215,7 @@ function handleGroupActivate(groupId: string) {
   flex-direction: row;
   width: 100%;
   height: 100%;
-  background: var(--color-border);
+  background: var(--theme-border);
 }
 
 .split-vertical {
@@ -223,13 +223,13 @@ function handleGroupActivate(groupId: string) {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: var(--color-border);
+  background: var(--theme-border);
 }
 
 .split-pane {
   min-width: 200px;
   min-height: 200px;
-  background: var(--color-background);
+  background: var(--theme-background);
 }
 </style>
 

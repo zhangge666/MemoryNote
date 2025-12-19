@@ -374,7 +374,7 @@ export class ReviewService {
   /**
    * 获取待复习的卡片
    */
-  async getDueCards(limit: number = 20): Promise<ReviewCard[]> {
+  async getDueCards(limit = 20): Promise<ReviewCard[]> {
     const db = getDatabase();
     const now = Date.now();
 
@@ -642,7 +642,7 @@ export class ReviewService {
   /**
    * 获取复习历史
    */
-  async getReviewHistory(cardId: number, limit: number = 10): Promise<ReviewHistory[]> {
+  async getReviewHistory(cardId: number, limit = 10): Promise<ReviewHistory[]> {
     const db = getDatabase();
 
     const rows = await db.query<any>(
@@ -665,7 +665,7 @@ export class ReviewService {
   /**
    * 获取每日复习统计
    */
-  async getDailyStats(days: number = 30): Promise<DailyReviewStats[]> {
+  async getDailyStats(days = 30): Promise<DailyReviewStats[]> {
     const db = getDatabase();
     const stats: DailyReviewStats[] = [];
 

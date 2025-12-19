@@ -223,10 +223,10 @@ onMounted(async () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--color-error-bg, rgba(239, 68, 68, 0.1));
-  border: 1px solid var(--color-error, #ef4444);
-  border-radius: 8px;
-  color: var(--color-error, #ef4444);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
+  border: 1px solid var(--theme-error);
+  border-radius: var(--radius-md);
+  color: var(--theme-error);
   margin-bottom: 1rem;
 }
 
@@ -243,6 +243,12 @@ onMounted(async () => {
   color: inherit;
   padding: 0;
   line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.error-dismiss:hover {
+  opacity: 1;
 }
 
 .plugin-loading {
@@ -251,14 +257,14 @@ onMounted(async () => {
   gap: 0.75rem;
   padding: 2rem;
   justify-content: center;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border: 2px solid var(--theme-border);
+  border-top-color: var(--theme-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -276,47 +282,51 @@ onMounted(async () => {
 .plugin-empty {
   text-align: center;
   padding: 3rem 2rem;
-  background: var(--color-surface);
-  border: 1px dashed var(--color-border);
-  border-radius: 12px;
+  background: var(--theme-background-secondary);
+  border: 1px dashed var(--theme-border-light);
+  border-radius: var(--radius-lg);
 }
 
 .empty-icon {
   font-size: 3rem;
   display: block;
   margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 .plugin-empty h3 {
   margin: 0 0 0.5rem;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .plugin-empty p {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .plugin-card {
   display: flex;
   gap: 1rem;
   padding: 1.25rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  transition: all 0.2s;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border-light);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
 }
 
 .plugin-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--theme-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .plugin-card.disabled {
   opacity: 0.7;
+  background: var(--theme-background);
 }
 
 .plugin-card.has-error {
-  border-color: var(--color-error, #ef4444);
+  border-color: var(--theme-error);
 }
 
 .plugin-icon {
@@ -326,9 +336,10 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
-  border-radius: 12px;
+  background: var(--theme-background);
+  border-radius: var(--radius-md);
   flex-shrink: 0;
+  border: 1px solid var(--theme-border-light);
 }
 
 .plugin-info {
@@ -348,37 +359,38 @@ onMounted(async () => {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .plugin-version {
   font-size: 0.75rem;
   padding: 0.125rem 0.5rem;
-  background: var(--color-background);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
+  background: var(--theme-background);
+  border-radius: var(--radius-sm);
+  color: var(--theme-text-secondary);
+  border: 1px solid var(--theme-border-light);
 }
 
 .plugin-status {
   font-size: 0.75rem;
   padding: 0.125rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .plugin-status.enabled {
-  background: var(--color-success-bg, rgba(34, 197, 94, 0.1));
-  color: var(--color-success, #22c55e);
+  background: color-mix(in srgb, var(--theme-success) 10%, transparent);
+  color: var(--theme-success);
 }
 
 .plugin-status.disabled {
-  background: var(--color-text-muted-bg, rgba(156, 163, 175, 0.1));
-  color: var(--color-text-muted);
+  background: var(--theme-background-tertiary);
+  color: var(--theme-text-muted);
 }
 
 .plugin-description {
   margin: 0 0 0.75rem;
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   line-height: 1.5;
 }
 
@@ -386,20 +398,20 @@ onMounted(async () => {
   display: flex;
   gap: 1.5rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
 }
 
 .meta-label {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .plugin-error-message {
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background: var(--color-error-bg, rgba(239, 68, 68, 0.1));
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
-  color: var(--color-error, #ef4444);
+  color: var(--theme-error);
 }
 
 .plugin-controls {

@@ -154,19 +154,23 @@ function handleEditBlur() {
 .node-content {
   display: flex;
   align-items: center;
-  height: 24px;
+  height: 28px;
   cursor: pointer;
-  border-radius: 4px;
-  margin: 0 4px;
-  transition: background 0.1s;
+  border-radius: var(--radius-sm);
+  margin: 1px 4px;
+  transition: all 0.15s ease;
+  color: var(--theme-text-secondary);
 }
 
 .node-content:hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
 .node-content.is-selected {
-  background: var(--color-hover);
+  background: var(--theme-background-secondary);
+  color: var(--theme-primary);
+  font-weight: 500;
 }
 
 .node-content.is-folder-active {
@@ -180,8 +184,13 @@ function handleEditBlur() {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   transition: transform 0.1s;
+  opacity: 0.7;
+}
+
+.node-content:hover .node-chevron {
+  opacity: 1;
 }
 
 .node-chevron svg {
@@ -210,12 +219,16 @@ function handleEditBlur() {
   font-size: 16px;
   line-height: 1;
   margin: 0 4px;
+  opacity: 0.8;
+}
+
+.node-content:hover .node-icon {
+  opacity: 1;
 }
 
 .node-name {
   flex: 1;
   font-size: 13px;
-  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -223,13 +236,13 @@ function handleEditBlur() {
 
 .node-name-input {
   flex: 1;
-  background: var(--color-background);
-  border: 1px solid var(--color-primary);
-  border-radius: 2px;
+  background: var(--theme-background);
+  border: 1px solid var(--theme-primary);
+  border-radius: var(--radius-sm);
   padding: 0 4px;
   font-size: 13px;
   outline: none;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .node-children {

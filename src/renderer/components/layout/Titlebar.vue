@@ -157,11 +157,11 @@ onUnmounted(() => {
 
 /* Window buttons */
 .window-btn {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .close-btn {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 /* 确保标题栏按钮显示正常 */

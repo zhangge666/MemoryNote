@@ -224,8 +224,8 @@ defineExpose({ refresh: loadCalendarData });
 
 <style scoped>
 .review-calendar {
-  background: var(--color-background-secondary);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 16px;
 }
@@ -244,17 +244,17 @@ defineExpose({ refresh: loadCalendarData });
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--theme-text);
   transition: all 0.2s;
 }
 
 .nav-btn:hover {
-  background: var(--color-background-hover);
-  border-color: var(--color-primary);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-primary);
 }
 
 .arrow {
@@ -265,7 +265,7 @@ defineExpose({ refresh: loadCalendarData });
 .month-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 /* 星期行 */
@@ -279,7 +279,7 @@ defineExpose({ refresh: loadCalendarData });
 .weekday {
   text-align: center;
   font-size: 10px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   padding: 4px 0;
 }
 
@@ -299,14 +299,14 @@ defineExpose({ refresh: loadCalendarData });
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: default;
   transition: all 0.15s;
-  background: var(--color-background);
+  background: var(--theme-background);
 }
 
 .day-cell:not(.empty):not(.today):hover {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-hover);
 }
 
 .day-cell.other {
@@ -316,15 +316,15 @@ defineExpose({ refresh: loadCalendarData });
 
 .day-number {
   font-size: 11px;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .day-cell.today {
-  background: var(--color-primary);
+  background: var(--theme-primary);
 }
 
 .day-cell.today .day-number {
-  color: white;
+  color: var(--theme-text-inverse);
   font-weight: 600;
 }
 
@@ -338,15 +338,15 @@ defineExpose({ refresh: loadCalendarData });
 
 /* 状态颜色 */
 .day-cell.pending .day-dot {
-  background: #3b82f6; /* 蓝色 - 待复习计划 */
+  background: var(--theme-info); /* 蓝色 - 待复习计划 */
 }
 
 .day-cell.incomplete .day-dot {
-  background: #ef4444; /* 红色 - 未完成 */
+  background: var(--theme-error); /* 红色 - 未完成 */
 }
 
 .day-cell.completed .day-dot {
-  background: #22c55e; /* 绿色 - 已完成 */
+  background: var(--theme-success); /* 绿色 - 已完成 */
 }
 
 .day-cell.today.pending .day-dot,
@@ -357,15 +357,15 @@ defineExpose({ refresh: loadCalendarData });
 }
 
 .day-cell.today.pending .day-dot {
-  box-shadow: 0 0 0 2px #3b82f6;
+  box-shadow: 0 0 0 2px var(--theme-info);
 }
 
 .day-cell.today.incomplete .day-dot {
-  box-shadow: 0 0 0 2px #ef4444;
+  box-shadow: 0 0 0 2px var(--theme-error);
 }
 
 .day-cell.today.completed .day-dot {
-  box-shadow: 0 0 0 2px #22c55e;
+  box-shadow: 0 0 0 2px var(--theme-success);
 }
 
 /* 图例 */
@@ -375,7 +375,7 @@ defineExpose({ refresh: loadCalendarData });
   gap: 12px;
   margin-top: 12px;
   padding-top: 8px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--theme-border);
 }
 
 .legend-item {
@@ -383,7 +383,7 @@ defineExpose({ refresh: loadCalendarData });
   align-items: center;
   gap: 4px;
   font-size: 10px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .legend-dot {
@@ -393,14 +393,14 @@ defineExpose({ refresh: loadCalendarData });
 }
 
 .legend-dot.pending {
-  background: #3b82f6;
+  background: var(--theme-info);
 }
 
 .legend-dot.incomplete {
-  background: #ef4444;
+  background: var(--theme-error);
 }
 
 .legend-dot.completed {
-  background: #22c55e;
+  background: var(--theme-success);
 }
 </style>

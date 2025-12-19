@@ -3,15 +3,15 @@
 /* 编辑器容器 */
 .milkdown {
   height: 100%;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--theme-background);
+  color: var(--theme-text);
 }
 
 .milkdown .editor {
   height: 100%;
   padding: 1.5rem;
   overflow: auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--theme-font-sans);
   font-size: 16px;
   line-height: 1.8;
 }
@@ -31,7 +31,7 @@
   font-size: 2em;
   font-weight: 700;
   line-height: 1.4;
-  color: #2d3748;
+  color: var(--theme-heading);
   margin: 1.5em 0 0.8em;
 }
 
@@ -39,7 +39,7 @@
   font-size: 1.6em;
   font-weight: 700;
   line-height: 1.4;
-  color: #2d3748;
+  color: var(--theme-heading);
   margin: 1.3em 0 0.7em;
 }
 
@@ -47,7 +47,7 @@
   font-size: 1.4em;
   font-weight: 600;
   line-height: 1.4;
-  color: #2d3748;
+  color: var(--theme-heading);
   margin: 1.2em 0 0.6em;
 }
 
@@ -55,7 +55,7 @@
   font-size: 1.2em;
   font-weight: 600;
   line-height: 1.4;
-  color: #4a5568;
+  color: var(--theme-text);
   margin: 1.1em 0 0.5em;
 }
 
@@ -63,7 +63,7 @@
   font-size: 1.1em;
   font-weight: 600;
   line-height: 1.4;
-  color: #4a5568;
+  color: var(--theme-text);
   margin: 1em 0 0.5em;
 }
 
@@ -71,59 +71,60 @@
   font-size: 1em;
   font-weight: 600;
   line-height: 1.4;
-  color: #718096;
+  color: var(--theme-text-muted);
   margin: 1em 0 0.5em;
 }
 
 /* 粗体和斜体 */
 .milkdown .ProseMirror strong {
   font-weight: 700;
-  color: #2d3748;
+  color: var(--theme-text);
 }
 
 .milkdown .ProseMirror em {
   font-style: italic;
-  color: #4a5568;
+  color: var(--theme-text);
 }
 
 /* 删除线 */
 .milkdown .ProseMirror s,
 .milkdown .ProseMirror del {
   text-decoration: line-through;
-  color: #a0aec0;
+  color: var(--theme-text-muted);
 }
 
 /* 链接 */
 .milkdown .ProseMirror a {
-  color: #667eea;
+  color: var(--theme-primary);
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .milkdown .ProseMirror a:hover {
-  color: #5a67d8;
+  color: var(--theme-primary-hover);
   text-decoration: underline;
 }
 
 /* 行内代码 */
 .milkdown .ProseMirror code {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  background-color: rgba(102, 126, 234, 0.1);
+  font-family: var(--theme-font-mono);
+  background-color: var(--theme-background-secondary);
   padding: 0.2em 0.4em;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 0.9em;
-  color: #e53e3e;
+  color: var(--theme-accent);
 }
 
 /* 代码块 */
 .milkdown .ProseMirror pre {
-  background: #2d3748;
-  color: #e2e8f0;
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
   padding: 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow-x: auto;
   margin: 1em 0;
+  border: 1px solid var(--theme-border);
 }
 
 .milkdown .ProseMirror pre code {
@@ -136,10 +137,10 @@
 
 /* 引用 */
 .milkdown .ProseMirror blockquote {
-  border-left: 4px solid #cbd5e0;
+  border-left: 4px solid var(--theme-border);
   padding-left: 1rem;
   margin: 1em 0;
-  color: #718096;
+  color: var(--theme-text-secondary);
   font-style: italic;
 }
 
@@ -152,7 +153,7 @@
 
 .milkdown .ProseMirror li {
   margin: 0.4em 0;
-  color: #4a5568;
+  color: var(--theme-text);
 }
 
 .milkdown .ProseMirror li p {
@@ -170,12 +171,13 @@
 .milkdown .ProseMirror .task-list-item input[type="checkbox"] {
   margin-top: 0.4em;
   cursor: pointer;
+  accent-color: var(--theme-primary);
 }
 
 /* 分隔线 */
 .milkdown .ProseMirror hr {
   border: none;
-  border-top: 2px solid #cbd5e0;
+  border-top: 2px solid var(--theme-border);
   margin: 2em 0;
 }
 
@@ -185,32 +187,34 @@
   width: 100%;
   margin: 1em 0;
   overflow: hidden;
+  border-radius: var(--radius-sm);
 }
 
 .milkdown .ProseMirror table th,
 .milkdown .ProseMirror table td {
-  border: 1px solid #cbd5e0;
+  border: 1px solid var(--theme-border);
   padding: 0.6em 1em;
   text-align: left;
 }
 
 .milkdown .ProseMirror table th {
-  background: #f7fafc;
+  background: var(--theme-background-secondary);
   font-weight: 600;
-  color: #2d3748;
+  color: var(--theme-text);
 }
 
 .milkdown .ProseMirror table tr:nth-child(even) {
-  background: #f7fafc;
+  background: var(--theme-background-tertiary);
 }
 
 /* 图片 */
 .milkdown .ProseMirror img {
   max-width: 100%;
   height: auto;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin: 1em 0;
   display: block;
+  box-shadow: var(--shadow-md);
 }
 
 /* 数学公式 */
@@ -237,7 +241,7 @@
 
 /* 选中状态 */
 .milkdown .ProseMirror ::selection {
-  background: rgba(102, 126, 234, 0.2);
+  background: color-mix(in srgb, var(--theme-primary) 20%, transparent);
 }
 
 /* 光标 */
@@ -247,71 +251,7 @@
 
 /* 占位符 */
 .milkdown .ProseMirror .placeholder {
-  color: #a0aec0;
+  color: var(--theme-text-muted);
   pointer-events: none;
   height: 0;
 }
-
-/* 深色模式 */
-@media (prefers-color-scheme: dark) {
-  .milkdown {
-    background: #1e1e1e;
-    color: #d4d4d4;
-  }
-
-  .milkdown .ProseMirror h1,
-  .milkdown .ProseMirror h2,
-  .milkdown .ProseMirror h3 {
-    color: #e2e8f0;
-  }
-
-  .milkdown .ProseMirror h4,
-  .milkdown .ProseMirror h5 {
-    color: #cbd5e0;
-  }
-
-  .milkdown .ProseMirror h6 {
-    color: #a0aec0;
-  }
-
-  .milkdown .ProseMirror strong {
-    color: #e2e8f0;
-  }
-
-  .milkdown .ProseMirror em {
-    color: #cbd5e0;
-  }
-
-  .milkdown .ProseMirror code {
-    background-color: rgba(102, 126, 234, 0.2);
-  }
-
-  .milkdown .ProseMirror pre {
-    background: #2d3748;
-  }
-
-  .milkdown .ProseMirror blockquote {
-    border-left-color: #4a5568;
-    color: #a0aec0;
-  }
-
-  .milkdown .ProseMirror table th {
-    background: #2d3748;
-    color: #e2e8f0;
-  }
-
-  .milkdown .ProseMirror table tr:nth-child(even) {
-    background: #2d3748;
-  }
-
-  .milkdown .ProseMirror table th,
-  .milkdown .ProseMirror table td {
-    border-color: #4a5568;
-  }
-
-  .milkdown .ProseMirror hr {
-    border-top-color: #4a5568;
-  }
-}
-
-

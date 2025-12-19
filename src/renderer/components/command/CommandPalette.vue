@@ -219,25 +219,25 @@ function formatKeybinding(keybinding: string): string {
 .command-palette {
   width: 90%;
   max-width: 600px;
-  background: var(--color-background);
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: var(--theme-background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--theme-border);
 }
 
 .command-palette-search {
   display: flex;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--theme-border);
+  background: var(--theme-background-secondary);
 }
 
 .search-icon {
   width: 20px;
   height: 20px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   flex-shrink: 0;
   margin-right: 12px;
 }
@@ -248,18 +248,19 @@ function formatKeybinding(keybinding: string): string {
   border: none;
   outline: none;
   font-size: 16px;
-  color: var(--color-text);
+  color: var(--theme-text);
+  font-family: inherit;
 }
 
 .search-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
 }
 
 .clear-button {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,7 +268,7 @@ function formatKeybinding(keybinding: string): string {
 }
 
 .clear-button:hover {
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .clear-button svg {
@@ -283,7 +284,7 @@ function formatKeybinding(keybinding: string): string {
 .no-results {
   padding: 40px 20px;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .command-item {
@@ -292,8 +293,8 @@ function formatKeybinding(keybinding: string): string {
   justify-content: space-between;
   padding: 12px 16px;
   cursor: pointer;
-  transition: background 0.15s;
-  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .command-item:last-child {
@@ -302,7 +303,7 @@ function formatKeybinding(keybinding: string): string {
 
 .command-item:hover,
 .command-item.active {
-  background: var(--color-background-secondary);
+  background: var(--theme-background-hover);
 }
 
 .command-info {
@@ -313,52 +314,53 @@ function formatKeybinding(keybinding: string): string {
 }
 
 .command-title {
-  color: var(--color-text);
+  color: var(--theme-text);
   font-size: 14px;
 }
 
 .command-category {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   padding: 2px 8px;
-  background: var(--color-background-tertiary);
-  border-radius: 4px;
+  background: var(--theme-background-tertiary);
+  border-radius: var(--radius-sm);
 }
 
 .command-keybinding {
   font-size: 12px;
-  color: var(--color-text-secondary);
-  font-family: monospace;
+  color: var(--theme-text-secondary);
+  font-family: var(--theme-font-mono);
 }
 
 .command-palette-footer {
   padding: 12px 16px;
-  background: var(--color-background-secondary);
-  border-top: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-top: 1px solid var(--theme-border);
 }
 
 .footer-hint {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 kbd {
-  background: var(--color-background-tertiary);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
   padding: 2px 6px;
   font-size: 11px;
-  font-family: monospace;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: var(--theme-font-mono);
+  box-shadow: var(--shadow-sm);
+  color: var(--theme-text-muted);
 }
 
 /* 过渡动画 */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity 0.2s ease;
 }
 
 .modal-enter-from,
@@ -368,12 +370,12 @@ kbd {
 
 .modal-enter-active .command-palette,
 .modal-leave-active .command-palette {
-  transition: transform 0.2s, opacity 0.2s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .modal-enter-from .command-palette,
 .modal-leave-to .command-palette {
-  transform: translateY(-20px);
+  transform: translateY(-20px) scale(0.96);
   opacity: 0;
 }
 </style>

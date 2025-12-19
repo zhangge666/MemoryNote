@@ -35,7 +35,7 @@ export class NLPService implements INLPService {
   private embeddingConfig: EmbeddingConfig;
   private isBuilding = false;
   private lastUpdated = 0;
-  private workspacePath: string = '';
+  private workspacePath = '';
 
   constructor(dbManager: DatabaseManager, fsService: FileSystemService) {
     this.dbManager = dbManager;

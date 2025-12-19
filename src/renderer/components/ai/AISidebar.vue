@@ -228,7 +228,7 @@ function formatTime(timestamp: number): string {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-background);
+  background: var(--theme-sidebar-background);
 }
 
 /* 头部 */
@@ -236,14 +236,14 @@ function formatTime(timestamp: number): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px;
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .ai-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0;
 }
 
@@ -260,15 +260,15 @@ function formatTime(timestamp: number): string {
   height: 28px;
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
-  border-radius: 4px;
+  color: var(--theme-text-secondary);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .icon-btn:hover {
-  background: var(--color-background-secondary);
-  color: var(--color-text);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
 .icon {
@@ -279,8 +279,8 @@ function formatTime(timestamp: number): string {
 /* 设置面板 */
 .settings-panel {
   padding: 16px;
-  background: var(--color-background-secondary);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .setting-group {
@@ -290,7 +290,7 @@ function formatTime(timestamp: number): string {
 .setting-label {
   display: block;
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-bottom: 4px;
 }
 
@@ -299,16 +299,16 @@ function formatTime(timestamp: number): string {
   width: 100%;
   padding: 8px 12px;
   font-size: 13px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-background);
-  color: var(--color-text);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
+  background: var(--theme-background);
+  color: var(--theme-text);
 }
 
 .setting-input:focus,
 .setting-select:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--theme-primary);
 }
 
 .setting-actions {
@@ -321,7 +321,7 @@ function formatTime(timestamp: number): string {
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 10px;
 }
 
 /* 设置提示 */
@@ -340,20 +340,21 @@ function formatTime(timestamp: number): string {
 .empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
+  opacity: 0.6;
 }
 
 .setup-prompt h4,
 .empty-chat h4 {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 8px 0;
 }
 
 .setup-prompt p,
 .empty-chat p {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -382,6 +383,9 @@ function formatTime(timestamp: number): string {
   justify-content: center;
   font-size: 16px;
   flex-shrink: 0;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--theme-border-light);
 }
 
 .message-content {
@@ -395,23 +399,25 @@ function formatTime(timestamp: number): string {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+  box-shadow: var(--shadow-sm);
 }
 
 .message.user .message-text {
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
   border-bottom-right-radius: 4px;
 }
 
 .message.assistant .message-text {
-  background: var(--color-background-secondary);
-  color: var(--color-text);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
   border-bottom-left-radius: 4px;
+  border: 1px solid var(--theme-border-light);
 }
 
 .message-time {
   font-size: 10px;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   margin-top: 4px;
   padding: 0 4px;
 }
@@ -423,6 +429,7 @@ function formatTime(timestamp: number): string {
 /* 流式输出光标 */
 .cursor {
   animation: blink 1s infinite;
+  color: var(--theme-primary);
 }
 
 @keyframes blink {
@@ -432,8 +439,9 @@ function formatTime(timestamp: number): string {
 
 /* 输入区域 */
 .input-container {
-  padding: 12px 16px;
-  border-top: 1px solid var(--color-border);
+  padding: 10px;
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-sidebar-background);
 }
 
 .input-wrapper {
@@ -446,18 +454,21 @@ function formatTime(timestamp: number): string {
   flex: 1;
   padding: 10px 14px;
   font-size: 13px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-background-secondary);
-  color: var(--color-text);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
   resize: none;
   max-height: 120px;
   line-height: 1.5;
+  transition: border-color 0.2s;
+  font-family: inherit;
 }
 
 .chat-input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 10%, transparent);
 }
 
 .chat-input:disabled {
@@ -472,20 +483,22 @@ function formatTime(timestamp: number): string {
   width: 36px;
   height: 36px;
   border: none;
-  background: var(--color-primary);
-  color: white;
-  border-radius: 8px;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .send-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--theme-primary-hover);
 }
 
 .send-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: var(--theme-background-secondary);
+  color: var(--theme-text-muted);
 }
 
 .send-btn .icon {

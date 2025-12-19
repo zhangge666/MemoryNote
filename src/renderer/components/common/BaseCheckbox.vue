@@ -1,5 +1,11 @@
 <template>
-  <label class="base-checkbox" :class="{ 'base-checkbox--disabled': disabled }">
+  <label 
+    class="base-checkbox"
+    :class="{ 
+      'base-checkbox--disabled': disabled,
+      'base-checkbox--checked': modelValue
+    }"
+  >
     <input
       type="checkbox"
       class="base-checkbox__input"
@@ -7,23 +13,23 @@
       :disabled="disabled"
       @change="handleChange"
     />
-    <span class="base-checkbox__box">
-      <svg
-        v-if="modelValue"
-        class="base-checkbox__icon"
-        viewBox="0 0 16 16"
+    <span class="base-checkbox__control">
+      <svg 
+        v-if="modelValue" 
+        class="base-checkbox__icon" 
+        viewBox="0 0 16 16" 
         fill="none"
       >
-        <path
-          d="M13.5 4.5L6 12L2.5 8.5"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
+        <path 
+          d="M3.5 8L6.5 11L12.5 5" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
           stroke-linejoin="round"
         />
       </svg>
     </span>
-    <span v-if="label || $slots.default" class="base-checkbox__label">
+    <span v-if="$slots.default || label" class="base-checkbox__label">
       <slot>{{ label }}</slot>
     </span>
   </label>
@@ -31,15 +37,13 @@
 
 <script setup lang="ts">
 export interface BaseCheckboxProps {
-  /** v-model 绑定值 */
-  modelValue: boolean;
-  /** 标签文本 */
+  modelValue?: boolean;
   label?: string;
-  /** 禁用状态 */
   disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<BaseCheckboxProps>(), {
+  modelValue: false,
   disabled: false,
 });
 
@@ -59,14 +63,10 @@ function handleChange(event: Event) {
 .base-checkbox {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
   cursor: pointer;
+  position: relative;
   user-select: none;
-}
-
-.base-checkbox--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  gap: 0.5rem;
 }
 
 .base-checkbox__input {
@@ -76,41 +76,47 @@ function handleChange(event: Event) {
   height: 0;
 }
 
-.base-checkbox__box {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--color-border);
-  border-radius: 4px;
-  background: var(--color-surface);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+.base-checkbox__control {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1.5px solid var(--theme-text-muted);
+  border-radius: 4px;
+  background: var(--theme-background);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--theme-text-inverse);
 }
 
-.base-checkbox:hover:not(.base-checkbox--disabled) .base-checkbox__box {
-  border-color: var(--color-primary);
+.base-checkbox:hover:not(.base-checkbox--disabled) .base-checkbox__control {
+  border-color: var(--theme-primary);
+  background: var(--theme-background-secondary);
 }
 
-.base-checkbox__input:checked + .base-checkbox__box {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-.base-checkbox__input:focus + .base-checkbox__box {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+.base-checkbox--checked .base-checkbox__control {
+  background: var(--theme-primary);
+  border-color: var(--theme-primary);
 }
 
 .base-checkbox__icon {
-  width: 12px;
-  height: 12px;
-  color: white;
+  width: 10px;
+  height: 10px;
 }
 
 .base-checkbox__label {
   font-size: 0.875rem;
-  color: var(--color-text);
+  color: var(--theme-text);
+  transition: color 0.2s ease;
+}
+
+.base-checkbox--disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.base-checkbox--disabled .base-checkbox__control {
+  background: var(--theme-background-tertiary);
+  border-color: var(--theme-border);
 }
 </style>

@@ -104,7 +104,7 @@ export function registerFileHandlers(): void {
   });
 
   // 删除目录
-  ipcMain.handle(IPCChannel.DIR_DELETE, async (_event, dirpath: string, recursive: boolean = false) => {
+  ipcMain.handle(IPCChannel.DIR_DELETE, async (_event, dirpath: string, recursive = false) => {
     try {
       await fileService.deleteDir(dirpath, recursive);
       return { success: true };

@@ -222,10 +222,10 @@ onUnmounted(() => {
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: var(--color-background);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--theme-border);
   min-width: 320px;
   max-width: 420px;
   overflow: hidden;
@@ -236,30 +236,30 @@ onUnmounted(() => {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .notification-info .notification-icon {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: color-mix(in srgb, var(--theme-info) 10%, transparent);
+  color: var(--theme-info);
 }
 
 .notification-success .notification-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: color-mix(in srgb, var(--theme-success) 10%, transparent);
+  color: var(--theme-success);
 }
 
 .notification-warning .notification-icon {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--theme-warning) 10%, transparent);
+  color: var(--theme-warning);
 }
 
 .notification-error .notification-icon {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
+  color: var(--theme-error);
 }
 
 .notification-content {
@@ -272,13 +272,13 @@ onUnmounted(() => {
 .notification-title {
   font-weight: 600;
   font-size: 14px;
-  color: var(--color-text);
+  color: var(--theme-text);
   line-height: 1.4;
 }
 
 .notification-message {
   font-size: 13px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   line-height: 1.5;
 }
 
@@ -290,28 +290,28 @@ onUnmounted(() => {
 
 .action-button {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  border: 1px solid var(--color-border);
-  background: var(--color-background-secondary);
-  color: var(--color-text);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
 }
 
 .action-button:hover {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-hover);
 }
 
 .action-button.primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  border-color: var(--theme-primary);
+  color: var(--theme-text-inverse);
 }
 
 .action-button.primary:hover {
-  opacity: 0.9;
+  background: var(--theme-primary-hover);
 }
 
 .notification-close {
@@ -323,8 +323,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--theme-text-secondary);
   transition: all 0.2s;
   cursor: pointer;
   background: transparent;
@@ -332,8 +332,8 @@ onUnmounted(() => {
 }
 
 .notification-close:hover {
-  background: var(--color-background-tertiary);
-  color: var(--color-text);
+  background: var(--theme-background-tertiary);
+  color: var(--theme-text);
 }
 
 .notification-progress {
@@ -342,7 +342,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: rgba(0, 0, 0, 0.05);
+  background: color-mix(in srgb, var(--theme-text) 5%, transparent);
 }
 
 .notification-progress-bar {
@@ -352,19 +352,19 @@ onUnmounted(() => {
 }
 
 .notification-info .notification-progress-bar {
-  background: #3b82f6;
+  background: var(--theme-info);
 }
 
 .notification-success .notification-progress-bar {
-  background: #10b981;
+  background: var(--theme-success);
 }
 
 .notification-warning .notification-progress-bar {
-  background: #f59e0b;
+  background: var(--theme-warning);
 }
 
 .notification-error .notification-progress-bar {
-  background: #ef4444;
+  background: var(--theme-error);
 }
 
 /* 过渡动画 */

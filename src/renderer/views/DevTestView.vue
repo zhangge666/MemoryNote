@@ -572,10 +572,10 @@ async function testDatabaseInsert() {
 
 <style scoped>
 .test-section {
-  background: var(--color-background-secondary);
-  border-radius: 16px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-lg);
   padding: 24px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--theme-border);
 }
 
 .test-btn {
@@ -584,18 +584,18 @@ async function testDatabaseInsert() {
   justify-content: center;
   gap: 8px;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 500;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border: 1px solid transparent;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .test-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .test-btn:active {
@@ -603,48 +603,48 @@ async function testDatabaseInsert() {
 }
 
 .btn-info {
-  background: #3b82f6;
-  color: white;
+  background: var(--theme-info);
+  color: var(--theme-text-inverse);
 }
 
 .btn-success {
-  background: #10b981;
-  color: white;
+  background: var(--theme-success);
+  color: var(--theme-text-inverse);
 }
 
 .btn-warning {
-  background: #f59e0b;
-  color: white;
+  background: var(--theme-warning);
+  color: var(--theme-text-inverse);
 }
 
 .btn-error {
-  background: #ef4444;
-  color: white;
+  background: var(--theme-error);
+  color: var(--theme-text-inverse);
 }
 
 .btn-primary {
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
 }
 
 .btn-secondary {
-  background: var(--color-background-tertiary);
-  color: var(--color-text);
-  border-color: var(--color-border);
+  background: var(--theme-background-tertiary);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
 }
 
 .btn-accent {
-  background: var(--color-accent);
-  color: white;
+  background: var(--theme-accent);
+  color: var(--theme-text-inverse);
 }
 
 .btn-danger {
-  background: #dc2626;
-  color: white;
+  background: var(--theme-error);
+  color: var(--theme-text-inverse);
 }
 
 .log-container {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--theme-border);
 }
 
 .log-item {
@@ -654,7 +654,7 @@ async function testDatabaseInsert() {
 }
 
 .log-time {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   min-width: 70px;
 }
 
@@ -663,19 +663,19 @@ async function testDatabaseInsert() {
 }
 
 .log-info .log-message {
-  color: #3b82f6;
+  color: var(--theme-info);
 }
 
 .log-success .log-message {
-  color: #10b981;
+  color: var(--theme-success);
 }
 
 .log-warning .log-message {
-  color: #f59e0b;
+  color: var(--theme-warning);
 }
 
 .log-error .log-message {
-  color: #ef4444;
+  color: var(--theme-error);
 }
 </style>
 

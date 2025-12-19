@@ -72,20 +72,21 @@ function handleContextMenu(event: MouseEvent) {
   min-width: 120px;
   max-width: 200px;
   background: transparent;
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid var(--theme-border);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all var(--transition-base);
   user-select: none;
   position: relative;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .tab-item:hover {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-tertiary);
 }
 
 .tab-item.active {
-  background: var(--color-background-secondary);
-  border-bottom: 2px solid var(--color-primary);
+  background: var(--theme-background-secondary);
+  border-bottom: 2px solid var(--theme-primary);
 }
 
 .tab-item.active::after {
@@ -95,7 +96,8 @@ function handleContextMenu(event: MouseEvent) {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--gradient-primary);
+  border-radius: 2px 2px 0 0;
 }
 
 .tab-icon {
@@ -111,14 +113,15 @@ function handleContextMenu(event: MouseEvent) {
 .tab-title {
   flex: 1;
   font-size: 13px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color var(--transition-fast);
 }
 
 .tab-item.active .tab-title {
-  color: var(--color-text);
+  color: var(--theme-text);
   font-weight: 500;
 }
 
@@ -140,14 +143,15 @@ function handleContextMenu(event: MouseEvent) {
   align-items: center;
   justify-content: center;
   opacity: 1;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-fast);
 }
 
 .tab-dirty-indicator .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--theme-primary);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* 当hover时隐藏脏标记 */
@@ -162,20 +166,20 @@ function handleContextMenu(event: MouseEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
 }
 
 .tab-close {
   position: absolute;
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   opacity: 0;
-  transition: all 0.15s;
+  transition: all var(--transition-fast);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -186,13 +190,16 @@ function handleContextMenu(event: MouseEvent) {
 }
 
 .tab-close:hover {
-  background: var(--color-background-tertiary);
-  color: var(--color-text);
+  background: var(--theme-background-tertiary);
+  color: var(--theme-text);
+  transform: scale(1.1);
+}
+
+.tab-close:active {
+  transform: scale(0.95);
 }
 
 .tab-item.pinned {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-tertiary);
 }
 </style>
-
-

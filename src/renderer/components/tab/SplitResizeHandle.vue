@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div
     class="split-resize-handle"
     :class="{
@@ -62,7 +62,7 @@ function stopResize() {
 .split-resize-handle {
   position: relative;
   flex-shrink: 0;
-  background: var(--color-border);
+  background: var(--theme-border);
   transition: background-color 0.2s;
   z-index: 10;
 }
@@ -79,12 +79,12 @@ function stopResize() {
 
 .split-resize-handle:hover,
 .split-resize-handle.is-resizing {
-  background: var(--color-primary);
+  background: var(--theme-primary);
 }
 
 .split-resize-handle-line {
   position: absolute;
-  background: var(--color-border);
+  background: var(--theme-border);
   transition: all 0.2s;
   opacity: 0.4;
 }
@@ -108,7 +108,7 @@ function stopResize() {
 .split-resize-handle:hover .split-resize-handle-line,
 .split-resize-handle.is-resizing .split-resize-handle-line {
   opacity: 1;
-  background: var(--color-primary);
+  background: var(--theme-primary);
 }
 
 .split-resize-handle-horizontal:hover .split-resize-handle-line,

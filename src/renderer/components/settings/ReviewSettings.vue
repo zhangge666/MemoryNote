@@ -157,8 +157,8 @@ async function saveSyncToCloud(value: boolean) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .setting-item:last-child {
@@ -169,18 +169,28 @@ async function saveSyncToCloud(value: boolean) {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
+  min-width: 120px; /* Ensure label container is always visible */
+  margin-right: 1rem;
 }
 
 .setting-label > span:first-child {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--theme-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .setting-description {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
 }
-
-
 </style>

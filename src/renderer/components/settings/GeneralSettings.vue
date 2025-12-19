@@ -186,8 +186,8 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .setting-item:last-child {
@@ -196,7 +196,13 @@ defineExpose({
 
 .setting-label {
   font-size: 0.9375rem;
-  color: var(--color-text);
+  color: var(--theme-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 100px; /* Ensure label is always visible with ellipsis */
+  margin-right: 12px;
+  flex: 1 1 auto; /* Allow grow and shrink */
 }
 
 .workspace-input {

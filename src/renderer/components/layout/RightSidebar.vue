@@ -134,9 +134,10 @@ function truncate(text: string, length: number): string {
 
 /* 待审核卡片区域 */
 .pending-cards-section {
-  background: var(--color-background-secondary);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   padding: 16px;
+  border: 1px solid var(--theme-border);
 }
 
 .section-header {
@@ -149,7 +150,7 @@ function truncate(text: string, length: number): string {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0;
 }
 
@@ -160,8 +161,8 @@ function truncate(text: string, length: number): string {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  background: var(--color-warning);
-  color: white;
+  background: var(--theme-warning);
+  color: #fff;
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
@@ -169,7 +170,7 @@ function truncate(text: string, length: number): string {
 
 .pending-desc {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.4;
 }
@@ -194,26 +195,30 @@ function truncate(text: string, length: number): string {
 
 .pending-card {
   padding: 12px;
-  background: var(--color-background);
+  background: var(--theme-background);
   border-radius: 8px;
-  border-left: 4px solid var(--color-border);
-  transition: all 0.2s;
+  border-left: 4px solid var(--theme-border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--theme-border-light);
+  border-left-width: 4px;
 }
 
 .pending-card:hover {
   box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .pending-card.added {
-  border-left-color: var(--color-success);
+  border-left-color: var(--theme-success);
 }
 
 .pending-card.modified {
-  border-left-color: var(--color-warning);
+  border-left-color: var(--theme-warning);
 }
 
 .pending-card.deleted {
-  border-left-color: var(--color-error);
+  border-left-color: var(--theme-error);
 }
 
 .pending-card-header {
@@ -232,23 +237,23 @@ function truncate(text: string, length: number): string {
 }
 
 .card-type-badge.added {
-  background: rgba(var(--color-success-rgb), 0.15);
-  color: var(--color-success);
+  background: color-mix(in srgb, var(--theme-success) 15%, transparent);
+  color: var(--theme-success);
 }
 
 .card-type-badge.modified {
-  background: rgba(var(--color-warning-rgb), 0.15);
-  color: var(--color-warning);
+  background: color-mix(in srgb, var(--theme-warning) 15%, transparent);
+  color: var(--theme-warning);
 }
 
 .card-type-badge.deleted {
-  background: rgba(var(--color-error-rgb), 0.15);
-  color: var(--color-error);
+  background: color-mix(in srgb, var(--theme-error) 15%, transparent);
+  color: var(--theme-error);
 }
 
 .card-note {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -256,7 +261,7 @@ function truncate(text: string, length: number): string {
 
 .card-content {
   font-size: 13px;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 10px 0;
   line-height: 1.5;
   word-break: break-word;
@@ -290,13 +295,13 @@ function truncate(text: string, length: number): string {
 .empty-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 8px 0;
 }
 
 .empty-desc {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0;
   line-height: 1.4;
 }

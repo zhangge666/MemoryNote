@@ -115,7 +115,7 @@ function openCommandPalette() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
+  background: var(--theme-background);
   padding: 40px;
   overflow: auto;
 }
@@ -147,7 +147,7 @@ function openCommandPalette() {
 .logo-icon-mask {
   width: 100%;
   height: 100%;
-  background-color: var(--color-text);
+  background-color: var(--theme-text);
   -webkit-mask-image: url('/icon.svg');
   mask-image: url('/icon.svg');
   -webkit-mask-size: contain;
@@ -162,7 +162,7 @@ function openCommandPalette() {
 .app-title {
   font-size: 32px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   opacity: 0.3;
   letter-spacing: -0.02em;
   margin: 0;
@@ -175,7 +175,7 @@ function openCommandPalette() {
 
 .app-subtitle {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   opacity: 0.5;
   margin: -16px 0 0 0;
   transition: opacity 0.3s ease;
@@ -200,9 +200,9 @@ function openCommandPalette() {
   gap: 8px;
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -210,9 +210,9 @@ function openCommandPalette() {
 }
 
 .action-btn:hover {
-  background: var(--color-hover);
-  border-color: var(--color-border-active);
-  color: var(--color-text);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-border-active);
+  color: var(--theme-text);
   opacity: 0.8;
   transform: translateY(-1px);
 }
@@ -227,11 +227,11 @@ function openCommandPalette() {
   display: inline-block;
   padding: 2px 6px;
   font-size: 11px;
-  font-family: monospace;
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text-muted);
+  font-family: var(--theme-font-mono);
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
+  color: var(--theme-text-muted);
   line-height: 1;
 }
 
@@ -255,15 +255,15 @@ function openCommandPalette() {
   flex-direction: column;
   gap: 6px;
   padding: 12px;
-  background: var(--color-background-secondary);
+  background: var(--theme-background-secondary);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
 .shortcut-item:hover {
-  background: var(--color-hover);
-  border-color: var(--color-border);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-border);
 }
 
 .shortcut-keys {
@@ -277,16 +277,19 @@ function openCommandPalette() {
   min-width: 28px;
   text-align: center;
   padding: 3px 6px;
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
 }
 
 .shortcut-keys span {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-size: 11px;
 }
 
 .shortcut-desc {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 /* 响应式 */

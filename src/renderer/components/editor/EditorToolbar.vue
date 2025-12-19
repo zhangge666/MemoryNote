@@ -136,8 +136,8 @@ const { t } = useI18n();
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-bottom: 1px solid var(--theme-border);
   flex-wrap: wrap;
 }
 
@@ -156,20 +156,20 @@ const { t } = useI18n();
   padding: 0;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--color-text);
-  transition: all 0.2s;
+  color: var(--theme-text);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 14px;
 }
 
 .toolbar-btn:hover {
-  background: var(--color-hover);
-  border-color: var(--color-border);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-border);
 }
 
 .toolbar-btn:active {
-  background: var(--color-active);
+  background: var(--theme-background-tertiary);
 }
 
 .toolbar-btn:disabled {
@@ -186,7 +186,7 @@ const { t } = useI18n();
 .toolbar-divider {
   width: 1px;
   height: 20px;
-  background: var(--color-border);
+  background: var(--theme-border);
 }
 </style>
 

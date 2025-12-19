@@ -1,59 +1,58 @@
 <template>
   <div class="search-sidebar">
     <!-- 搜索输入 -->
-    <div class="search-input-wrapper">
-      <input
-        v-model="searchKeyword"
-        type="text"
-        class="search-input"
-        :placeholder="t('search.placeholder')"
-        @keyup.enter="handleSearch"
-      />
-      <button class="search-btn" @click="handleSearch" :disabled="isLoading">
-        <span v-if="isLoading" class="loading-icon">⏳</span>
-        <span v-else>🔍</span>
-      </button>
-    </div>
+    <div class="search-header">
+      <div class="search-input-wrapper">
+        <BaseInput
+          v-model="searchKeyword"
+          type="search"
+          :placeholder="t('search.placeholder')"
+          class="flex-1"
+          block
+          @keydown.enter="handleSearch"
+        />
+        <button 
+          class="search-btn" 
+          @click="handleSearch" 
+          :disabled="isLoading"
+          :title="t('search.doSearch')"
+        >
+          <span v-if="isLoading" class="loading-icon spin">⟳</span>
+          <span v-else>→</span>
+        </button>
+      </div>
 
-    <!-- 高级选项 -->
-    <div class="advanced-options">
-      <button class="toggle-options-btn" @click="showAdvanced = !showAdvanced">
-        {{ t('search.advancedOptions') }}
-        <span :class="{ 'rotated': showAdvanced }">▼</span>
-      </button>
-      
-      <div v-if="showAdvanced" class="options-panel">
-        <label class="option-item">
-          <input
-            v-model="caseSensitive"
-            type="checkbox"
-          />
-          <span>{{ t('search.caseSensitive') }}</span>
-        </label>
-        <label class="option-item">
-          <input
-            v-model="useRegex"
-            type="checkbox"
-          />
-          <span>{{ t('search.useRegex') }}</span>
-        </label>
+      <!-- 高级选项 -->
+      <div class="advanced-section">
+        <button class="toggle-options-btn" @click="showAdvanced = !showAdvanced">
+          <span class="btn-text">{{ t('search.advancedOptions') }}</span>
+          <span class="btn-icon" :class="{ 'rotated': showAdvanced }">▼</span>
+        </button>
+        
+        <transition name="expand">
+          <div v-if="showAdvanced" class="options-panel">
+            <BaseCheckbox v-model="caseSensitive" :label="t('search.caseSensitive')" />
+            <BaseCheckbox v-model="useRegex" :label="t('search.useRegex')" />
+          </div>
+        </transition>
       </div>
     </div>
 
     <!-- 搜索结果 -->
     <div class="results-section">
-      <div v-if="isLoading" class="loading">
-        {{ t('search.searching') }}
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ t('search.searching') }}</p>
       </div>
 
-      <div v-else-if="hasSearched && !hasResults" class="empty">
-        <div class="empty-icon">🔍</div>
-        <p>{{ t('search.noResults') }}</p>
+      <div v-else-if="hasSearched && !hasResults" class="empty-state">
+        <div class="empty-icon">¯\_(ツ)_/¯</div>
+        <p class="empty-text">{{ t('search.noResults') }}</p>
         <p class="empty-desc">{{ t('search.noResultsDesc') }}</p>
       </div>
 
       <div v-else-if="hasResults" class="results-list">
-        <div class="results-header">
+        <div class="results-meta">
           <span class="results-count">{{ t('search.resultCount', { count: resultCount }) }}</span>
         </div>
         
@@ -64,8 +63,8 @@
           @click="openNote(result)"
         >
           <div class="result-header">
-            <span class="result-icon">📝</span>
-            <span class="result-title">{{ result.note.title }}</span>
+            <span class="result-icon">📄</span>
+            <span class="result-title" :title="result.note.title">{{ result.note.title }}</span>
           </div>
           
           <div v-if="result.matches.length > 0" class="result-matches">
@@ -74,11 +73,11 @@
               :key="idx"
               class="match-item"
             >
-              <span class="match-line">{{ t('search.line', { line: match.lineNumber }) }}</span>
+              <span class="match-line">{{ match.lineNumber }}</span>
               <span class="match-content" v-html="highlightMatch(match.content)"></span>
             </div>
             <div v-if="result.matches.length > 3" class="more-matches">
-              {{ t('search.matchCount', { count: result.matches.length - 3 }) }} more...
+              +{{ result.matches.length - 3 }} {{ t('search.moreMatches') }}
             </div>
           </div>
         </div>
@@ -88,8 +87,8 @@
       <div v-else-if="hasHistory" class="history-section">
         <div class="history-header">
           <span class="section-title">{{ t('search.recentHistory') }}</span>
-          <button class="clear-history-btn" @click="clearHistory">
-            {{ t('search.clearHistory') }}
+          <button class="clear-history-btn" @click="clearHistory" :title="t('search.clearHistory')">
+            🗑
           </button>
         </div>
         
@@ -100,16 +99,16 @@
             class="history-item"
             @click="searchFromHistory(item.keyword)"
           >
-            <span class="history-icon">🕐</span>
+            <span class="history-icon">🕒</span>
             <span class="history-keyword">{{ item.keyword }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 空状态 -->
-      <div v-else class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <p>{{ t('search.placeholder') }}</p>
+      <!-- 初始空状态 -->
+      <div v-else class="initial-state">
+        <div class="initial-icon">🔍</div>
+        <p>{{ t('search.startTyping') }}</p>
       </div>
     </div>
   </div>
@@ -121,6 +120,8 @@ import { useI18n } from 'vue-i18n';
 import { useSearchStore } from '../../stores/search';
 import { useTabStore } from '../../stores/tab';
 import type { SearchResult } from '@shared/types/search';
+import BaseInput from '../common/BaseInput.vue';
+import BaseCheckbox from '../common/BaseCheckbox.vue';
 
 const { t } = useI18n();
 const searchStore = useSearchStore();
@@ -237,61 +238,63 @@ defineExpose({
 
 <style scoped>
 .search-sidebar {
-  padding: 16px;
+  padding: 10px;
   height: 100%;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background: var(--theme-sidebar-background);
+  overflow: hidden; /* 防止自身出现滚动条，让 results-section 滚动 */
 }
 
-/* 搜索输入 */
-.search-input-wrapper {
-  display: flex;
-  gap: 8px;
+/* 头部区域固定 */
+.search-header {
+  flex-shrink: 0;
   margin-bottom: 12px;
 }
 
-.search-input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-background-secondary);
-  color: var(--color-text);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  border-color: var(--color-primary);
-}
-
-.search-input::placeholder {
-  color: var(--color-text-muted);
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .search-btn {
-  padding: 10px 14px;
-  background: var(--color-primary);
-  color: white;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .search-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--theme-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .search-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.7;
+  cursor: wait;
 }
 
-.loading-icon {
+.spin {
   animation: spin 1s linear infinite;
+  display: inline-block;
+  font-size: 1rem;
 }
 
 @keyframes spin {
@@ -300,126 +303,88 @@ defineExpose({
 }
 
 /* 高级选项 */
-.advanced-options {
-  margin-bottom: 16px;
+.advanced-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .toggle-options-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
   background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
-  font-size: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--theme-text-secondary);
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .toggle-options-btn:hover {
-  background: var(--color-background-secondary);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
-.toggle-options-btn span {
-  transition: transform 0.2s;
-  font-size: 10px;
+.btn-icon {
+  font-size: 0.625rem;
+  transition: transform 0.3s ease;
+  opacity: 0.7;
 }
 
-.toggle-options-btn span.rotated {
+.btn-icon.rotated {
   transform: rotate(180deg);
 }
 
 .options-panel {
-  margin-top: 8px;
-  padding: 12px;
-  background: var(--color-background-secondary);
-  border-radius: 6px;
+  padding: 8px;
+  margin-top: 4px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border-light);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.option-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.option-item input {
-  accent-color: var(--color-primary);
+  gap: 6px;
+  overflow: hidden;
 }
 
 /* 结果区域 */
 .results-section {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px; /* 给滚动条留点位置 */
 }
 
-.loading,
-.empty {
-  text-align: center;
-  padding: 32px 16px;
-  color: var(--color-text-secondary);
-}
-
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.empty-desc {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-top: 4px;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 16px;
-  color: var(--color-text-secondary);
-}
-
-.empty-state .empty-icon {
-  font-size: 64px;
-  opacity: 0.5;
-}
-
-/* 结果列表 */
-.results-header {
-  margin-bottom: 12px;
-}
-
-.results-count {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+.results-meta {
+  padding: 0 4px 8px;
+  font-size: 0.75rem;
+  color: var(--theme-text-muted);
 }
 
 .results-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: 20px;
 }
 
 .result-item {
-  padding: 12px;
-  background: var(--color-background-secondary);
-  border-radius: 6px;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border-light);
+  border-radius: var(--radius-md);
+  padding: 10px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .result-item:hover {
-  background: var(--color-background-tertiary);
-  border-color: var(--color-primary);
+  border-color: var(--theme-primary);
+  background: var(--theme-background-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(2px);
 }
 
 .result-header {
@@ -427,123 +392,209 @@ defineExpose({
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  min-width: 0; /* 关键：允许 flex 子项缩小 */
 }
 
 .result-icon {
-  font-size: 14px;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .result-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--theme-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0; /* 关键：允许文本截断 */
 }
 
 .result-matches {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .match-item {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--theme-background) 50%, transparent);
 }
 
 .match-line {
-  color: var(--color-text-muted);
-  white-space: nowrap;
+  color: var(--theme-text-muted);
+  font-family: var(--theme-font-mono);
+  font-size: 0.7rem;
   flex-shrink: 0;
+  width: 24px;
+  text-align: right;
 }
 
 .match-content {
-  color: var(--color-text-secondary);
-  word-break: break-word;
-  line-height: 1.4;
+  color: var(--theme-text-secondary);
+  word-break: break-all; /* 防止长单词撑开 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .match-content :deep(mark) {
-  background: var(--color-warning);
-  color: var(--color-text);
+  background: color-mix(in srgb, var(--theme-warning) 30%, transparent);
+  color: var(--theme-text);
+  font-weight: 600;
   padding: 0 2px;
   border-radius: 2px;
 }
 
 .more-matches {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  font-style: italic;
+  font-size: 0.7rem;
+  color: var(--theme-text-muted);
+  text-align: center;
+  padding-top: 2px;
 }
 
-/* 历史区域 */
+/* 历史记录 */
 .history-section {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  padding: 0 4px;
+  margin-bottom: 4px;
 }
 
 .section-title {
-  font-size: 13px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .clear-history-btn {
-  padding: 4px 8px;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
-  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--theme-text-muted);
   cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
   transition: all 0.2s;
+  opacity: 0.6;
 }
 
 .clear-history-btn:hover {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: white;
+  opacity: 1;
+  background: var(--theme-background-hover);
+  color: var(--theme-error);
 }
 
 .history-list {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap; /* 允许历史记录标签换行 */
+  gap: 6px;
 }
 
 .history-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--color-background-secondary);
-  border-radius: 4px;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border-light);
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  max-width: 100%;
 }
 
 .history-item:hover {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-primary);
+  transform: translateY(-1px);
 }
 
 .history-icon {
-  font-size: 12px;
-  opacity: 0.6;
+  font-size: 0.7rem;
+  opacity: 0.5;
 }
 
 .history-keyword {
-  font-size: 13px;
-  color: var(--color-text);
+  font-size: 0.8rem;
+  color: var(--theme-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* 限制单个标签最大宽度 */
+}
+
+/* 状态展示 */
+.initial-state,
+.empty-state,
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--theme-text-muted);
+  text-align: center;
+}
+
+.initial-icon,
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.2;
+}
+
+.empty-text {
+  font-size: 0.9rem;
+  color: var(--theme-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-desc {
+  font-size: 0.75rem;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--theme-border);
+  border-top-color: var(--theme-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* 过渡动画 */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  max-height: 100px;
+  opacity: 1;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
 }
 </style>

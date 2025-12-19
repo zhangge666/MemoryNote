@@ -29,15 +29,16 @@ const { t } = useI18n();
 .about-info h2 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
+  color: var(--theme-text);
 }
 
 .about-version {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0 0 1rem;
 }
 
 .about-desc {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   line-height: 1.6;
 }
 </style>

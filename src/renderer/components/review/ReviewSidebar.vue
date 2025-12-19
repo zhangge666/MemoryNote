@@ -151,7 +151,7 @@ defineExpose({
 
 <style scoped>
 .review-sidebar {
-  padding: 16px;
+  padding: 10px;
   height: 100%;
   overflow-y: auto;
 }
@@ -169,20 +169,20 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   padding: 12px 8px;
-  background: var(--color-background-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border);
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(--theme-primary);
 }
 
 .stat-label {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-top: 2px;
   text-align: center;
 }
@@ -200,17 +200,17 @@ defineExpose({
 .section-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 12px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .loading,
 .empty {
   text-align: center;
   padding: 24px 0;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   font-size: 13px;
 }
 
@@ -228,36 +228,36 @@ defineExpose({
 
 .card-item {
   padding: 10px 12px;
-  background: var(--color-background-secondary);
-  border-radius: 6px;
-  border-left: 3px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--theme-border);
 }
 
 .card-item.added {
-  border-left-color: var(--color-success);
+  border-left-color: var(--theme-success);
 }
 
 .card-item.modified {
-  border-left-color: var(--color-warning);
+  border-left-color: var(--theme-warning);
 }
 
 .card-item.deleted {
-  border-left-color: var(--color-error);
+  border-left-color: var(--theme-error);
 }
 
 .card-type-badge {
   display: inline-block;
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--color-background);
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--theme-background);
+  color: var(--theme-text-secondary);
   margin-bottom: 4px;
 }
 
 .card-content {
   font-size: 12px;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0;
   line-height: 1.4;
   word-break: break-word;
@@ -266,28 +266,28 @@ defineExpose({
 .card-note {
   display: block;
   font-size: 10px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-top: 4px;
 }
 
 .more-cards {
   text-align: center;
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   padding: 8px;
 }
 
 /* 手动 Diff 分析区域 */
 .manual-diff-section {
   margin-bottom: 20px;
-  background: var(--color-background-secondary);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   padding: 12px;
 }
 
 .manual-diff-desc {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.4;
 }
@@ -295,10 +295,10 @@ defineExpose({
 .analyze-btn {
   width: 100%;
   padding: 8px;
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
@@ -306,7 +306,7 @@ defineExpose({
 }
 
 .analyze-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--theme-primary-hover);
 }
 
 .analyze-btn:disabled {
@@ -317,7 +317,7 @@ defineExpose({
 .diff-results h4 {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 8px 0;
 }
 
@@ -329,36 +329,36 @@ defineExpose({
 
 .diff-change {
   padding: 10px;
-  background: var(--color-background);
-  border-radius: 6px;
-  border-left: 3px solid var(--color-border);
+  background: var(--theme-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--theme-border);
 }
 
 .diff-change.add {
-  border-left-color: var(--color-success);
+  border-left-color: var(--theme-success);
 }
 
 .diff-change.modify {
-  border-left-color: var(--color-warning);
+  border-left-color: var(--theme-warning);
 }
 
 .diff-change.delete {
-  border-left-color: var(--color-error);
+  border-left-color: var(--theme-error);
 }
 
 .change-type {
   display: inline-block;
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--color-background-secondary);
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text-secondary);
   margin-bottom: 4px;
 }
 
 .change-content {
   font-size: 12px;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0 0 8px 0;
   line-height: 1.4;
 }
@@ -372,20 +372,20 @@ defineExpose({
   flex: 1;
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn.accept {
-  background: var(--color-success);
-  color: white;
+  background: var(--theme-success);
+  color: var(--theme-text-inverse);
 }
 
 .action-btn.reject {
-  background: var(--color-error);
-  color: white;
+  background: var(--theme-error);
+  color: var(--theme-text-inverse);
 }
 
 .action-btn:hover {
@@ -395,17 +395,17 @@ defineExpose({
 .no-changes {
   text-align: center;
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   padding: 16px 0;
 }
 
 /* 待审核卡片区域 */
 .pending-cards-section {
   margin-bottom: 20px;
-  background: var(--color-background-secondary);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   padding: 12px;
-  border: 1px solid var(--color-warning);
+  border: 1px solid var(--theme-warning);
 }
 
 .section-header {
@@ -429,20 +429,20 @@ defineExpose({
 .action-btn-small {
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn-small.accept {
-  background: var(--color-success);
-  color: white;
+  background: var(--theme-success);
+  color: var(--theme-text-inverse);
 }
 
 .action-btn-small.reject {
-  background: var(--color-error);
-  color: white;
+  background: var(--theme-error);
+  color: var(--theme-text-inverse);
 }
 
 .action-btn-small:hover:not(:disabled) {
@@ -456,7 +456,7 @@ defineExpose({
 
 .pending-desc {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.4;
 }
@@ -471,21 +471,21 @@ defineExpose({
 
 .pending-card {
   padding: 10px;
-  background: var(--color-background);
-  border-radius: 6px;
-  border-left: 3px solid var(--color-border);
+  background: var(--theme-background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--theme-border);
 }
 
 .pending-card.added {
-  border-left-color: var(--color-success);
+  border-left-color: var(--theme-success);
 }
 
 .pending-card.modified {
-  border-left-color: var(--color-warning);
+  border-left-color: var(--theme-warning);
 }
 
 .pending-card.deleted {
-  border-left-color: var(--color-error);
+  border-left-color: var(--theme-error);
 }
 
 .pending-card-header {
@@ -503,8 +503,8 @@ defineExpose({
 
 /* 统计区域 */
 .stats-section {
-  background: var(--color-background-secondary);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   padding: 12px;
 }
 
@@ -513,8 +513,8 @@ defineExpose({
   justify-content: space-between;
   padding: 8px 0;
   font-size: 13px;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border);
+  color: var(--theme-text-secondary);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .stat-row:last-child {
@@ -523,6 +523,6 @@ defineExpose({
 
 .stat-num {
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 </style>

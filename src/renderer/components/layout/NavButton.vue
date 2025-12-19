@@ -34,19 +34,19 @@ defineEmits<{
 .nav-button {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  color: var(--color-text-secondary);
-  transition: all 0.2s ease;
+  border-radius: var(--radius-md);
+  color: var(--theme-text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-button:hover {
-  background: var(--color-hover);
-  color: var(--color-text);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
 .nav-button.active {
-  background: var(--color-primary-light, rgba(59, 130, 246, 0.1));
-  color: var(--color-primary);
+  background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  color: var(--theme-primary);
 }
 
 .icon-svg {

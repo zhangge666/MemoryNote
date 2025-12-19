@@ -300,7 +300,7 @@ function resetToDefaults() {
 
 <style scoped>
 .keybinding-settings {
-  padding: 1.5rem;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -350,7 +350,7 @@ function resetToDefaults() {
   display: grid;
   grid-template-columns: 2fr 1fr 1.5fr 1fr;
   gap: 1rem;
-  padding: 1rem;
+  padding: 10px;
   border-bottom: 1px solid var(--theme-border-light);
   transition: background 0.2s ease;
 }

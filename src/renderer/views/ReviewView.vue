@@ -194,7 +194,7 @@ async function deleteCard() {
   flex-direction: column;
   padding: 24px;
   overflow-y: auto;
-  background: var(--color-background);
+  background: var(--theme-background);
 }
 
 /* 加载状态 */
@@ -205,14 +205,14 @@ async function deleteCard() {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border: 3px solid var(--theme-border);
+  border-top-color: var(--theme-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -242,13 +242,13 @@ async function deleteCard() {
 .empty-state h2,
 .completed-state h2 {
   font-size: 24px;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin: 0;
 }
 
 .empty-state p,
 .completed-state p {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0;
 }
 
@@ -256,24 +256,27 @@ async function deleteCard() {
 .primary-btn {
   margin-top: 16px;
   padding: 12px 24px;
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
 }
 
 .refresh-btn:hover,
 .primary-btn:hover {
-  background: var(--color-primary-hover);
+  background: var(--theme-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 /* 进度条 */
 .progress-bar {
   height: 4px;
-  background: var(--color-border);
+  background: var(--theme-border);
   border-radius: 2px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -281,7 +284,7 @@ async function deleteCard() {
 
 .progress-fill {
   height: 100%;
-  background: var(--color-primary);
+  background: var(--theme-primary);
   transition: width 0.3s ease;
 }
 
@@ -289,29 +292,30 @@ async function deleteCard() {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-bottom: 24px;
 }
 
 /* 卡片 */
 .card {
-  background: var(--color-background-secondary);
-  border-radius: 12px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 24px;
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--shadow-md);
 }
 
 .card.card-added {
-  border-color: var(--color-success);
+  border-left: 4px solid var(--theme-success);
 }
 
 .card.card-modified {
-  border-color: var(--color-warning);
+  border-left: 4px solid var(--theme-warning);
 }
 
 .card.card-deleted {
-  border-color: var(--color-error);
+  border-left: 4px solid var(--theme-error);
 }
 
 .card-header {
@@ -320,34 +324,34 @@ async function deleteCard() {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .card-type {
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 500;
 }
 
 .card-type.added {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--color-success);
+  background: color-mix(in srgb, var(--theme-success) 10%, transparent);
+  color: var(--theme-success);
 }
 
 .card-type.modified {
-  background: rgba(234, 179, 8, 0.1);
-  color: var(--color-warning);
+  background: color-mix(in srgb, var(--theme-warning) 10%, transparent);
+  color: var(--theme-warning);
 }
 
 .card-type.deleted {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-error);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
+  color: var(--theme-error);
 }
 
 .card-source {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .card-content {
@@ -356,31 +360,32 @@ async function deleteCard() {
 
 .content-label {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-bottom: 8px;
 }
 
 .content-text {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--theme-font-mono);
   font-size: 14px;
   line-height: 1.6;
   padding: 16px;
-  background: var(--color-background);
-  border-radius: 8px;
+  background: var(--theme-background);
+  border-radius: var(--radius-md);
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
-  color: var(--color-text);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border-light);
 }
 
 .content-text.added {
-  background: rgba(34, 197, 94, 0.05);
-  border-left: 3px solid var(--color-success);
+  background: color-mix(in srgb, var(--theme-success) 5%, transparent);
+  border-left-color: var(--theme-success);
 }
 
 .content-text.deleted {
-  background: rgba(239, 68, 68, 0.05);
-  border-left: 3px solid var(--color-error);
+  background: color-mix(in srgb, var(--theme-error) 5%, transparent);
+  border-left-color: var(--theme-error);
   text-decoration: line-through;
   opacity: 0.7;
 }
@@ -393,7 +398,7 @@ async function deleteCard() {
   display: flex;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--theme-border);
 }
 
 .action-btn {
@@ -402,22 +407,24 @@ async function deleteCard() {
   gap: 6px;
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--theme-border);
   border-radius: 6px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn:hover {
-  background: var(--color-background);
-  border-color: var(--color-text-secondary);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-text-secondary);
+  color: var(--theme-text);
 }
 
 .action-btn.delete:hover {
-  border-color: var(--color-error);
-  color: var(--color-error);
+  border-color: var(--theme-error);
+  color: var(--theme-error);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
 }
 
 /* 评分按钮 */
@@ -427,7 +434,7 @@ async function deleteCard() {
 
 .quality-hint {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -444,62 +451,63 @@ async function deleteCard() {
   align-items: center;
   gap: 4px;
   padding: 16px 8px;
-  background: var(--color-background-secondary);
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border: 2px solid var(--theme-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .quality-btn:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .quality-btn.fail {
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: color-mix(in srgb, var(--theme-error) 30%, transparent);
 }
 
 .quality-btn.fail:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--color-error);
+  background: color-mix(in srgb, var(--theme-error) 10%, transparent);
+  border-color: var(--theme-error);
 }
 
 .quality-btn.pass {
-  border-color: rgba(234, 179, 8, 0.3);
+  border-color: color-mix(in srgb, var(--theme-warning) 30%, transparent);
 }
 
 .quality-btn.pass:hover {
-  background: rgba(234, 179, 8, 0.1);
-  border-color: var(--color-warning);
+  background: color-mix(in srgb, var(--theme-warning) 10%, transparent);
+  border-color: var(--theme-warning);
 }
 
 .quality-btn.good {
-  border-color: rgba(59, 130, 246, 0.3);
+  border-color: color-mix(in srgb, var(--theme-info) 30%, transparent);
 }
 
 .quality-btn.good:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--theme-info) 10%, transparent);
+  border-color: var(--theme-info);
 }
 
 .quality-btn.perfect {
-  border-color: rgba(34, 197, 94, 0.3);
+  border-color: color-mix(in srgb, var(--theme-success) 30%, transparent);
 }
 
 .quality-btn.perfect:hover {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--theme-success) 10%, transparent);
+  border-color: var(--theme-success);
 }
 
 .quality-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .quality-label {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   text-align: center;
   line-height: 1.3;
 }
@@ -527,43 +535,47 @@ async function deleteCard() {
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  background: var(--color-background-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-value {
   font-size: 32px;
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(--theme-primary);
 }
 
 .stat-label {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin-top: 4px;
 }
 
 .start-btn {
   padding: 16px 48px;
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
 }
 
 .start-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--theme-primary-hover);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .start-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* 响应式 */

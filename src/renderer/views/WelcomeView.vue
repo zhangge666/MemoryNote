@@ -121,7 +121,7 @@ function showHelp() {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  background: var(--color-background);
+  background: var(--theme-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,25 +142,25 @@ function showHelp() {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.5rem;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
 .logo-icon {
   width: 50px;
   height: 50px;
-  color: white;
+  color: var(--theme-text-inverse);
 }
 
 .app-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -168,7 +168,7 @@ function showHelp() {
 
 .app-subtitle {
   font-size: 1.125rem;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   margin: 0;
 }
 
@@ -182,7 +182,7 @@ function showHelp() {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 1rem;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .action-grid {
@@ -192,19 +192,20 @@ function showHelp() {
 }
 
 .action-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  border-color: var(--theme-primary);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
+  background: var(--theme-background-hover);
 }
 
 .action-icon {
@@ -216,12 +217,12 @@ function showHelp() {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .action-desc {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .shortcut-list {
@@ -235,9 +236,14 @@ function showHelp() {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s;
+}
+
+.shortcut-item:hover {
+  border-color: var(--theme-primary);
 }
 
 .shortcut-keys {
@@ -248,16 +254,17 @@ function showHelp() {
 
 kbd {
   padding: 0.25rem 0.5rem;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  background: var(--theme-background);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
-  font-family: monospace;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: var(--theme-font-mono);
+  box-shadow: var(--shadow-sm);
+  color: var(--theme-text-secondary);
 }
 
 .shortcut-desc {
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   font-size: 0.875rem;
 }
 </style>

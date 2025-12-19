@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <div
       v-if="visible"
@@ -128,8 +128,8 @@ onUnmounted(() => {
 .context-menu {
   position: fixed;
   z-index: 10000;
-  background: var(--color-background-secondary, #2a2a2a);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary, #2a2a2a);
+  border: 1px solid var(--theme-border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   padding: 4px;
@@ -143,25 +143,25 @@ onUnmounted(() => {
   gap: 8px;
   padding: 6px 12px;
   font-size: 13px;
-  color: var(--color-text);
+  color: var(--theme-text);
   cursor: pointer;
   border-radius: 4px;
   user-select: none;
 }
 
 .menu-item:not(.is-divider):not(.is-disabled):hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
 }
 
 .menu-item.is-disabled {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .menu-item.is-divider {
   height: 1px;
-  background: var(--color-border);
+  background: var(--theme-border);
   margin: 4px 0;
   padding: 0;
   cursor: default;
@@ -180,7 +180,7 @@ onUnmounted(() => {
 .menu-item-shortcut {
   flex-shrink: 0;
   font-size: 11px;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   opacity: 0.7;
 }
 </style>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div 
     class="tab-group" 
     :class="{ 'is-active': isActive }"
@@ -119,7 +119,7 @@ function handleSplitVertical() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-background);
+  background: var(--theme-background);
   position: relative; /* 必须设置，让 active-indicator 正确定位 */
   transition: all 0.2s ease;
 }

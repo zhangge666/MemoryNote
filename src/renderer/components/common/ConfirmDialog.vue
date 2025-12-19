@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <div v-if="visible" class="dialog-overlay" @click.self="handleCancel">
       <div class="dialog-container">
@@ -92,24 +92,24 @@ function handleDeny() {
 }
 
 .dialog-container {
-  background: var(--color-background);
+  background: var(--theme-background);
   border-radius: 12px;
   width: 90%;
   max-width: 480px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--theme-border);
 }
 
 .dialog-header {
   padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .dialog-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .dialog-body {
@@ -120,7 +120,7 @@ function handleDeny() {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .dialog-footer {
@@ -128,7 +128,7 @@ function handleDeny() {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--theme-border);
 }
 
 .dialog-btn {
@@ -142,28 +142,28 @@ function handleDeny() {
 }
 
 .dialog-btn-cancel {
-  background: var(--color-background-secondary);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
 }
 
 .dialog-btn-cancel:hover {
-  background: var(--color-background-tertiary);
+  background: var(--theme-background-tertiary);
 }
 
 .dialog-btn-deny {
-  background: var(--color-background-secondary);
-  color: var(--color-error);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  color: var(--theme-error);
+  border: 1px solid var(--theme-border);
 }
 
 .dialog-btn-deny:hover {
-  background: var(--color-error);
+  background: var(--theme-error);
   color: white;
 }
 
 .dialog-btn-confirm {
-  background: var(--color-primary);
+  background: var(--theme-primary);
   color: white;
 }
 

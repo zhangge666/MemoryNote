@@ -36,8 +36,8 @@ const autoSave = ref(true);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .setting-item:last-child {
@@ -53,13 +53,17 @@ const autoSave = ref(true);
   display: block;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 80px; /* Ensure label is always visible with ellipsis */
 }
 
 .setting-description {
   font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   line-height: 1.4;
 }
 </style>

@@ -4,7 +4,7 @@
  */
 
 import { reactive, readonly } from 'vue';
-import type { Notification, NotificationType, NotificationOptions } from '@shared/types/notification';
+import type { Notification, NotificationOptions } from '@shared/types/notification';
 
 export interface INotificationService {
   /** 显示通知 */

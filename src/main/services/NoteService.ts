@@ -714,7 +714,7 @@ export class NoteService {
 
   // ==================== 辅助方法 ====================
 
-  private mapRowToNote(row: any, tags: Tag[] = [], content: string = ''): Note {
+  private mapRowToNote(row: any, tags: Tag[] = [], content = ''): Note {
     return {
       id: row.id,
       title: row.title,

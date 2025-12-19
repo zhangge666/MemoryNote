@@ -85,78 +85,107 @@ function getComponentForCategory(category: string) {
   width: 100%;
   height: 100%;
   display: flex;
-  background: var(--color-background);
+  background: var(--theme-background);
+  color: var(--theme-text);
+  overflow: hidden;
 }
 
+/* 侧边栏 - 玻璃拟态风格 */
 .settings-sidebar {
-  width: 200px;
+  width: 240px;
   flex-shrink: 0;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background: var(--theme-sidebar-background);
+  border-right: 1px solid var(--theme-border);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  gap: var(--spacing-xs);
+  backdrop-filter: blur(10px);
 }
 
 .settings-nav {
-  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .settings-nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 10px 16px;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--theme-text-secondary);
   text-align: left;
-  transition: all 0.2s;
-  margin-bottom: 0.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: var(--theme-font-size-sm);
+  font-weight: 500;
 }
 
 .settings-nav-item:hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
 .settings-nav-item.active {
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
+  box-shadow: var(--shadow-sm);
 }
 
 .settings-nav-icon {
   font-size: 1.25rem;
+  line-height: 1;
 }
 
 .settings-nav-text {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
+/* 内容区域 */
 .settings-content {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background: var(--theme-background);
 }
 
 .settings-header {
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 32px 40px 20px;
+  border-bottom: 1px solid var(--theme-border-light);
+  margin-bottom: 0;
+  background: var(--theme-background);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .settings-header h1 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 24px;
   font-weight: 600;
+  color: var(--theme-text);
+  letter-spacing: -0.5px;
 }
 
 .settings-body {
   flex: 1;
-  padding: 2rem;
+  padding: 32px 40px;
+  max-width: 800px; /* 限制内容宽度，增加阅读体验 */
 }
 
-.settings-section {
-  max-width: 600px;
+/* 滚动条美化 (如果未在全局生效) */
+.settings-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.settings-content::-webkit-scrollbar {
+  width: 8px;
 }
 </style>

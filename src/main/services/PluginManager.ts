@@ -49,7 +49,7 @@ export class PluginManager extends EventEmitter {
   private plugins: Map<string, PluginInfo> = new Map();
   private pluginsDir: string;
   private static instance: PluginManager | null = null;
-  private initialized: boolean = false;
+  private initialized = false;
 
   private constructor() {
     super();

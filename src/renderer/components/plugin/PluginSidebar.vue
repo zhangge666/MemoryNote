@@ -149,15 +149,15 @@ watch(() => props.viewId, () => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-surface);
+  background: var(--theme-sidebar-background);
 }
 
 .plugin-sidebar-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px;
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .plugin-icon {
@@ -168,23 +168,23 @@ watch(() => props.viewId, () => {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .plugin-sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 10px;
 }
 
 .plugin-sidebar-footer {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--color-border);
+  padding: 10px;
+  border-top: 1px solid var(--theme-border);
   text-align: center;
 }
 
 .plugin-sidebar-footer small {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-size: 0.75rem;
 }
 
@@ -197,22 +197,23 @@ watch(() => props.viewId, () => {
 
 .greeting-card {
   padding: 0.75rem 1rem;
-  background: var(--color-background);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid var(--theme-border-light);
 }
 
 .greeting-card p {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--theme-text);
 }
 
 .greeting-card .timestamp {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
 }
 
 .action-buttons {
@@ -224,7 +225,7 @@ watch(() => props.viewId, () => {
   flex: 1;
   padding: 0.5rem 0.75rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -232,29 +233,29 @@ watch(() => props.viewId, () => {
 }
 
 .action-btn.primary {
-  background: var(--color-primary);
-  color: white;
+  background: var(--theme-primary);
+  color: var(--theme-text-inverse);
 }
 
 .action-btn.primary:hover {
-  opacity: 0.9;
+  background: var(--theme-primary-hover);
 }
 
 .action-btn.secondary {
-  background: var(--color-background);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
 }
 
 .action-btn.secondary:hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
 }
 
 .items-section h4 {
   margin: 0 0 0.5rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -270,24 +271,24 @@ watch(() => props.viewId, () => {
   align-items: center;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.25rem;
-  background: var(--color-background);
-  border-radius: 6px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-sm);
   transition: background 0.2s;
 }
 
 .item:hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
 }
 
 .item-text {
   flex: 1;
   font-size: 0.8125rem;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .item-time {
   font-size: 0.6875rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   margin-right: 0.5rem;
 }
 
@@ -297,10 +298,10 @@ watch(() => props.viewId, () => {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-size: 14px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,16 +309,19 @@ watch(() => props.viewId, () => {
 }
 
 .item-remove:hover {
-  background: var(--color-error, #ef4444);
-  color: white;
+  background: var(--theme-error);
+  color: var(--theme-text-inverse);
 }
 
 .empty-state {
   text-align: center;
   padding: 1.5rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-size: 0.8125rem;
   font-style: italic;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--theme-border-light);
 }
 
 /* 通用插件占位符 */
@@ -330,12 +334,13 @@ watch(() => props.viewId, () => {
 
 .plugin-placeholder {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .placeholder-icon {
   font-size: 3rem;
   display: block;
   margin-bottom: 1rem;
+  opacity: 0.5;
 }
 </style>

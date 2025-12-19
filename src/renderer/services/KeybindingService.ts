@@ -34,7 +34,7 @@ export interface IKeybindingService {
 
 export class KeybindingService implements IKeybindingService {
   private keybindings: Map<string, Keybinding> = new Map();
-  private listening: boolean = false;
+  private listening = false;
   private boundHandler: ((event: KeyboardEvent) => void) | null = null;
 
   /**

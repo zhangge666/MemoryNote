@@ -1,18 +1,18 @@
-<template>
+﻿<template>
   <button
     class="base-toggle"
     :class="{ 
       'base-toggle--active': modelValue, 
-      'base-toggle--disabled': disabled,
-      'base-toggle--ready': isReady
+      'base-toggle--disabled': disabled
     }"
+    :style="transitionStyle"
     :disabled="disabled"
     role="switch"
     :aria-checked="modelValue"
     @click="handleToggle"
   >
-    <span class="base-toggle__slider">
-      <span class="base-toggle__icon">
+    <span class="base-toggle__slider" :style="transitionStyle">
+      <span class="base-toggle__icon" :style="transitionStyle">
         <svg v-if="!modelValue" viewBox="0 0 12 12" fill="none">
           <path d="M3 6L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 export interface BaseToggleProps {
   /** v-model 绑定值 */
@@ -42,19 +42,24 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
 }>();
 
-const isReady = ref(false);
+// 使用更长的延迟来确保初始渲染完全完成
+const enableTransition = ref(false);
+
+// 通过内联样式直接控制 transition，这是最可靠的方式
+const transitionStyle = computed(() => {
+  if (!enableTransition.value) {
+    return { transition: 'none !important' };
+  }
+  return {};
+});
 
 onMounted(() => {
-  // 使用 nextTick 确保 Vue 的响应式更新完成
-  // 再使用双重 requestAnimationFrame 确保浏览器的布局和绘制都完成
-  // 这样可以彻底避免初始渲染时的过渡动画
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        isReady.value = true;
-      });
-    });
-  });
+  // 使用 setTimeout 而不是 requestAnimationFrame
+  // 因为 setTimeout 0 会被推迟到下一个事件循环
+  // 再加上一个小延迟确保布局完成
+  setTimeout(() => {
+    enableTransition.value = true;
+  }, 50);
 });
 
 function handleToggle() {
@@ -74,33 +79,25 @@ function handleToggle() {
   border: none;
   cursor: pointer;
   flex-shrink: 0;
-  transition: none;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-/* 只有在组件准备好后才启用过渡动画 */
-.base-toggle.base-toggle--ready {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .base-toggle:hover:not(.base-toggle--disabled) {
   background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-}
-
-.base-toggle.base-toggle--ready:hover:not(.base-toggle--disabled) {
   transform: scale(1.02);
 }
 
 .base-toggle--active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 80%, #000) 100%);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent),
+  background: linear-gradient(135deg, var(--theme-primary) 0%, color-mix(in srgb, var(--theme-primary) 80%, #000) 100%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-primary) 10%, transparent),
               inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .base-toggle--active:hover:not(.base-toggle--disabled) {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 90%, #fff) 0%, var(--color-primary) 100%);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 15%, transparent),
-              0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent),
+  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-primary) 90%, #fff) 0%, var(--theme-primary) 100%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-primary) 15%, transparent),
+              0 4px 12px color-mix(in srgb, var(--theme-primary) 30%, transparent),
               inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -123,10 +120,6 @@ function handleToggle() {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* 只有在组件准备好后才启用滑块的过渡动画 */
-.base-toggle--ready .base-toggle__slider {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -148,7 +141,7 @@ function handleToggle() {
 }
 
 .base-toggle--active .base-toggle__icon {
-  color: var(--color-primary);
+  color: var(--theme-primary);
 }
 
 .base-toggle__icon svg {

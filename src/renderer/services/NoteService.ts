@@ -42,9 +42,6 @@ export interface INoteService {
 }
 
 export class NoteService implements INoteService {
-  constructor() {
-  }
-
   // ==================== 笔记操作 ====================
 
   async createNote(options: CreateNoteOptions): Promise<Note> {

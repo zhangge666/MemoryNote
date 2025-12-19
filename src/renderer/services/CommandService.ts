@@ -75,11 +75,7 @@ export class CommandService implements ICommandService {
       return;
     }
 
-    try {
-      await command.handler(...args);
-    } catch (error) {
-      throw error;
-    }
+    await command.handler(...args);
   }
 
   /**

@@ -84,7 +84,7 @@ onUnmounted(() => {
   width: 4px;
   cursor: col-resize;
   z-index: 999;
-  background-color: rgba(102, 126, 234, 0.05);
+  background-color: color-mix(in srgb, var(--theme-primary) 5%, transparent);
   transition: all 0.2s ease;
 }
 
@@ -96,32 +96,32 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   width: 1.5px;
   height: 50px;
-  background-color: var(--color-border);
+  background-color: var(--theme-border);
   border-radius: 1px;
   opacity: 0.4;
   transition: all 0.2s ease;
 }
 
 .resize-handle:hover {
-  background-color: rgba(102, 126, 234, 0.15);
+  background-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
 }
 
 .resize-handle:hover::before {
   opacity: 1;
-  background-color: var(--color-primary);
+  background-color: var(--theme-primary);
   height: 70px;
   width: 2px;
 }
 
 .resize-handle:active {
-  background-color: rgba(102, 126, 234, 0.25);
+  background-color: color-mix(in srgb, var(--theme-primary) 25%, transparent);
 }
 
 .resize-handle:active::before {
   opacity: 1;
-  background-color: var(--color-primary);
+  background-color: var(--theme-primary);
   width: 2.5px;
-  box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-primary) 50%, transparent);
 }
 
 .resize-handle-right {

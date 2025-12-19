@@ -57,11 +57,11 @@ export class AlgorithmRegistry extends EventEmitter {
   private diffAlgorithms: Map<string, AlgorithmEntry<IDiffAlgorithm>> = new Map();
   
   // 当前选中的算法 ID
-  private currentReviewAlgorithmId: string = 'algo:review:builtin:sm2';
-  private currentDiffAlgorithmId: string = 'algo:diff:builtin:simple';
+  private currentReviewAlgorithmId = 'algo:review:builtin:sm2';
+  private currentDiffAlgorithmId = 'algo:diff:builtin:simple';
   
   // 初始化标志
-  private initialized: boolean = false;
+  private initialized = false;
 
   private constructor() {
     super();

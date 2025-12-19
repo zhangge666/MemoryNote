@@ -975,7 +975,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-background);
+  background: var(--theme-sidebar-background);
 }
 
 /* 工具栏 */
@@ -983,9 +983,9 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background);
+  padding: 6px;
+  border-bottom: 1px solid var(--theme-border);
+  background: var(--theme-sidebar-background);
 }
 
 .toolbar-btn {
@@ -997,15 +997,15 @@ defineExpose({
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
 
 .toolbar-btn:hover {
-  background: var(--color-background-hover);
-  color: var(--color-text);
+  background: var(--theme-background-hover);
+  color: var(--theme-text);
 }
 
 .btn-icon {
@@ -1016,36 +1016,34 @@ defineExpose({
   transform: scale(1.1);
 }
 
-
-
 .toolbar-spacer {
   flex: 1;
 }
 
 /* 搜索框 */
 .tree-search {
-  padding: 10px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background);
+  padding: 6px;
+  border-bottom: 1px solid var(--theme-border);
+  background: var(--theme-sidebar-background);
 }
 
 .search-input {
   width: 100%;
   padding: 8px 12px;
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text);
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
   font-size: 14px;
   outline: none;
   transition: all 0.2s ease;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .search-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: var(--color-background);
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  background: var(--theme-background);
 }
 
 /* 树内容 */
@@ -1062,44 +1060,44 @@ defineExpose({
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: var(--color-text-muted);
-  background: var(--color-background);
-  border-radius: 12px;
+  color: var(--theme-text-muted);
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   margin: 20px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+  border: 1px dashed var(--theme-border);
 }
 
 .tree-empty p {
-  font-size: 16px;
+  font-size: 14px;
   margin-bottom: 20px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .create-first-btn {
   margin-top: 16px;
   padding: 10px 20px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-  color: white;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  color: var(--theme-text-inverse);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 
 .create-first-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-accent-hover));
+  background: linear-gradient(135deg, var(--theme-primary-hover), var(--theme-accent));
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .create-first-btn:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .create-first-btn.modern-create-btn::before {
@@ -1125,47 +1123,48 @@ defineExpose({
 .tree-search-results {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
-  background: var(--color-background);
+  padding: 6px;
+  background: var(--theme-sidebar-background);
 }
 
 .search-empty {
   padding: 60px 20px;
   text-align: center;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-size: 14px;
-  background: var(--color-background);
-  border-radius: 8px;
+  background: var(--theme-background-secondary);
+  border-radius: var(--radius-md);
   margin: 10px;
+  border: 1px dashed var(--theme-border);
 }
 
 .search-result-item {
   padding: 10px 14px;
   margin-bottom: 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
 }
 
 .search-result-item:hover {
-  background: var(--color-background-hover);
-  border-color: var(--color-primary);
+  background: var(--theme-background-hover);
+  border-color: var(--theme-primary);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .result-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin-bottom: 4px;
 }
 
 .result-excerpt {
   font-size: 13px;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

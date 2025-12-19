@@ -70,11 +70,13 @@ const markdownTheme = EditorView.theme({
   '&': {
     height: '100%',
     fontSize: '16px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+    fontFamily: 'var(--theme-font-sans)',
+    color: 'var(--theme-text)',
+    backgroundColor: 'var(--theme-background)',
   },
   '.cm-content': {
     padding: '1.5rem',
-    caretColor: '#667eea',
+    caretColor: 'var(--theme-primary)',
     minHeight: '100%',
   },
   '.cm-line': {
@@ -82,17 +84,17 @@ const markdownTheme = EditorView.theme({
     padding: '0.2rem 0',
   },
   '.cm-cursor': {
-    borderLeftColor: '#667eea',
+    borderLeftColor: 'var(--theme-primary)',
     borderLeftWidth: '2px',
   },
   '&.cm-focused .cm-cursor': {
-    borderLeftColor: '#667eea',
+    borderLeftColor: 'var(--theme-primary)',
   },
   '&.cm-focused .cm-selectionBackground, ::selection': {
-    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    backgroundColor: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)',
   },
   '.cm-activeLine': {
-    backgroundColor: 'rgba(102, 126, 234, 0.05)',
+    backgroundColor: 'var(--theme-background-secondary)',
   },
   '.cm-gutters': {
     display: 'none',
@@ -102,98 +104,98 @@ const markdownTheme = EditorView.theme({
     fontSize: '2em',
     fontWeight: '700',
     lineHeight: '1.4',
-    color: '#2d3748',
+    color: 'var(--theme-heading)',
   },
   '.cm-md-header2': {
     fontSize: '1.6em',
     fontWeight: '700',
     lineHeight: '1.4',
-    color: '#2d3748',
+    color: 'var(--theme-heading)',
   },
   '.cm-md-header3': {
     fontSize: '1.4em',
     fontWeight: '600',
     lineHeight: '1.4',
-    color: '#2d3748',
+    color: 'var(--theme-heading)',
   },
   '.cm-md-header4': {
     fontSize: '1.2em',
     fontWeight: '600',
     lineHeight: '1.4',
-    color: '#4a5568',
+    color: 'var(--theme-text)',
   },
   '.cm-md-header5': {
     fontSize: '1.1em',
     fontWeight: '600',
     lineHeight: '1.4',
-    color: '#4a5568',
+    color: 'var(--theme-text)',
   },
   '.cm-md-header6': {
     fontSize: '1em',
     fontWeight: '600',
     lineHeight: '1.4',
-    color: '#718096',
+    color: 'var(--theme-text-muted)',
   },
   '.cm-strong': {
     fontWeight: '700',
-    color: '#2d3748',
+    color: 'var(--theme-text)',
   },
   '.cm-em': {
     fontStyle: 'italic',
-    color: '#4a5568',
+    color: 'var(--theme-text)',
   },
   '.cm-strikethrough': {
     textDecoration: 'line-through',
-    color: '#a0aec0',
+    color: 'var(--theme-text-muted)',
   },
   '.cm-link': {
-    color: '#667eea',
+    color: 'var(--theme-primary)',
     textDecoration: 'none',
     cursor: 'pointer',
   },
   '.cm-url': {
-    color: '#a0aec0',
+    color: 'var(--theme-text-muted)',
   },
   '.cm-monospace': {
-    fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    fontFamily: 'var(--theme-font-mono)',
+    backgroundColor: 'var(--theme-background-secondary)',
     padding: '0.2em 0.4em',
-    borderRadius: '3px',
+    borderRadius: 'var(--radius-sm)',
     fontSize: '0.9em',
-    color: '#e53e3e',
+    color: 'var(--theme-accent)',
   },
   '.cm-quote': {
-    color: '#718096',
+    color: 'var(--theme-text-secondary)',
     fontStyle: 'italic',
-    borderLeft: '4px solid #cbd5e0',
+    borderLeft: '4px solid var(--theme-border)',
     paddingLeft: '1rem',
     marginLeft: '0',
   },
   '.cm-list': {
-    color: '#4a5568',
+    color: 'var(--theme-text)',
   },
   '.cm-hr': {
-    color: '#cbd5e0',
+    color: 'var(--theme-border)',
   },
 });
 
 // 自定义语法高亮
 const markdownHighlight = HighlightStyle.define([
-  { tag: tags.heading1, fontSize: '2em', fontWeight: '700', color: '#2d3748' },
-  { tag: tags.heading2, fontSize: '1.6em', fontWeight: '700', color: '#2d3748' },
-  { tag: tags.heading3, fontSize: '1.4em', fontWeight: '600', color: '#2d3748' },
-  { tag: tags.heading4, fontSize: '1.2em', fontWeight: '600', color: '#4a5568' },
-  { tag: tags.heading5, fontSize: '1.1em', fontWeight: '600', color: '#4a5568' },
-  { tag: tags.heading6, fontSize: '1em', fontWeight: '600', color: '#718096' },
-  { tag: tags.strong, fontWeight: '700', color: '#2d3748' },
-  { tag: tags.emphasis, fontStyle: 'italic', color: '#4a5568' },
-  { tag: tags.strikethrough, textDecoration: 'line-through', color: '#a0aec0' },
-  { tag: tags.link, color: '#667eea', textDecoration: 'none' },
-  { tag: tags.url, color: '#a0aec0' },
-  { tag: tags.monospace, fontFamily: 'Consolas, Monaco, monospace', backgroundColor: 'rgba(102, 126, 234, 0.1)', padding: '0.2em 0.4em', borderRadius: '3px', fontSize: '0.9em', color: '#e53e3e' },
-  { tag: tags.quote, color: '#718096', fontStyle: 'italic' },
-  { tag: tags.list, color: '#4a5568' },
-  { tag: tags.contentSeparator, color: '#cbd5e0' },
+  { tag: tags.heading1, fontSize: '2em', fontWeight: '700', color: 'var(--theme-heading)' },
+  { tag: tags.heading2, fontSize: '1.6em', fontWeight: '700', color: 'var(--theme-heading)' },
+  { tag: tags.heading3, fontSize: '1.4em', fontWeight: '600', color: 'var(--theme-heading)' },
+  { tag: tags.heading4, fontSize: '1.2em', fontWeight: '600', color: 'var(--theme-text)' },
+  { tag: tags.heading5, fontSize: '1.1em', fontWeight: '600', color: 'var(--theme-text)' },
+  { tag: tags.heading6, fontSize: '1em', fontWeight: '600', color: 'var(--theme-text-muted)' },
+  { tag: tags.strong, fontWeight: '700', color: 'var(--theme-text)' },
+  { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--theme-text)' },
+  { tag: tags.strikethrough, textDecoration: 'line-through', color: 'var(--theme-text-muted)' },
+  { tag: tags.link, color: 'var(--theme-primary)', textDecoration: 'none' },
+  { tag: tags.url, color: 'var(--theme-text-muted)' },
+  { tag: tags.monospace, fontFamily: 'var(--theme-font-mono)', backgroundColor: 'var(--theme-background-secondary)', padding: '0.2em 0.4em', borderRadius: 'var(--radius-sm)', fontSize: '0.9em', color: 'var(--theme-accent)' },
+  { tag: tags.quote, color: 'var(--theme-text-secondary)', fontStyle: 'italic' },
+  { tag: tags.list, color: 'var(--theme-text)' },
+  { tag: tags.contentSeparator, color: 'var(--theme-border)' },
 ]);
 
 // 隐藏 Markdown 语法标记的插件
@@ -534,7 +536,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-background);
+  background: var(--theme-background);
 }
 
 .editor-container {
@@ -565,10 +567,10 @@ onUnmounted(() => {
   justify-content: flex-end;
   gap: 1.5rem;
   padding: 0.5rem 1rem;
-  background: var(--color-border);
-  border-top: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border-top: 1px solid var(--theme-border);
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
 }
 
 .status-item {
@@ -586,40 +588,8 @@ onUnmounted(() => {
 
 /* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
-  .codemirror-wrapper :deep(.cm-editor) {
-    background: #1e1e1e;
-    color: #d4d4d4;
-  }
-  
   .codemirror-wrapper :deep(.cm-activeLine) {
-    background: rgba(102, 126, 234, 0.1);
-  }
-  
-  .codemirror-wrapper :deep(.cm-md-header1),
-  .codemirror-wrapper :deep(.cm-md-header2),
-  .codemirror-wrapper :deep(.cm-md-header3) {
-    color: #e2e8f0;
-  }
-  
-  .codemirror-wrapper :deep(.cm-md-header4),
-  .codemirror-wrapper :deep(.cm-md-header5) {
-    color: #cbd5e0;
-  }
-  
-  .codemirror-wrapper :deep(.cm-md-header6) {
-    color: #a0aec0;
-  }
-  
-  .codemirror-wrapper :deep(.cm-strong) {
-    color: #e2e8f0;
-  }
-  
-  .codemirror-wrapper :deep(.cm-em) {
-    color: #cbd5e0;
-  }
-  
-  .codemirror-wrapper :deep(.cm-link) {
-    color: #7c3aed;
+    background: var(--theme-background-secondary);
   }
 }
 </style>

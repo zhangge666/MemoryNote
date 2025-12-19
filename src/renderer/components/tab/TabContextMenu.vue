@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <div
       v-if="visible"
@@ -126,8 +126,8 @@ onUnmounted(() => {
 .tab-context-menu {
   position: fixed;
   z-index: 10000;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 4px;
@@ -154,13 +154,13 @@ onUnmounted(() => {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  color: var(--color-text);
+  color: var(--theme-text);
   transition: background-color 0.2s;
   user-select: none;
 }
 
 .context-menu-item:hover {
-  background: var(--color-hover);
+  background: var(--theme-background-hover);
 }
 
 .context-menu-icon {
@@ -171,7 +171,7 @@ onUnmounted(() => {
 
 .context-menu-divider {
   height: 1px;
-  background: var(--color-border);
+  background: var(--theme-border);
   margin: 4px 0;
 }
 </style>

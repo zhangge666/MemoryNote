@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="tab-bar">
     <!-- 标签列表 -->
     <div class="tab-list" ref="tabListRef" @wheel="handleWheel">
@@ -140,8 +140,8 @@ function handleTogglePin() {
 .tab-bar {
   display: flex;
   align-items: center;
-  background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--theme-background);
+  border-bottom: 1px solid var(--theme-border);
   height: 40px;
   flex-shrink: 0;
 }
@@ -163,12 +163,12 @@ function handleTogglePin() {
 }
 
 .tab-list::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--theme-border);
   border-radius: 2px;
 }
 
 .tab-list::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-tertiary);
+  background: var(--theme-text-tertiary);
 }
 
 .tab-actions {
@@ -176,7 +176,7 @@ function handleTogglePin() {
   align-items: center;
   gap: 4px;
   padding: 0 8px;
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--theme-border);
 }
 
 .tab-action-btn {
@@ -186,7 +186,7 @@ function handleTogglePin() {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  color: var(--color-text-secondary);
+  color: var(--theme-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -194,8 +194,8 @@ function handleTogglePin() {
 }
 
 .tab-action-btn:hover {
-  background: var(--color-background-secondary);
-  color: var(--color-text);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
 }
 </style>
 

@@ -175,7 +175,7 @@ export class FileService implements IFileService {
   /**
    * 删除目录
    */
-  async deleteDir(dirpath: string, recursive: boolean = false): Promise<void> {
+  async deleteDir(dirpath: string, recursive = false): Promise<void> {
     try {
       if (recursive) {
         await fs.rm(dirpath, { recursive: true, force: true });

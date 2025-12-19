@@ -259,7 +259,7 @@ export class FileSystemService {
   /**
    * 生成唯一文件名
    */
-  generateUniqueFileName(title: string, folderPath: string = ''): string {
+  generateUniqueFileName(title: string, folderPath = ''): string {
     const sanitized = title.replace(/[<>:"/\\|?*]/g, '_');
     let fileName = `${sanitized}.md`;
     let fullPath = path.join(folderPath, fileName);
@@ -277,7 +277,7 @@ export class FileSystemService {
   /**
    * 扫描目录获取所有笔记文件
    */
-  async scanDirectory(dirPath: string = ''): Promise<string[]> {
+  async scanDirectory(dirPath = ''): Promise<string[]> {
     const absolutePath = this.getAbsolutePath(dirPath);
     const files: string[] = [];
 
@@ -304,7 +304,7 @@ export class FileSystemService {
   /**
    * 提取笔记摘要（前几行）
    */
-  extractExcerpt(content: string, maxLength: number = 200): string {
+  extractExcerpt(content: string, maxLength = 200): string {
     // 移除 Markdown 标记
     const plainText = content
       .replace(/^#{1,6}\s+/gm, '') // 标题

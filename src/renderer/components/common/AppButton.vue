@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <button
     class="app-button"
     :class="[
@@ -72,7 +72,7 @@ function handleClick(event: MouseEvent) {
 }
 
 .app-button:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
 
@@ -104,92 +104,92 @@ function handleClick(event: MouseEvent) {
 
 /* ========== Primary Variant ========== */
 .app-button--primary {
-  background: var(--color-primary);
+  background: var(--theme-primary);
   color: white;
 }
 
 .app-button--primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary) 85%, black);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--theme-primary) 85%, black);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
 .app-button--primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary) 75%, black);
+  background: color-mix(in srgb, var(--theme-primary) 75%, black);
 }
 
 /* ========== Secondary Variant ========== */
 .app-button--secondary {
-  background: var(--color-background-secondary);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  background: var(--theme-background-secondary);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
 }
 
 .app-button--secondary:hover:not(:disabled) {
-  background: var(--color-background-tertiary);
-  border-color: var(--color-primary);
+  background: var(--theme-background-tertiary);
+  border-color: var(--theme-primary);
 }
 
 .app-button--secondary:active:not(:disabled) {
-  background: var(--color-border);
+  background: var(--theme-border);
 }
 
 /* ========== Success Variant ========== */
 .app-button--success {
-  background: var(--color-success);
+  background: var(--theme-success);
   color: white;
 }
 
 .app-button--success:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-success) 85%, black);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-success) 30%, transparent);
+  background: color-mix(in srgb, var(--theme-success) 85%, black);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-success) 30%, transparent);
 }
 
 .app-button--success:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-success) 75%, black);
+  background: color-mix(in srgb, var(--theme-success) 75%, black);
 }
 
 /* ========== Warning Variant ========== */
 .app-button--warning {
-  background: var(--color-warning);
+  background: var(--theme-warning);
   color: #1a1a1a;
 }
 
 .app-button--warning:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-warning) 85%, black);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-warning) 30%, transparent);
+  background: color-mix(in srgb, var(--theme-warning) 85%, black);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-warning) 30%, transparent);
 }
 
 .app-button--warning:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-warning) 75%, black);
+  background: color-mix(in srgb, var(--theme-warning) 75%, black);
 }
 
 /* ========== Danger Variant ========== */
 .app-button--danger {
-  background: var(--color-error);
+  background: var(--theme-error);
   color: white;
 }
 
 .app-button--danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-error) 85%, black);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-error) 30%, transparent);
+  background: color-mix(in srgb, var(--theme-error) 85%, black);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-error) 30%, transparent);
 }
 
 .app-button--danger:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-error) 75%, black);
+  background: color-mix(in srgb, var(--theme-error) 75%, black);
 }
 
 /* ========== Ghost Variant ========== */
 .app-button--ghost {
   background: transparent;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .app-button--ghost:hover:not(:disabled) {
-  background: var(--color-background-secondary);
+  background: var(--theme-background-secondary);
 }
 
 .app-button--ghost:active:not(:disabled) {
-  background: var(--color-border);
+  background: var(--theme-border);
 }
 
 /* ========== Disabled State ========== */

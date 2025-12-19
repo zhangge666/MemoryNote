@@ -1,5 +1,8 @@
-<template>
-  <div class="base-input-wrapper">
+﻿<template>
+  <div 
+    class="base-input-wrapper"
+    :class="{ 'base-input--block': block }"
+  >
     <input
       class="base-input"
       :class="{ 
@@ -36,12 +39,15 @@ export interface BaseInputProps {
   disabled?: boolean;
   /** 只读状态 */
   readonly?: boolean;
+  /** 是否占满父容器宽度 */
+  block?: boolean;
 }
 
 const props = withDefaults(defineProps<BaseInputProps>(), {
   type: 'text',
   disabled: false,
   readonly: false,
+  block: false,
 });
 
 const emit = defineEmits<{
@@ -76,41 +82,46 @@ function handleFocus(event: FocusEvent) {
 .base-input-wrapper {
   position: relative;
   display: inline-block;
-  width: 220px;
-  flex-shrink: 0;
+  width: auto;
+  max-width: 220px;
+  min-width: 120px; /* Minimum readable width */
+}
+
+.base-input-wrapper.base-input--block {
+  width: 100%;
 }
 
 .base-input {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  background: linear-gradient(135deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-surface) 95%, #000) 100%);
-  border: 1.5px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text);
-  font-size: 0.875rem;
+  background: var(--theme-background-secondary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+  font-size: var(--theme-font-size-sm);
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
   font-family: inherit;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .base-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   font-weight: 400;
 }
 
 .base-input:hover:not(.base-input--disabled):not(.base-input--readonly) {
-  border-color: var(--color-primary);
-  background: var(--color-surface);
+  border-color: var(--theme-primary);
+  background: var(--theme-background-secondary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
 .base-input:focus {
-  border-color: var(--color-primary);
-  background: var(--color-surface);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 12%, transparent),
+  border-color: var(--theme-primary);
+  background: var(--theme-background-secondary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-primary) 12%, transparent),
               0 2px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
@@ -122,7 +133,7 @@ function handleFocus(event: FocusEvent) {
 }
 
 .base-input--readonly {
-  background: color-mix(in srgb, var(--color-background-secondary) 50%, transparent);
+  background: color-mix(in srgb, var(--theme-background-secondary) 50%, transparent);
   cursor: default;
   border-color: transparent;
 }
@@ -139,14 +150,14 @@ function handleFocus(event: FocusEvent) {
   transform: translateY(-50%);
   width: 18px;
   height: 18px;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   pointer-events: none;
   transition: color 0.2s ease;
 }
 
 .base-input-wrapper:hover .base-input__search-icon,
 .base-input:focus ~ .base-input__search-icon {
-  color: var(--color-primary);
+  color: var(--theme-primary);
 }
 
 /* 数字输入框 - 隐藏默认的上下箭头 */

@@ -540,7 +540,7 @@ watch(
 .settings-section {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .settings-section:last-child {
@@ -552,15 +552,15 @@ watch(
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 1rem;
-  color: var(--color-text);
+  color: var(--theme-text);
 }
 
 .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--theme-border-light);
 }
 
 .setting-item:last-child {
@@ -570,23 +570,30 @@ watch(
 .setting-info {
   flex: 1;
   margin-right: 1rem;
+  min-width: 120px; /* Ensure info container is always visible */
 }
 
 .setting-label {
   display: block;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--theme-text);
   margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .setting-description {
   font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
   line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
 }
-
-
 
 .settings-actions {
   display: flex;
@@ -594,7 +601,7 @@ watch(
   align-items: center;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--theme-border-light);
 }
 
 .index-status {
@@ -602,7 +609,7 @@ watch(
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  color: var(--theme-text-muted);
 }
 
 @media (max-width: 768px) {

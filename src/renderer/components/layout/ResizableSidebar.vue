@@ -54,7 +54,7 @@ export interface SidebarProps {
 const props = withDefaults(defineProps<SidebarProps>(), {
   minWidth: 200,
   maxWidth: 600,
-  contentPadding: '1rem',
+  contentPadding: '0',
 });
 
 const emit = defineEmits<{
@@ -116,11 +116,11 @@ const handleResizeEnd = () => {
 
 /* 左侧栏样式 */
 .sidebar-left {
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid var(--theme-border);
 }
 
 /* 右侧栏样式 */
 .sidebar-right {
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--theme-border);
 }
 </style>
